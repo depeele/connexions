@@ -1,0 +1,307 @@
+<?php
+/** @file
+ *
+ *  A view partial to render the top-level navigation menu.
+ *
+ *  $this implements the Zend_View_Interface and has at least the following
+ *  members/methods:
+ *      navigation()    Returns the Zend_View_Helper_Navigtion instance to be
+ *                      used to retrieve the Zend_View_Helper_Navigation_Menu
+ *                      instance to aid in rendering
+ *                      (initialized in Bootstrap::_initNavigation());
+ */
+
+/* Ensure that navigation menu related view variables that we need
+ * (i.e. 'search') have been initialized.
+ */
+$navMenu = $this->navMenu();
+
+/************************************************************
+ * Render the Navigation Menu
+ *
+ */
+$nav       = $this->navigation();
+$menu      = $nav->menu();
+
+$uri       = Connexions::getRequestUri();
+$iterator  = new RecursiveIteratorIterator($nav->getContainer(),
+                    RecursiveIteratorIterator::SELF_FIRST);
+
+/* Attempt to simplify the current request uri by stripping off any query
+ * and/or fragment.
+ */
+$uri =  preg_replace('/[\?#].*$/', '', $uri);
+
+/* First, iterate through and determine the lowest page that matches the
+ * current URI.
+ */
+foreach ($iterator as $page)
+{
+    if (! $menu->accept($page))
+    {
+        // NOT accepted by ACL or visibility
+        continue;
+    }
+
+    $href = $page->getHref();
+
+    $isActive = preg_match('#^'.$href.'#', $uri);
+    if ($isActive)
+    {
+        $page->setActive(true);
+    }
+}
+$iterator->rewind();
+
+$prevDepth     = -1;
+$liFirst       = false;
+$ulClass       = 'nav';
+foreach ($iterator as $page)
+{
+    if (! $menu->accept($page))
+    {
+        // NOT accepted by ACL or visibility
+        continue;
+    }
+
+    $depth    = $iterator->getDepth();
+    $indent   = str_repeat(' ', $depth);
+    $href     = $page->getHref();
+    $isActive = (($depth > 0
+                    ? preg_match('#^'.$href.'#', $uri)
+                    : $page->isActive(true)) ? true : false );
+
+    /*
+    Connexions::log("nav_menu: depth[ %s ], label[ %s ], href[ %s ], "
+                    .   "isActive[ %s ]",
+                    $depth,
+                    $page->getLabel(),
+                    $href,
+                    Connexions::varExport($isActive));
+    // */
+
+    if ($depth > $prevDepth)
+    {
+        // Start a new <ul>
+        $ulClasses = array();
+        if ( ($depth == 0) && (! @empty($ulClass)))
+            array_push($ulClasses, $ulClass);
+        else if ($depth > 0)
+        {
+            array_push($ulClasses, 'sub');
+            if ($isActive)
+                array_push($ulClasses, 'active');
+        }
+
+        echo $indent, '<ul',
+                    (! @empty($ulClasses)
+                        ? " class='". implode(' ', $ulClasses) ."'"
+                        : ""),
+                      ">\n";
+        $liFirst = true;
+    }
+    else if ($depth < $prevDepth)
+    {
+        // Close li/ul tags until we're at current depth
+        Connexions::closeTags($indent, $prevDepth, $depth, '</li></ul>');
+    }
+
+    if ($depth <= $prevDepth)
+    {
+        // Close the previous <li>
+        echo $indent, " </li>\n";
+    }
+
+    // Render the <li> for this page
+    $liClasses = array();
+    if ( $liFirst )
+    {
+        array_push($liClasses, ($depth > 0 ? 'sub-first' : 'menu-first'));
+    }
+    if ( ($pageClass = $page->getClass()) !== null)
+    {
+        $liLast = (strpos($pageClass, 'sub-last') !== false);
+
+        array_push($liClasses, $pageClass);
+    }
+    else
+    {
+        $liLast = false;
+    }
+
+    printf ("%s <li%s>",
+            $indent,
+            (! @empty($liClasses)
+                ? " class='". implode(' ', $liClasses) ."'"
+                : ""));
+    if ($liFirst)
+    {
+        if ($depth === 0)
+        {
+            // Include the main left outter corner (for IE)
+            echo "<div class='ie-corner ",
+                             "connexions_sprites corner_outter_left'>",
+                 "</div>";
+        }
+        else
+        {
+            // Include the left inner corner
+            echo "<div class='connexions_sprites corner_inner_left'>",
+                 "</div>";
+        }
+    }
+    if ($liLast)
+    {
+        // Include the lower outer corners (for IE)
+        echo "<div class='ie-corner connexions_sprites corner_outter_left'>",
+             "</div>";
+        echo "<div class='ie-corner connexions_sprites corner_outter_right'>",
+             "</div>";
+    }
+
+
+    $label = Connexions::replaceables($page->getLabel());
+    printf ("<a href='%s'%s>%s</a>",
+            $href,
+            ($isActive ? " class='active'" : ''),
+            $label);
+
+    if ($depth == 0)
+    {
+        // Include a drop-down indicator
+        echo "<div class='menu-arrow ui-icon ui-icon-triangle-1-s'>",
+              "&nbsp;",
+             "</div>";
+    }
+
+    if (($depth > 0) && $liFirst)
+    {
+        // Include the right inner corner
+        echo "<div class='connexions_sprites corner_inner_right'>",
+             "</div>";
+    }
+
+    $liFirst = false;
+
+    echo "\n";
+
+    $prevDepth = $depth;
+}
+
+// Finished iterating -- close all open li/ul tags
+Connexions::closeTags($indent, $depth+1, 0, '</li></ul>');
+
+
+/************************************************************
+ * Render the Search Control
+ *
+ */
+$searchTerm     = (isset($this->search['term'])
+                    ? $this->search['term']
+                    : null);
+$searchContext  = (isset($this->search['context'])
+                    ? $this->search['context']
+                    : null);
+
+?>
+<form id='search' action='<?= $this->baseUrl('/search') ?>' method='post'
+      class='ui-form'>
+ <div class='searchBox'><!-- searchBox { -->
+  <div class='searchInput'><!-- searchInput { -->
+   <div class='choices'>
+    <input name='referer' type='hidden'
+          value='<?= $this->url ?>' />
+    <input name='searchContext' type='hidden'
+          value='<?= $searchContext ?>' />
+    <ul class='sub list'>
+     <?php
+
+    if (! $this->search['disabled'])
+    {
+        /* Render the list of available search contexts.
+         *
+         * This is defined in 'application/configs/application.ini' via
+         *     'searchContext.<name> = { title: , resource: }
+         */
+        $contextText = 'Search connexions';
+        $ind         = "     ";
+        $nItems      = count($this->search['contexts']);
+        $idex        = 0;
+        $isFirst     = true;
+        foreach($this->search['contexts'] as $name => $info)
+        {
+            if (! $navMenu->searchAccept($name))
+            {
+                // NOT accepted by ACL or visibility
+                $idex++;
+                continue;
+            }
+
+            $title = $info['title'];
+
+            $isLast    = ( ($idex + 1) >= $nItems);
+            $id        = 'search-choice-'. $name;
+            $liClasses = array();
+            if ( $isFirst )
+                array_push($liClasses, 'sub-first');
+            else if ( $isLast )
+                array_push($liClasses, 'sub-last');
+
+            if ($searchContext == $name)
+            {
+                //array_push($liClasses, 'on');
+                array_push($liClasses, 'active');
+                $contextText = $title;
+            }
+
+            printf ("%s<li id='%s'%s>",
+                    $ind, $id,
+                    (! @empty($liClasses)
+                        ? " class='". implode(' ', $liClasses) ."'"
+                        : ""));
+            if ( $isFirst ) //$idex == 0)
+            {
+                // Include the left inner corner
+                echo "<div class='connexions_sprites corner_inner_left'>",
+                     "</div>";
+            }
+
+            $title = Connexions::replaceables($title);
+            printf ("<a>%s</a>", $title);
+
+            if ( $isFirst )
+            {
+                // Include the right inner corner
+                echo "<div class='connexions_sprites corner_inner_right'>",
+                     "</div>";
+            }
+            if ( $isLast )
+            {
+                // Include the lower outer corners (for IE)
+                echo "<div class='ie-corner ",
+                                  "connexions_sprites corner_outter_left'>",
+                     "</div>";
+                echo "<div class='ie-corner ",
+                                  "connexions_sprites corner_outter_right'>",
+                     "</div>";
+            }
+
+            echo "</li>\n";
+
+            $isFirst = false;
+            $idex++;
+        }
+    }
+     ?>
+    </ul>
+   </div>
+   <label  for='terms'></label>
+   <input name='terms'   type='text' class='input'
+          autocomplete='off' maxlength='255' size='30'
+          <?= ($this->search['disabled'] === true ? "disabled='true'" : '') ?>
+    />
+  </div><!-- searchInput } -->
+  <button class='submit connexions_sprites magnifier_small'
+          <?= ($this->search['disabled'] === true ? "disabled='true'" : '') ?>>&nbsp;</button>
+ </div><!-- searchBox } -->
+</form>

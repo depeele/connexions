@@ -1,0 +1,19 @@
+@import "colors";
+@import "mixins";
+
+.ui-confirmation {
+  position:         absolute;
+  min-width:        8em;
+  padding:          0.2em;
+  font-size:        0.8em;
+
+  @include          corners(0.3em);
+  background-color: $darkest;
+  color:            $lightest;
+
+  text-align:       center;
+
+  button {
+    width:          3.5em;
+  }
+}

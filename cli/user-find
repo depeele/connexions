@@ -1,0 +1,16 @@
+#!/usr/bin/env php
+<?php
+define('CLI_DIR', realpath(dirname(__FILE__)));
+
+require_once(CLI_DIR. '/bootstrap.php');
+$prog = array_shift($argv);
+
+$svc = Connexions_Service::factory('Service_User');
+foreach ($argv as $userId)
+{
+    printf ("find: userId[ %s ]: ", $userId);
+    $user = $svc->find($userId);
+    echo ($user instanceof Model_User
+                ? $user->debugDump()
+                : "NOT FOUND");
+}

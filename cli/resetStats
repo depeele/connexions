@@ -1,0 +1,25 @@
+#!/usr/bin/env php
+<?php
+define('CLI_DIR', realpath(dirname(__FILE__)));
+
+require_once(CLI_DIR. '/bootstrap.php');
+$prog = array_shift($argv);
+
+$svc = Connexions_Service::factory('Service_Bookmark');
+foreach ($argv as $id)
+{
+    /*
+    list($userId, $itemId) = explode(':', $id);
+
+    $bookmark = $svc->find( array('userId' => $userId,
+                                  'itemId' => $itemId) );
+    */
+
+    $bookmark = $svc->find( $id );
+
+    printf ("id[ %s ]: %s\n",
+            $id,
+            ($bookmark instanceof Model_Bookmark
+                ? $bookmark->debugDump()
+                : "NOT FOUND") );
+}

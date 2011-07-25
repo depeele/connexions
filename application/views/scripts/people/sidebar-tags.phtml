@@ -1,0 +1,49 @@
+<?php
+/** @file
+ *
+ *  View script for IndexController::index to render the tags portion of the
+ *  sidebar (i.e. the 'Tags' tab).
+ *
+ *  Incoming members:
+ *      url             The full url for the main controller of this page;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      tags            A Model_Set_Tag instance containing information about
+ *                      any requested tags (i.e. tag restrictions);
+ *      main            An array of settings for the main content panel:
+ *      sidebar         Configuration for the sidebar presentation;
+ */
+$paneName = 'tags';
+$config   =  (is_array($this->sidebar['panes']) &&
+              is_array($this->sidebar['panes'][$paneName])
+                ? $this->sidebar['panes'][$paneName]
+                : array());
+
+if ($this->sidebar['initialRender'] === true)
+{
+    ?>
+  <div class='columnHeader'>
+   <div class='context-bg connexions_sprites tag_bg ui-corner-left'>
+    &nbsp;
+   </div>
+   <p>Tags related to these people<?php
+
+    $nTags = count($this->tags);
+    if ($nTags > 0)
+    {
+        printf ("<span class='restrictions'>and %d tag%s.</span>",
+                $nTags,
+                ($nTags === 1 ? '' : 's'));
+    }
+    else
+    {
+        echo ".";
+    }
+   
+   ?></p>
+  </div>
+    <?php
+}
+
+$htmlItemCloud = $this->htmlItemCloud($config);
+echo $htmlItemCloud->render();

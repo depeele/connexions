@@ -1,0 +1,87 @@
+<?php
+/** @file
+ *
+ *  View script for UrlController::index to render the main content.
+ *
+ *  Incoming members:
+ *      url             The full url for the main controller of this page;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      tags            A Model_Set_Tag instance containing information about
+ *                      any request tags (i.e. tag restrictions);
+ *      item            A Model_Item instance containing information about
+ *                      the target Item;
+ *
+ *      main            An array of settings for the main body:
+ *          namespace       The cookie/parameters/settings namespace for the
+ *                          sidebar [ 'sidebarTab' ];
+ *          viewer          The Model_User instance representing the current
+ *                          viewer (typically a reference to $view->viewer);
+ *          tags            The Model_Tag or Model_Set_Tag instance
+ *                          representing the tag(s) that paraially define the
+ *                          scope of this view
+ *                          (typically a reference to $view->tags);
+ *          items           The Model_Item_Set or Model_Item instance
+ *                          representing the target item(s);
+ *
+ *          displayStyle    Indicates the current presentation style -- if this
+ *                          is an array, the style is 'custom';
+ *          perPage         The number of results on a single page;
+ *          page            The desired page of results;
+ *          sortBy          Indicates the sort field used to retrieve the
+ *                          current bookmark set;
+ *          sortOrder       Indicates the sort order used to retrieve the
+ *                          current bookmark set;
+ *
+ *
+ *  Initialize the HTML Bookmarks helper, needed here because the Scope Helper
+ *  needs access to the bookmarks for count.
+ */
+$htmlBookmarks = $this->htmlBookmarks( $this->main );
+
+// Prepare the Html Item Scope helper
+$scopePath = array('Url' => $this->baseUrl('/url'));
+
+$htmlItemScope = $this->htmlItemScope( array(
+                    'namespace'         => $this->namespace,
+                    'items'             => $htmlBookmarks->paginator,
+                    'scope'             => $this->tags, //$htmlBookmarks->tags,
+                    'inputLabel'        => 'Tags',
+                    'inputName'         => 'Tags',
+                    'path'              => $scopePath,
+                    'jsonRpc'           =>  array(
+                        'method'    =>   'bookmark.autocompleteTag',
+                        'params'    =>   array(
+                            'tags'  => (count($this->tags) < 1
+                                            ? null
+                                            : $this->tags->__toString()),
+                            'items'  => ( (! $this->item)
+                                            ? null
+                                            : $this->item->urlHash),
+                        ),
+                    ),
+                 ));
+
+$firstBookmark = $htmlBookmarks->paginator->getItem(0);
+ 
+#$itemBaseUrl = preg_replace('#([^:]+://[^/]+).*$#', '$1', $this->item->url);
+#$icoUrl      = $itemBaseUrl .'/favicon.ico';
+?>
+<div class='columnHeader'>
+ <div class='context-bg connexions_sprites bookmark_bg
+             ui-corner-left ui-corner-tr'>&nbsp;</div>
+ <p class='smaller'>Bookmarks for</p>
+ <div class='url'>
+  <a href='<?= $this->item->url ?>'><?= $this->item->getTitle() ?></a>
+ </div>
+ <h3 class='siteName'>
+  <a href='<?= $this->item->url ?>'><?= $firstBookmark->name ?></a>
+ </h3>
+ <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>
+</div>
+<?php
+
+echo $htmlItemScope->render();
+
+// Use the main.phtml view script from the IndexController
+echo $this->render('url/main.phtml');

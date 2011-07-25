@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="chrome://global/content/textbox.css" type="text/css"?>
+<?xml-stylesheet href="chrome://global/skin/textbox.css" type="text/css"?>
+<?xml-stylesheet href="chrome://connexions/skin/statusbar.css" type="text/css"?>
+<!DOCTYPE overlay SYSTEM "chrome://connexions/locale/statusbar.dtd">
+<overlay
+    id="connexions-statusbar-overlay"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  <script src="connexions.js"/>
+  <script src="ff-statusbar.js"/>
+
+  <!-- Make the overlay.properties strings available via '#connexions-strings'
+       and thus via connexions.getString() -->
+  <stringbundleset id="stringbundleset">
+    <stringbundle id="connexions-statusbar-strings"
+                 src="chrome://connexions/locale/statusbar.properties"/>
+  </stringbundleset>
+
+  <statusbar id="status-bar">
+    <hbox
+          id="connexions-statusbar">
+      <hbox
+            id="connexions-statusbar-info">
+        <image src='chrome://connexions/skin/logo-100.png'
+               class='statusbar-icon'
+               tooltiptext="&connexions.statusbar.connexions.tooltip;"
+               onclick="connexions.loadPage(event, 'bookmarks');" />
+      </hbox>
+      <hbox
+            id="connexions-statusbar-sync"
+            tooltiptext="&connexions.statusbar.panel.sync.tooltip;"
+            onclick="connexions.showOptions();"
+            hidden="true">
+        <stack class='connexions-progressmeter'>
+          <progressmeter
+            id="connexions-statusbar-sync-progress-meter"
+            mode="undetermined"
+            flex="1" />
+          <hbox class='statusbar-syncDetails'>
+            <label id="connexions-statusbar-sync-progress-current"
+                   class='progressCurrent'
+                   pack='start'
+                   flex='1' />
+            <label id="connexions-statusbar-sync-progress-final"
+                   class='progressFinal'
+                   pack='end'
+                   flex='1' />
+          </hbox>
+        </stack>
+        <image
+            id="connexions-statusbar-sync-cancel"
+            class="textbox-search-clear connexions-cancel-sync"
+            tooltiptext="&connexions.statusbar.sync.cancel;"
+            onclick="cStatusbar.click_syncCancel(event);" />
+      </hbox>
+    </hbox>
+  </statusbar>
+</overlay>

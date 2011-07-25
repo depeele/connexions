@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<dataset>
+ <activity
+    activityId="1"
+    userId="1"
+    objectType="bookmark"
+    objectId="1:1"
+    operation="save"
+    time="2010-04-05 17:25:19"
+    properties='{"userId":1,"itemId":1,"name":"More than a password manager | CLipperz","description":"Testing 1,2...","rating":0,"isFavorite":0,"isPrivate":0,"taggedOn":"2010-04-05 17:25:19","updatedOn":"2010-04-05 17:25:19"}' />
+ <activity
+    activityId="2"
+    userId="1"
+    objectType="bookmark"
+    objectId="1:1"
+    operation="update"
+    time="2010-07-22 10:00:00"
+    properties='{"description":"Testing 1,2 3, 4...","rating":1,"isPrivate":1,"updatedOn":"2010-04-05 17:25:19"}' />
+ <activity
+    activityId="3"
+    userId="1"
+    objectType="bookmark"
+    objectId="1:1"
+    operation="update"
+    time="2011-04-12 17:25:19"
+    properties='{"description":"Testing...","rating":0,"isPrivate":0,"updatedOn":"2011-04-12 17:25:19"}' />
+
+</dataset>
+

@@ -1,0 +1,98 @@
+@import "sizes";
+@import "colors";
+@import "mixins";
+@import "uiStars";
+
+.ui-validation-form {
+  padding: 0 0 0 0.5em;
+  float: left;
+  width: auto;
+  background-color: $pageColorBackground;
+  border: unquote("2px solid") $borderColor;
+  @include corners(10px);
+  .legend {
+    text-align: right;
+    padding-right: 2em;
+    h1 {
+      padding:      0;
+      color:        $navColorSelected;
+      font-size:    1.25em;
+      font-weight:  bold;
+    }
+    p {
+      padding: 0;
+      color: $fieldInfoColor;
+    }
+  }
+  .userInput {
+    position: relative;
+    padding:  1em;
+    z-index:  1;
+    //background-color: #eef
+    @include corners(10px);
+    .field {
+      padding-bottom: 0.25em;
+      label {
+        color: $fieldInfoColor;
+      }
+      //.text {
+      //  width: 30em;
+      //}
+      .ui-field-info {
+        height:       1.25em;
+        font-size:    0.9em;
+        padding-left: 1.25em;
+        @include opacity(75);
+        .ui-field-status {
+          float:      left;
+        }
+        .ui-field-requirements {
+          float:      right;
+          color:      $fieldInfoColor;
+          text-align: right;
+        }
+      }
+    }
+    .click-to-edit {
+      label {
+        display: none;
+      }
+      input {
+        color:            $validationInputColor;
+        border-color:     $pageColorBackground; /* transparent */
+        background-color: $pageColorBackground;
+        background-image: none;
+      }
+      input:focus {
+        color:            $validationFocusColor;
+        border-color:     $validationFocusBorderColor;
+      }
+      .ui-field-info {
+        visibility: hidden;
+      }
+      &:hover {
+        .ui-field-info {
+          visibility: visible;
+        }
+      }
+    }
+    .buttons {
+      position:     relative;
+      text-align:   right;
+      width:        100%;
+      padding:      2em 0 0.5em 1em;
+      clear:        both;
+      input, label, button {
+        position: relative;
+        display: inline;
+        cursor: pointer;
+      }
+    }
+    .formError {
+      padding: 0;
+      font-weight: bold;
+      text-align: left;
+      color: $errorColor;
+    }
+  }
+}

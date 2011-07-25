@@ -1,0 +1,135 @@
+<?php
+/** @file
+ *
+ *  View script for IndexController::index to render the people portion of the
+ *  sidebar.
+ *
+ *  The Connexions_View_Helper_HtmlItemCloud helper MUST be initialized
+ *  before this view is rendered.
+ *
+ *  Incoming members:
+ *      url             The full url for the main controller of this page;
+ *      owner           The owner of the current item set -- either a string or
+ *                      a Model_User instance;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      tags            A Model_Set_Tag instance containing information about
+ *                      any requested tags (i.e. tag restrictions);
+ *      sidebar         Configuration for the sidebar presentation;
+ */
+$paneName = 'people';
+$config   =  (is_array($this->sidebar['panes']) &&
+              is_array($this->sidebar['panes'][$paneName])
+                ? $this->sidebar['panes'][$paneName]
+                : array());
+
+
+if (($this->sidebar['initialRender'] === true) && ($this->owner === '*'))
+{
+    ?>
+  <div class='columnHeader'>
+   <div class='context-bg connexions_sprites user_bg ui-corner-left'>
+    &nbsp;
+   </div>
+   <p>People related to these bookmarks.</p>
+  </div>
+    <?php
+}
+
+if ($this->owner !== '*')
+{
+    // Present information about the single user.
+    echo $this->partial('sidebar-user.phtml',
+                        array(
+                            'user'   => $this->owner,
+                            'viewer' => $this->viewer,
+                        ));
+
+    // Include any collected statistics and/or timeline
+    if (isset($config['stats']))
+    {
+        $stats     = $config['stats'];
+        $bookmarks = $stats['privates'] + $stats['publics'];
+
+        ?>
+  <table class='statistics'>
+   <tbody class='twoCol'>
+    <tr><th>Bookmarks</th
+       ><td><?= number_format($bookmarks) ?></td></tr>
+        <?php
+        if ($stats['privates'] > 0)
+        {
+            ?>
+    <tr><th class='subHeader'>Private</th
+       ><td><?= number_format($stats['privates'])   ?></td></tr>
+    <tr><th class='subHeader'>Public</th
+       ><td><?= number_format($stats['publics'])    ?></td></tr>
+            <?php
+        }
+        ?>
+    <tr><th class='subHeader'>Favorites</th
+       ><td><?= number_format($stats['favorites']) ?></td></tr>
+    <tr><th class='subHeader'>Rated</th
+       ><td><?= number_format($stats['rated'])     ?></td></tr>
+   </tbody>
+  </table>
+            <?php
+    }
+
+    if (isset($config['timeline']))
+    {
+        ?>
+  <div id='sb-bookmarks-timeline' class='timeline'>
+   <div class='timeline-controls'><!-- timeline-controls { -->
+    <select name='timeline.grouping'>
+     <optgroup label="Simple Timelines">
+      <option value='YM'  selected>Year, Month</option>
+      <option value='Y'           >Year</option>
+      <option value='M'           >Month</option>
+      <option value='w'           >Week</option>
+      <option value='D'           >Day</option>
+      <option value='d'           >Day-of-week</option>
+      <option value='H'           >Hour</option>
+     </optgroup>
+     <optgroup label="Series Timelines (by Year)">
+      <option value='Y:M'         >Month</option>
+      <option value='Y:D'         >Day-of-month</option>
+      <option value='Y:d'         >Day-of-week</option>
+      <option value='Y:H'         >Hour</option>
+     </optgroup>
+     <optgroup label="Series Timelines (by Month)">
+      <option value='M:D'         >Day-of-month</option>
+      <option value='M:d'         >Day-of-week</option>
+      <option value='M:H'         >Hour</option>
+     </optgroup>
+     <optgroup label="Series Timelines (by Week)">
+      <option value='w:d'         >Day-of-week</option>
+      <option value='w:H'         >Hour</option>
+     </optgroup>
+     <optgroup label="Series Timelines (by Day-of-Month)">
+      <option value='D:H'         >Hour</option>
+     </optgroup>
+     <optgroup label="Series Timelines (by Day-of-Week)">
+      <option value='d:H'         >Hour</option>
+     </optgroup>
+    </select>
+   </div><!-- timeline-controls } -->
+   <div class='timeline-plot'></div>
+   <div class='timeline-legend'></div>
+  </div>
+  <script type='text/javascript'>
+(function ($) {
+    var $timeline   = $('#sb-bookmarks-timeline');
+
+    $timeline.timeline( <?= Zend_Json::encode( $config['timeline'] ) ?> );
+ }(jQuery));
+  </script>
+            <?php
+    }
+}
+else
+{
+    // Tag-related users
+    $htmlItemCloud = $this->htmlItemCloud($config);
+    echo $htmlItemCloud->render();
+}

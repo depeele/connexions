@@ -1,0 +1,18 @@
+#!/usr/bin/env php
+<?php
+$dir = dirname(__FILE__);
+
+require_once("${dir}/../library/Connexions.php");
+
+$prog = array_shift($argv);
+foreach ( $argv as $arg )
+{
+    printf ("url        [ %s ]\n".
+            "   norm    [ %s ]\n".
+            "        md5[ %s ]\n".
+            "   norm.md5[ %s ]\n\n",
+            $arg,
+            Connexions::normalizeUrl($arg),
+            md5($arg),
+            Connexions::md5Url($arg));
+}

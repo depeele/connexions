@@ -1,0 +1,88 @@
+<?php
+/** @file
+ *
+ *  View script for TagsController::index to render the main content.
+ *
+ *  Incoming members:
+ *      url             The full url for the main controller of this page;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      users           A Model_Set_User instance containing information about
+ *                      any request users (i.e. user restrictions);
+ *
+ *      main            An array of settings for the main body:
+ *          namespace       The cookie/parameters/settings namespace for the
+ *                          sidebar [ 'sidebarTab' ];
+ *          viewer          The Model_User instance representing the current
+ *                          viewer (typically a reference to $view->viewer);
+ *          users           The Model_Set_User instance representing the
+ *                          user(s) that define the scope of this view
+ *                          (typically a reference to $view->users);
+ *          tags            The Model_Set_Tag instance representing the
+ *                          tag(s) to be presented;
+ *
+ *          displayStyle    Indicates the current presentation style -- if this
+ *                          is an array, the style is 'custom';
+ *          perPage         The number of results on a single page;
+ *          page            The desired page of results;
+ *          sortBy          Indicates the sort field used to retrieve the
+ *                          current bookmark set;
+ *          sortOrder       Indicates the sort order used to retrieve the
+ *                          current bookmark set;
+ *
+ *          highlightCount  The number of tags to highlight;
+ *
+ */
+
+Connexions::log('view/scripts/tags/index.phtml');
+
+/* Initialize the HTML Bookmarks helper, needed here because the Scope Helper
+ * needs access to the bookmarks for count.
+ */
+$htmlCloud = $this->htmlItemCloud( $this->main );
+
+
+// Prepare the Html Item Scope helper
+$scopePath = array('Tags' => $this->baseUrl('/tags'));
+
+$htmlItemScope = $this->htmlItemScope( array(
+                    'namespace'         =>  $this->namespace,
+                    'items'             =>  $htmlCloud->paginator,
+                    'scope'             =>  $this->users,
+                    'inputLabel'        =>  'Users',
+                    'inputName'         =>  'Users',
+                    'termName'          =>  array('name', 'fullName', 'email'),
+                    'path'              =>  $scopePath,
+                    'jsonRpc'           =>  array(
+                        'method'    =>   'tag.autocompleteUser',
+                        'params'    =>   array(
+                            'users' => (count($this->users) < 1
+                                            ? null
+                                            : $this->users->__toString()),
+                        ),
+                    ),
+                 ));
+
+?>
+<div class='columnHeader'>
+ <div class='context-bg connexions_sprites tag_bg
+             ui-corner-left ui-corner-tr'>&nbsp;</div>
+ <p>All Tags<?php
+
+        $nUsers = count($this->users);
+        if ( $nUsers > 0 )
+        {
+            printf ("<span class='restrictions'>used by '%s'.</span>",
+                    $this->users);
+        }
+        else
+        {
+            echo ".";
+        }
+    ?>
+ </p>
+ <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>
+</div>
+
+<?= $htmlItemScope->render() ?>
+<?= $this->render('tags/main.phtml') ?>

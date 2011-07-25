@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<dataset>
+ <memberGroup groupId="1" name="Tags"
+              groupType="tag"
+              controlMembers="owner" controlItems="owner" visibility="private"
+              canTransfer="1" ownerId="1" />
+ <memberGroup groupId="2" name="System:Network"
+              groupType="user"
+              controlMembers="owner" controlItems="owner" visibility="private"
+              canTransfer="0" ownerId="1" />
+ <memberGroup groupId="3" name="Urls"
+              groupType="item"
+              controlMembers="owner" controlItems="owner" visibility="group"
+              canTransfer="1" ownerId="1" />
+ <memberGroup groupId="4" name="System:Network"
+              groupType="user"
+              controlMembers="group" controlItems="group" visibility="public"
+              canTransfer="0" ownerId="2" />
+ <memberGroup groupId="5" name="System:Network"
+              groupType="user"
+              controlMembers="group" controlItems="group" visibility="group"
+              canTransfer="0" ownerId="3" />
+ <memberGroup groupId="6" name="System:Network"
+              groupType="user"
+              controlMembers="owner" controlItems="owner" visibility="private"
+              canTransfer="0" ownerId="4" />
+</dataset>

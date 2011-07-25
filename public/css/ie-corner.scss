@@ -1,0 +1,27 @@
+@import "urls";
+#pageHeader {
+  .siteAuth {
+    .siteMarking {
+      .urCorner {
+        .urCorner-background {
+          // From sprites.scss::.connexions_sprites
+          background-image:       $connexions_sprites_url;
+          background-attachment:  scroll;
+          background-repeat:      no-repeat;
+          background-color:       transparent;
+
+          // From sprites.scss::.corner_inner_left
+          width:                  12px;
+          background-position:    0 0;
+        }
+        .urCorner-rounded {
+          display:  none;
+        }
+      }
+    }
+  }
+}
+
+.ie-corner {
+  display:  block;
+}

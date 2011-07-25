@@ -1,0 +1,240 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/"
+                 type"text/css" ?>
+<?xml-stylesheet href="chrome://connexions/skin/sidebar.css"
+                 type="text/css" ?>
+<?xml-stylesheet href="chrome://connexions/skin/bookmark-properties.css"
+                 type="text/css" ?>
+<!DOCTYPE page SYSTEM "chrome://connexions/locale/overlay.dtd">
+
+<page id="connexions-sidebar"
+   title="&connexions.sidebar.label;"
+   xmlns:html="http://www.w3.org/1999/xhtml"
+   xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  <script src="connexions.js"/>
+  <script src="ff-sidebar.js"/>
+  <script src="bookmark-properties.js"/>
+
+  <tooltip id='connexions-tooltip'>
+    <vbox id='connexions-tooltip-label' width='180px' />
+  </tooltip>
+
+  <!-- Sidebar Bookmarks Context menu { -->
+  <popup id='sidebar-bookmarks-contextMenu'>
+    <menuitem
+        label="&connexions.sidebar.context.open.label;"
+        accesskey="&connexions.sidebar.context.open.accesskey;"
+        oncommand="cSidebar.openIn(event, document.popupNode, 'current');"/>
+    <menuitem
+        label="&connexions.sidebar.context.openInWindow.label;"
+        accesskey="&connexions.sidebar.context.openInWindow.accesskey;"
+        oncommand="cSidebar.openIn(event, document.popupNode, 'window');"/>
+    <menuitem
+        label="&connexions.sidebar.context.openInTab.label;"
+        accesskey="&connexions.sidebar.context.openInTab.accesskey;"
+        oncommand="cSidebar.openIn(event, document.popupNode, 'tab');"/>
+    <menuseparator />
+    <menuitem
+        label="&connexions.sidebar.context.properties.label;"
+        accesskey="&connexions.sidebar.context.properties.accesskey;"
+        oncommand="cSidebar.properties(event, document.popupNode);"/>
+    <menuseparator />
+    <menuitem
+        label="&connexions.sidebar.context.edit.label;"
+        accesskey="&connexions.sidebar.context.edit.accesskey;"
+        oncommand="cSidebar.edit(event, document.popupNode);"/>
+    <menuitem
+        label="&connexions.sidebar.context.delete.label;"
+        accesskey="&connexions.sidebar.context.delete.accesskey;"
+        authenticated="true"
+        oncommand="cSidebar.delete(event, document.popupNode);"/>
+  </popup>
+  <!-- Sidebar Bookmarks Context menu } -->
+
+  <!-- Sidebar Bookmark Property Panel { -->
+  <panel id="sidebar-bookmark-properties">
+    <vbox class='properties'>
+      <hbox class='property odd'>
+        <label class='label' value='&bookmark.label.id;' />
+        <label id='bookmark-id' flex='1'/>
+      </hbox>
+      <hbox class='property'>
+        <label class='label' value='&bookmark.label.url;' />
+        <label id='bookmark-url' flex='1'/>
+      </hbox>
+      <hbox class='property odd'>
+        <label class='label' value='&bookmark.label.urlHash;' />
+        <label id='bookmark-urlHash' flex='1'/>
+      </hbox>
+      <hbox class='property'>
+        <label class='label' value='&bookmark.label.name;' />
+        <label id='bookmark-name' flex='1'/>
+      </hbox>
+      <hbox class='property odd'>
+        <label class='label' value='&bookmark.label.description;' />
+        <label id='bookmark-description' flex='1'/>
+      </hbox>
+      <hbox class='property'>
+        <label class='label' value='&bookmark.label.rating;' />
+        <label id='bookmark-rating' flex='1'/>
+      </hbox>
+      <hbox class='property odd'>
+        <label class='label' value='&bookmark.label.isFavorite;' />
+        <label id='bookmark-isFavorite' flex='1'/>
+      </hbox>
+      <hbox class='property'>
+        <label class='label' value='&bookmark.label.isPrivate;' />
+        <label id='bookmark-isPrivate' flex='1'/>
+      </hbox>
+      <hbox class='property odd'>
+        <label class='label' value='&bookmark.label.taggedOn;' />
+        <label id='bookmark-taggedOn' flex='1'/>
+      </hbox>
+      <hbox class='property'>
+        <label class='label' value='&bookmark.label.updatedOn;' />
+        <label id='bookmark-updatedOn' flex='1'/>
+      </hbox>
+      <hbox class='property odd'>
+        <label class='label' value='&bookmark.label.visitedOn;' />
+        <label id='bookmark-visitedOn' flex='1'/>
+      </hbox>
+      <hbox class='property'>
+        <label class='label' value='&bookmark.label.visitCount;' />
+        <label id='bookmark-visitCount' flex='1'/>
+      </hbox>
+      <hbox class='property odd'>
+        <label class='label' value='&bookmark.label.shortcut;' />
+        <label id='bookmark-shortcut' flex='1'/>
+      </hbox>
+      <hbox class='property'>
+        <label class='label' value='&bookmark.label.tags;' />
+        <label id='bookmark-tags' flex='1'/>
+      </hbox>
+    </vbox>
+  </panel>
+  <!-- Sidebar Bookmark Property Panel } -->
+
+  <!-- Sidebar Content { -->
+  <vbox flex="1">
+    <hbox class='sidebar-tools' align="center">
+     <textbox id="sidebar-search"
+              type="search"
+              class="compact"
+              flex="1"
+              searchbutton="true"
+              oncommand="cSidebar.search(this.value);" />
+    </hbox>
+    <vbox flex="1">
+      <!-- NOTE: For hbox, 'center' === 'middle' -->
+      <hbox align="center"
+            class="sidebar-header sidebar-bookmarks-section">
+       <box class="sidebar-context-image" />
+       <label class="sidebar-title"
+              value="&connexions.sidebar.bookmarks.label;" />
+       <label id="sidebar-bookmarksCount"
+              class="sidebar-count"
+              value="(##)" />
+       <spacer flex="1000" />
+       <hbox pack="end" flex="1" align="center">
+         <box  id="sidebar-bookmarksSort-order"
+               class="sort-order sort-ascending"
+               tooltiptext="&connexions.sidebar.sort.order;" />
+         <menulist
+              id="sidebar-bookmarksSort-by"
+              class="sort-by"
+              flex="1"
+              sizetopopup="none"
+              tooltiptext="&connexions.sidebar.sort.by;">
+           <menupopup>
+             <menuitem label="&connexions.sidebar.bookmarks.sort.title;"
+                       value="name"
+                       oncommand="cSidebar.sortBookmarks('name');" />
+             <menuitem label="&connexions.sidebar.bookmarks.sort.url;"
+                       value="url"
+                       oncommand="cSidebar.sortBookmarks('url');" />
+             <menuitem label="&connexions.sidebar.bookmarks.sort.rating;"
+                       value="rating"
+                       oncommand="cSidebar.sortBookmarks('rating');" />
+             <menuitem label="&connexions.sidebar.bookmarks.sort.taggedOn;"
+                       value="taggedOn"
+                       oncommand="cSidebar.sortBookmarks('taggedOn');" />
+             <menuitem label="&connexions.sidebar.bookmarks.sort.updatedOn;"
+                       value="updatedOn"
+                       oncommand="cSidebar.sortBookmarks('updatedOn');" />
+             <menuitem label="&connexions.sidebar.bookmarks.sort.visitedOn;"
+                       value="visitedOn"
+                       oncommand="cSidebar.sortBookmarks('visitedOn');" />
+             <menuitem label="&connexions.sidebar.bookmarks.sort.visitCount;"
+                       value="visitCount"
+                       oncommand="cSidebar.sortBookmarks('visitCount');" />
+           </menupopup>
+         </menulist>
+       </hbox>
+      </hbox>
+      <deck flex="1">
+        <listbox
+              id="sidebar-bookmarkList"
+              class="bookmarks list"
+              contextmenu="sidebar-bookmarks-contextMenu"
+              flex="1">
+          <listcols flex="1">
+            <listcol id="sidebar-bookmarkList-name" flex="1" />
+            <listcol id="sidebar-bookmarkList-props" />
+            <!-- Without this, any scrollbar will crop the last column out -->
+            <listcol id="sidebar-bookmarkList-scrollarea" />
+          </listcols>
+        </listbox>
+      </deck>
+    </vbox>
+
+    <splitter collapse="after" resizeafter="farthest"><grippy /></splitter>
+
+    <vbox flex="1">
+      <!-- NOTE: For hbox, 'center' === 'middle' -->
+      <hbox align="center"
+            class="sidebar-header sidebar-tags-section">
+       <box class="sidebar-context-image" />
+       <label class="sidebar-title"
+             value="&connexions.sidebar.tags.label;" />
+       <label id="sidebar-tagsCount"
+              class="sidebar-count"
+              value="(##)" />
+       <spacer flex="1000" />
+       <hbox pack="end" flex="1" align="center">
+         <box  id="sidebar-tagsSort-order"
+               class="sort-order sort-ascending"
+               tooltiptext="&connexions.sidebar.sort.order;" />
+         <menulist
+              id="sidebar-tagsSort-by"
+              class="sort-by"
+              label="View"
+              flex="1"
+              sizetopopup="none"
+              tooltiptext="&connexions.sidebar.sort.by;">
+           <menupopup>
+             <menuitem label="&connexions.sidebar.tags.sort.name;"
+                       value="name"
+                       oncommand="cSidebar.sortTags('name');" />
+             <menuitem label="&connexions.sidebar.tags.sort.frequency;"
+                       value="frequency"
+                       oncommand="cSidebar.sortTags('frequency');" />
+           </menupopup>
+         </menulist>
+       </hbox>
+      </hbox>
+      <listbox
+            id="sidebar-tagList"
+            class="tags list"
+            seltype="multiple"
+            flex="1">
+        <listcols flex="1" pack="end">
+          <listcol flex="1" />
+          <listcol />
+          <!-- Without this, any scrollbar will crop the last column out -->
+          <listcol />
+        </listcols>
+      </listbox>
+    </vbox>
+  </vbox>
+  <!-- Sidebar Content } -->
+</page>

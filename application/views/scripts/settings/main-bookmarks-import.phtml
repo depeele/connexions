@@ -1,0 +1,240 @@
+<?php
+/** @file
+ *
+ *  Render the Bookmarks Import section.
+ *
+ *  Incoming members:
+ *      baseUrl         The base url for the main controller of this page
+ *                      without any differentiating parameters
+ *                      (e.g. tag restrictions);
+ *      url             The full url for the main controller of this page
+ *                      with differentiating parameters;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *
+ *      section         The settings section;
+ *      setting         The specific setting;
+ *      sections        An array of avaialble sections and commands of the
+ *                      form:
+ *                          {section: {
+ *                              'title':    section title,
+ *                              'script':   section render script
+ *                              'settings': [
+ *                                  {'title':   command title,
+ *                                   'script':  command render script},
+ *                                  ...
+ *                              ],
+ *                           },
+ *                           ...
+ *                          }
+ */
+
+$maxSize = Connexions::getMaxUploadSize();
+
+$jQuery = $this->jQuery();
+$jQuery->addOnLoad('$.bookmark_import_onLoad();')
+       ->javascriptCaptureStart();
+?>
+(function($) {
+
+    $.bookmark_import_onLoad = function() {
+        $('#bookmark-import').bookmarksImport();
+    };
+
+}(jQuery));
+<?php
+$jQuery->javascriptCaptureEnd();
+
+
+?>
+<div id='bookmark-import'><!-- bookmark-import { -->
+ <!-- form  action='?section=bookmarks&setting=import' -->
+ <form  action='?format=partial&part=post-bookmarks-import&streaming=true'
+        method='POST'
+       enctype="multipart/form-data"
+        target='bookmark-import-results'><!-- form { -->
+  <div class='section'><!-- section { -->
+   <h3>Step 1: Save your browser bookmarks to a file</h3>
+   <p id='bookmark-import-browser-instructions'>
+     Use your browsers <i>export bookmarks</i> option and save to a file,
+     remembering where the file was saved.
+   </p>
+
+   <div id='bookmark-import-browser-instructions-ff'
+        class='browser-instructions' style='display:none;'>
+    <h4>Firefox</h4>
+    <ol>
+     <li>Choose "Organize Bookmarks" from the Bookmarks menu;</li>
+     <li>Choose "Export..." from the File menu (star);</li>
+     <li>Choose a location for your bookmarks file and click Save;</li>
+     <li>Remember the location you chose for your bookmarks file;</li>
+    </ol>
+   </div>
+
+   <div id='bookmark-import-browser-instructions-ie6'
+        class='browser-instructions' style='display:none;'>
+    <h4>Internet Explorer 6</h4>
+    <ol>
+     <li>Choose "Import and Export" from the File menu;</li>
+     <li>Click Next, choose "Export Favorites" and click Next again;</li>
+     <li>Choose which bookmark folder you want to export from (the top one will export all your bookmarks) and click Next;</li>
+     <li>Choose a location for your bookmarks file, click Next, then Finish, and finally OK once it says "Successfully exported favorites";</li>
+     <li>Remember the location you chose for your bookmarks file;</li>
+    </ol>
+   </div>
+
+   <div id='bookmark-import-browser-instructions-ie'
+        class='browser-instructions' style='display:none;'>
+    <h4>Internet Explorer 7+</h4>
+    <ol>
+     <li>Click the Tools button, and make sure that the Menu Bar is checked;</li>
+     <li>Choose "Import and Export" from the File menu;</li>
+     <li>Click Next, choose "Export Favorites", and click Next again;</li>
+     <li>Choose which bookmark folder you want to export from (the top one will export all your bookmarks) and click Next;</li>
+     <li>Choose a location for your bookmarks file, click Next, then Finish, and finally OK once it says "Successfully exported favorites";</li>
+     <li>Remember the location you chose for your bookmarks file;</li>
+    </ol>
+   </div>
+
+   <div id='bookmark-import-browser-instructions-op'
+        class='browser-instructions' style='display:none;'>
+    <h4>Opera</h4>
+    <ol>
+     <li>Choose "Import and Export..." from the File menu;</li>
+     <li>Choose "Export Opera bookmarks"
+          <div class='warning'>
+            <p><span class='title'>Important:</span> do NOT choose the similar looking "Explort bookmarks as HTML" option, which is incompatible!</p>
+          </div>
+     </li>
+     <li>Choose a location for your bookmarks file and click Save;</li>
+     <li>Remember the location you chose for your bookmarks file;</li>
+    </ol>
+   </div>
+
+   <div id='bookmark-import-browser-instructions-sf'
+        class='browser-instructions' style='display:none;'>
+    <h4>Safari</h4>
+    <ol>
+     <li>Choose "Export Bookmarks" from the File menu;</li>
+     <li>Choose a location for your bookmarks file and click Save;</li>
+     <li>Remember the location you chose for your bookmarks file;</li>
+    </ol>
+   </div>
+
+   <div id='bookmark-import-browser-instructions-ch'
+        class='browser-instructions' style='display:none;'>
+    <h4>Chrome</h4>
+    <ol>
+     <li>Choose "Bookmark Manager" from the Settings menu (wrench icon);</li>
+     <li>Choose "Export bookmarks" from the Organize menu;</li>
+     <li>Choose a location for your bookmarks file and click Save;</li>
+     <li>Remember the location you chose for your bookmarks file;</li>
+    </ol>
+   </div>
+
+   <p class='alternatives note'>Show instructions for
+        <a href='?ua=ff'>Firefox</a>,
+        <a href='?ua=ie6'>Internet Explorer 6</a>,
+        <a href='?ua=ie'>Internet Explorer 7+</a>,
+        <a href='?ua=op'>Opera</a>,
+        <a href='?ua=sf'>Safari</a>,
+        <a href='?ua=ch'>Chrome</a>.
+   </p>
+  </div><!-- section } -->
+  <div class='section'><!-- section { -->
+   <h3>Step 2: Establish the settings for your import</h3>
+   <ul class='steps'><!-- steps { -->
+    <li class='field'><!-- field { -->
+     <label for='bookmarks-import-file'>Click browser and select the file you exported in <b>Step 1</b></label>
+     <input name='MAX_FILE_SIZE' type='hidden' value='<?= $maxSize ?>' />
+     <input   id='bookmarks-import-file' name='bookmarkFile'
+            type='file' />
+     <div class='note'>Maximum file size of <?php
+        $pows = array(
+            'TB'    => (1024 * 1024 * 1024 * 1024),
+            'GB'    => (1024 * 1024 * 1024),
+            'MB'    => (1024 * 1024),
+            'KB'    => (1024),
+            'Bytes' => 1
+        );
+        foreach ($pows as $label => $val)
+        {
+            if ($maxSize > $val)
+            {
+                if ($val > 1)
+                {
+                    printf ("%3.2f %s", $maxSize / $val, $label);
+                }
+                else
+                {
+                    printf ("%u %s", $maxSize, $label);
+                }
+                break;
+            }
+        }
+
+            ?>.</div>
+    </li><!-- field } -->
+
+    <li class='field'><!-- field { -->
+     <label for='bookmarks-import-tags'>Tags will be added to your imported bookmarks based upon the folder structure of your bookmarks.  For example, a bookmark in the "recipes" folder within the "household" folder will be tagged with both "household" and "recipes".  You can also choose additional tags here that will be applied to <b>all</b> the bookmarks importes.</label>
+     <textarea   id='bookmarks-import-tags' name='tags'
+               type='text'>imported</textarea>
+     <div class='note'>This is a comma separated list of tags.  It is recommended that you use the default tag "imported" to make it easier to view all imported bookmarks in one list by visiting <?= Connexions::anchor('/mine/imported', 'your imported bookmarks') ?><!-- <?= Connexions::anchor('/'. $this->viewer->name .'/imported', 'your imported bookmarks') ?> -->.</div>
+    </li><!-- field } -->
+
+    <li class='field'><!-- field { -->
+     <label for='bookmarks-import-visibility'>Should imported bookmarks be marked <i>private</i> or <i>shared</i>?</label>
+     <div id='bookmarks-import-visibility'><!-- visibility { -->
+      <div class='field'>
+       <input type='radio' id='visibility_private'
+              name='visibility' value='private' checked='true' /><label for='visibility_private'>Private</label>
+       <input type='radio' id='visibility_public'
+              name='visibility' value='public' /><label for='visibility_public'>Public</label>
+      </div>
+     </div><!-- visibility } -->
+     <div class='note'>If privacy is set within the incoming bookmarks (e.g. the items have <tt>PRIVATE="yes/no"</tt>, that will override this setting.  Otherwise, all imported bookmarks will be marked according to this setting.  In either case, you may change the privacy setting for any item individually after the import is complete.  You are encouraged to share a many bookmarks as possible to benefit the community.</div>
+    </li><!-- field } -->
+
+    <li class='field'><!-- field { -->
+     <label for='bookmarks-import-conflict'>What should happen if an imported bookmark already exists in your set of bookmarks (matched by url)?</label>
+     <div id='bookmarks-import-conflict'><!-- conflict { -->
+      <div class='field'>
+       <input type='radio' id='conflict_replace'
+              name='conflict' value='replace' /><label for='conflict_replace'>Replace with the imported bookmark</label>
+       <input type='radio' id='conflict_ignore'
+              name='conflict' value='ignore' checked='true' /><label for='conflict_ignore'>Keep the existing bookmark</label>
+      </div>
+     </div><!-- conflict } -->
+    </li><!-- field } -->
+
+    <li class='field'><!-- field { -->
+     <label for='bookmarks-import-test'>Would you like to test the import before actually importing?</label>
+     <div id='bookmarks-import-test'><!-- test { -->
+      <div class='field'>
+       <input type='radio' id='test_yes'
+              name='test' value='yes' /><label for='test_yes'>Yes, please!</label>
+       <input type='radio' id='test_no'
+              name='test' value='no' checked='true' /><label for='test_no'>No, just do it!</label>
+      </div>
+     </div><!-- test } -->
+    </li><!-- field } -->
+
+   </ul><!-- steps } -->
+  </div><!-- section } -->
+  <div class='section'><!-- section { -->
+   <div class='buttons'>
+    <!-- button name='submit'>Import</button -->
+    <input type='submit' name='submit' value='Import' />
+   </div>
+  </div><!-- section } -->
+ </form><!-- form } -->
+
+ <div class='results-section section' style='display:none'>
+  <h3>Import Results:</h3>
+  <!-- Target for form submission / bookmark file upload / import results -->
+  <iframe id='bookmark-import-results'
+        name='bookmark-import-results'
+         src='about:blank'></iframe>
+ </div>
+</div><!-- bookmark-import } -->

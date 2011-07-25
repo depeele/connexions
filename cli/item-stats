@@ -1,0 +1,61 @@
+#!/usr/bin/env php
+<?php
+define('CLI_DIR', realpath(dirname(__FILE__)));
+
+require_once(CLI_DIR. '/bootstrap.php');
+$prog = array_shift($argv);
+
+$svc = Connexions_Service::factory('Service_Item');
+
+// Parameters
+$params = array();
+$validParams = array(
+    'users'     => 'comma-separated-list of users',
+    'items'     => 'comma-separated-list of items',
+    'tags'      => 'comma-separated-list of tags',
+    'order'     => 'SQL ordering',
+    'count'     => 'numeric limit/count',
+    'offset'    => 'numeric limit/offset',
+    'aggregate' => 'aggregate (not per item)',
+);
+
+$help = false;
+foreach ($argv as $arg)
+{
+    if (preg_match('/[-]+([^=]+)(?:=(.*))$/', $arg, $matches))
+    {
+        $key = trim($matches[1]);
+        $val = trim($matches[2], " \t\n\r\0\x0B'\"");
+
+        if (isset($validParams[ $key ]))
+        {
+            $params[ $key ] = $val;
+        }
+        else
+        {
+            $help = true;
+        }
+    }
+    else
+    {
+        $help = true;
+    }
+
+    if ($help === true)
+    {
+        printf ("*** Usage: %s\n", basename($prog));
+        foreach ($validParams as $param => $args)
+        {
+            printf ("              [--%-13s] - %s\n", $param.'=args', $args);
+        }
+        return;
+    }
+}
+
+$stats = $svc->getStatistics( $params );
+
+printf (  "Statistics:\n"
+        . "%s\n",
+        ($stats
+            ? preg_replace('/\],\[/', "],\n[", Zend_Json::encode($stats))
+            : "") );

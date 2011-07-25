@@ -1,0 +1,209 @@
+<?php
+$this->headTitle('Sign In');
+
+Connexions::log("views/scripts/auth/sign-in.phtml: connection[ %s ]",
+                Connexions::varExport($this->connection));
+Connexions::log("views/scripts/auth/sign-in.phtml: autoSignin[ %s ]",
+                Connexions::varExport($this->autoSignin));
+
+$pki = $this->connection['pki'];
+
+$jQuery = $this->jQuery();
+$jQuery->addStylesheet($this->baseUrl('css/auth.min.css'));
+?>
+<div id="auth" class='ui-validation-form ribbon-form line'><!-- { -->
+ <div class='context-ribbon'>&nbsp;</div>
+ <div class="legend unit"><!-- { -->
+  <h1>Sign in</h1>
+  <p>
+   or <?= Connexions::anchor('/auth/register', 'Join now') ?>
+  </p>
+  <div class='status<?= (@isset($this->error) ? ' error' : '') ?>'>
+   <?= (@isset($this->error) ? $this->error : '') ?>
+  </div>
+ </div><!-- legend } -->
+ <div class="userInput lastUnit"><!-- { -->
+  <form method='post'>
+   <div class='field'>
+    <label for='username'>User name</label>
+    <input type='text' class='text required' name='username'
+                       value='<?= $this->username ?>'
+                    tabindex='1' />
+    <div class='ui-field-info'>
+     <div class='ui-field-status'></div>
+    </div>
+   </div>
+   <div class='field'>
+    <label for='password' >Password</label>
+    <input type='password' class='text required'
+           name='password'
+                        tabindex='2' />
+    <div class='ui-field-info'>
+     <div class='ui-field-status'></div>
+    </div>
+   </div>
+   <div class='field buttons'>
+    <button name='cancel' tabindex='3'>
+     Cancel
+    </button>
+    <button name='method' tabindex='4' value='userpassword'>
+     Sign-in
+    </button>
+   </div>
+   <?php
+   if (($pki !== null) &&
+       ($pki['verified'] === true))
+   {
+       /* We have a valid SSL client certificate so offer the option
+        * of authenticating using that.
+        */
+       ?>
+   <div class='field buttons pki'>
+    <span class='dn'
+     ><span class='ui-icon'
+      ><span class='connexions_sprites type-certificate'></span></span>
+      <?= $pki['subject'] ?></span>
+    <label for='autoSignin'>Automatic signin</label>
+    <input id='autoSignin'
+           type='checkbox'
+           name='autoSignin'
+           value='pki'<?= ( preg_match('/(\s*,\s*)?pki(\s*,\s*)?/',
+                                       $this->autoSignin)
+                                ? " checked='true'"
+                                : '') ?> />
+           
+    <button name='method' tabindex='5' value='pki'>
+     PKI
+    </button>
+   </div>
+       <?php
+   }
+   ?>
+  </form>
+
+  <? if ($this->welcome)   echo "Welcome!!<br />"; ?>
+ </div><!-- userInput } -->
+</div><!-- ribbon-form } -->
+<script type='text/javascript'>
+/* Include an event delegate to adjust our legend if the bookmarkPost widget
+ * changes the 'isEdit' state.
+ */
+(function($) {
+    var $container  = $('#auth');
+    var $form       = $container.find('form');
+    var $status     = $container.find('.status');
+    var api         = $.registry('api');
+
+    function updateAuthCookie(user)
+    {
+        var authCookie  = api.authCookie;
+        var cookieVal   = '';
+        var cookieOpts  = {
+            expires:    365,    // days
+            path:       '<?= $this->baseUrl('') ?>'
+        };
+        if (user.isAuthenticated)
+        {
+            cookieVal = user.name;
+        }
+
+        $.log("updateAuthCookie: path[ %s ], val[ %s ]",
+              cookieOpts.path, cookieVal);
+
+        $.cookie(api.authCookie, cookieVal, cookieOpts);
+    }
+
+    $container.delegate('button[name=method]', 'click', function(e) {
+        /* If we go down this path, we MUST set the 'authCookie' to signal the
+         * client side about authentication status.
+         */
+        e.preventDefault();
+
+        // Use jsonRpc to see if the authentication information is valid
+        var $button     = $(this);
+        var method      = $button.val();
+        var rpc         = $.extend({}, api.jsonRpc);
+        var params      = {
+            'method':   method
+        };
+        var id;
+
+        if (method === 'userpassword')
+        {
+            id                = $container.find('input[name=username]').val();
+            params.id         = id;
+            params.credential = $container.find('input[name=password]').val();
+        }
+
+        $.jsonRpc(rpc, 'user.authenticate', params, {
+            success:    function(data, textStatus, req) {
+                if (data.error)
+                {
+                    $status.text(data.error.message);
+                    return;
+                }
+
+                var user    = data.result;
+                if ( (user.name === 'anonymous') ||
+                     ((id !== undefined) && (user.name !== id)) )
+                {
+                    user.isAuthenticated = false;
+
+                    // Invalid id and/or credential
+                    $status.text('Invalid id and/or credential');
+                }
+                else
+                {
+                    // Authentication success
+                    user.isAuthenticated = true;
+
+                    // Update the userAuth cookie
+                    $form.trigger('complete');
+                }
+
+                updateAuthCookie(user);
+            },
+            error:      function(req, textStatus, err) {
+                $status.html( textStatus );
+            },
+            complete:   function(req, textStatus) {
+            }
+        });
+    });
+
+    $container.delegate('input[name=autoSignin]', 'click', function(e) {
+        $.changeAutoSignin( $(this) );
+    });
+
+    $container.delegate('form', 'complete', function() {
+        /* Authentication is complete -- either via successful save or cancel
+         *
+         * Our action now is determined by whether or not 'closeAction' was
+         * specified in the request.  Valid closeActions are:
+         *  - 'back'                move back in the browser's history;
+         *  - 'close'               attempt to close the current window;
+         *  - 'hide'                hide the ribbon-form;
+         *  - 'iframe'              attempt to invoke the 'close' function
+         *                          on the containing iframe;
+         *  - 'redirect:%url%'      redirect to the specified %url;
+         *  - 'urlCallback:%url%'   redirect to the specified %url;
+         *  - 'callback:%func%'     invoke the Javascript function %func%;
+         *  - 'ignore'              do nothing;
+         *
+         * If 'closeAction' was NOT specified, 'back' will be used.
+         */
+        var action  = '<?= $this->closeAction ?>';
+
+        $.closeAction(action, $container);
+    });
+
+    $(document).ready(function() {
+        $form.validationForm({
+            submitSelector:             "button[name=method]:first",
+            disableSubmitOnUnchanged:   false,
+            handleAutofill:             true
+        });
+    });
+
+ }(jQuery));
+</script>
