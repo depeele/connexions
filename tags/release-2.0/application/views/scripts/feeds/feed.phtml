@@ -1,0 +1,39 @@
+<?php
+/** @file
+ *
+ *  If 'main' is undefined, present an explorer view for feeds/rss
+ *  otherwise, use the feedBookmarks helper to render this feed.
+ */
+Connexions::log("view/scripts/feeds/feed.phtml:");
+
+if (isset($this->main))
+{
+    /*
+    Connexions::log("view/scripts/feeds/feed.phtml: main[ %s ]",
+                    Connexions::varExport($this->main));
+    // */
+
+    $this->feed = $this->feedBookmarks($this->main)->render();
+
+    /*
+    Connexions::log("view/scripts/feeds/feed.phtml: "
+                    .   "%s entries, [ %s ], headers send[ %s ]",
+                    count($this->feed),
+                    $this->feed->saveXml(),
+                    Connexions::varExport(headers_sent()) );
+    // */
+
+    $this->feed->send();
+}
+else
+{
+    //Connexions::log("view/scripts/feeds/feed.phtml: no main, render smd");
+
+    $this->group     = $this->feedType;
+    $this->urlMethod = array('GET');
+    $this->urlParams = true;
+    $this->dataType  = 'xml';
+    //$this->jsonRpc   = true;
+    echo $this->render('smd.phtml');
+}
+

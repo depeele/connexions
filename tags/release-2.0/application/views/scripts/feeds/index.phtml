@@ -1,0 +1,39 @@
+<?php
+/** @file
+ *
+ *  Feed Explorer
+ */
+
+if (isset($this->server))
+{
+    /* :XXX: Can't really use this since we have different feeds types
+     *       (json, rss, atom).
+     */
+    $this->urlMethod = array('GET');
+    $this->urlParams = true;
+    $this->seeAlso   = array(
+        "the <a href='{$this->baseUrl('api/')}'>API V1 Explorer</a>",
+        "and the <a href='{$this->baseUrl('api/v2/')}'>API V2 Explorer</a>",
+    );
+    echo $this->render('smd.phtml');
+    return;
+}
+
+$this->headLink()->appendStylesheet($this->baseUrl('/css/api.min.css'));
+
+?>
+<div class='columnHeader'>
+ <div class='context-bg connexions_sprites settings_bg 
+             ui-corner-left ui-corner-tr'>&nbsp;</div>
+ <p>Feeds Explorer</p>
+ <p class='seeAlso'>See also the <a href="../api/">API V1 Explorer</a>
+ and the <a href="../api/v2/">API V2 Explorer</a>.</p>
+</div>
+<div class='pane'>
+ <p>Legacy feeds provided to maintain compatability with the original implementation of connexions.</p>
+ <ul class='numbered'>
+  <li><a href='json/'>json</a></li>
+  <li><a href='rss/'>RSS</a></li>
+  <li><a href='atom/'>ATOM</a></li>
+ </ul>
+</div>

@@ -1,0 +1,83 @@
+@import "colors";
+@import "mixins";
+
+.tagInput {
+  @include inlineBlock();
+  position: relative;
+  //z-index:  1;
+
+  padding:  0;
+  margin:   0;
+
+  .rawInput {
+    //z-index:  2;
+  }
+
+  .tagList {
+    //position:   absolute;
+    //z-index:    3;
+    //top:        0;
+    //left:       0;
+    //overflow:   hidden;
+
+    padding:    0.2em;
+    margin:     0;
+
+
+    background: none;
+    cursor:     text;
+
+    .tag, .activeInput {
+      @include inlineBlock();
+      padding:  0.2em;
+      float:    none;
+    }
+
+    .tag {
+      border:   unquote("1px solid") $borderColor;
+      @include corners(4px);
+      margin:   0.2em;
+      
+      cursor:   pointer;
+
+      span, .delete {
+        @include inlineBlock();
+        vertical-align: middle;
+      }
+      span {
+        padding:          0 0 0 0.25em;
+      }
+      .delete {
+        text-indent:      16px;
+        white-space:      nowrap;
+        text-decoration:  none;
+        padding:          0;
+        overflow:         hidden;
+      }
+    }
+    .activeInput {
+      // Account for the border of '.tag'
+      border:       none;
+      margin:       0;
+      width:        auto;
+      input {
+        display:    inline;
+        border:     none;
+        background: none;
+        padding:    0;
+        margin:     0;
+        width:      auto;
+      }
+    }
+
+    // Hidden li used to measure the width of input characters
+    .measureInput {
+      position:   absolute;
+      //z-index:    0;
+      visibility: hidden;
+      width:      auto;
+      padding:    1px;
+      margin:     2px;
+    }
+  }
+}

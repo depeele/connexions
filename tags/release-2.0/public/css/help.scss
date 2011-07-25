@@ -1,0 +1,204 @@
+@import "sizes";
+@import "colors";
+@import "mixins";
+@import "urls";
+@import "sprites";
+
+#help {
+  h3,h4,h5,h6 {
+    color:          $linkColor;
+    font-weight:    bold;
+    margin-bottom:  0.5em;
+  }
+  h3 {
+    font-size:      1.2em;
+    border-bottom:  unquote("1px solid") $borderColor;
+    padding:        1em 0 0;
+  }
+  h4 {
+    font-size:      1.1em;
+    border-bottom:  unquote("1px dotted") $borderColor;
+    margin-left:    0.5em;
+    padding:        0.5em 0 0;
+  }
+  h5 {
+    font-size:      1em;
+  }
+
+  ul,ol {
+    padding:        0;
+  }
+
+  a {
+    color:          $linkColor;
+  }
+
+  sup {
+    font-size:      0.75em;
+  }
+
+  .figure {
+    @include  inlineBlock();
+    margin:   0.5em 2em 2em;
+    padding:  1em;
+    border:   unquote("1px dotted") $borderColor;
+    @include  corners(1em);
+    background-color: $lightestGrey;
+
+    img {
+      max-width:    800px;
+
+      @include      corners(1em);
+      margin-left:  auto;
+      margin-right: auto;
+    }
+    .caption {
+      padding:  0.5em 1em;
+    }
+  }
+
+  .icon, .icon .connexions_sprites, .icon .ui-stars-wrapper {
+    @include  inlineBlock();
+  }
+  .ui-stars-wrapper {
+    width:  80px;
+  }
+
+  .warning {
+    text-align: center;
+    color:      $controlColor;
+    font-size:  0.9em;
+
+    p {
+      @include inlineBlock();
+      margin-left:  8em;
+      text-align:   left;
+
+      .title {
+        position: absolute;
+        font-size:    1.2em;
+        font-weight:  bold;
+        left:         -5em;
+      }
+    }
+  }
+
+  .toolbar {
+    font-size:  0.8em;
+    text-align: right;
+
+    a {
+      cursor: pointer;
+    }
+  }
+
+  .help-content {
+    ul,ol {
+      padding-left: 1em;
+
+      li {
+        margin:       0.5em 1em;
+      }
+    }
+    div > ol, div > ul {
+      padding-left: 2em;
+    }
+
+    ul li,ol ul li {
+      list-style:   disc;
+    }
+    ol li {
+      list-style:   decimal;
+    }
+    ol ol li {
+      list-style:   lower-alpha;
+    }
+
+    .toggle {
+      margin:           0;
+      padding:          0;
+    }
+
+    .outer {
+      padding-left: 2em;
+    }
+  }
+
+  .collapsableList {
+    padding-left:   0;
+    margin-bottom:  1em;
+    .collapsable {
+      list-style:         none;
+      margin:             0;
+
+      .toggle {
+        color:            $linkColor;
+        background-color: inherit;
+        border:           none;
+      }
+
+      .help-content {
+        margin-left:    0.8em;
+        margin-bottom:  0.8em;
+        padding:        0.25em 1em 1em 0;
+        border-bottom:  unquote("1px dotted") $lightestGrey;
+        border-left:    unquote("1px dotted") $lightestGrey;
+        border-top:     none;
+        border-right:   none;
+
+        .collapsableList {
+          padding-left: 0.8em;
+          .toggle {
+            margin-left:  0;
+          }
+        }
+      }
+
+      .faq-answer {
+      }
+    }
+  }
+
+  p {
+    padding:  0 0 1em 1em;
+  }
+  pre {
+    font-size:  0.9em;
+    padding:    0 0 1em 2em;
+  }
+  .continued, .description {
+    padding-bottom: 0;
+  }
+  span.description {
+    color:  $themeText;
+  }
+
+  .api-method, .api-record, .additional-info {
+    p {
+      padding:  0.5em 1em;
+    }
+    .continued, .description {
+      padding-bottom: 0;
+    }
+    table {
+      margin-left:    1em;
+      margin-bottom:  0.5em;
+
+      th, td {
+        padding:      0.1em 0.5em;
+
+        p {
+          padding-left:   0;
+        }
+      }
+
+      th {
+        font-weight:  bold;
+      }
+    }
+  }
+
+  .relation {
+    @include inlineBlock();
+  }
+}

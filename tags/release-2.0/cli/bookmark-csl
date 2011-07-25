@@ -1,0 +1,19 @@
+#!/usr/bin/env php
+<?php
+define('CLI_DIR', realpath(dirname(__FILE__)));
+
+require_once(CLI_DIR. '/bootstrap.php');
+$prog = array_shift($argv);
+
+$svc = Connexions_Service::factory('Service_Bookmark');
+foreach ($argv as $bookmarks)
+{
+    $bookmarkSet = $svc->csList2set($bookmarks);
+
+    printf ("bookmarks[ %s ]: %s\n",
+            $bookmarks,
+            ($bookmarkSet instanceof Model_Set_Bookmark
+                ? $bookmarkSet->debugDump()
+                : "NOT FOUND") );
+}
+

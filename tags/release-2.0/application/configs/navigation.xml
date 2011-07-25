@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+ <nav>
+  <!-- Navigation menu { ***************************** -->
+    <!-- Authenticated Users -->
+    <!-- userInfo>
+     <label>%user.name%</label>
+     <controller>index</controller>
+     <action>%user.name%</action>
+     <resource>member</resource>
+     <class>welcome connexions_sprites welcome_bg</class>
+     <pages>
+      <inbox>
+       <label>Inbox</label>
+       <controller>inbox</controller>
+       <action>%user.name%</action>
+       <resource>member</resource>
+       <class>local</class>
+      </inbox>
+      <post>
+       <label>Post</label>
+       <controller>post</controller>
+       <resource>member</resource>
+       <class>local</class>
+      </post>
+      <settings>
+       <label>Settings</label>
+       <controller>settings</controller>
+       <resource>member</resource>
+       <class>local sub-last</class>
+      </settings>
+     </pages>
+    </userInfo -->
+
+    <!-- Guests -->
+    <!-- register>
+     <label>Join Now</label>
+     <controller>auth</controller>
+     <action>register</action>
+     <resource>guest</resource>
+     <class>join</class>
+    </register -->
+  
+    <!-- Authenticated Users -->
+    <!-- signOut>
+     <label>Sign Out</label>
+     <controller>auth</controller>
+     <action>signOut</action>
+     <resource>member</resource>
+    </signOut -->
+  
+    <!-- Guests -->
+    <!-- signIn>
+     <label>Sign In</label>
+     <controller>auth</controller>
+     <action>signIn</action>
+     <resource>guest</resource>
+    </signIn -->
+
+    <bookmarks>
+     <label>Bookmarks</label>
+     <controller>bookmarks</controller>
+     <action>index</action>
+     <pages>
+      <mine>
+       <label>Mine</label>
+       <controller>index</controller>
+       <action>%user.name%</action>
+       <class>local</class>
+       <resource>member</resource>
+      </mine>
+      <network>
+       <label>My network</label>
+       <controller>network</controller>
+       <action>%user.name%</action>
+       <class>local</class>
+       <resource>member</resource>
+      </network>
+      <explore>
+       <label>Explore</label>
+       <controller>bookmarks</controller>
+       <action>index</action>
+       <class>global</class>
+      </explore>
+      <lookup>
+       <label>Lookup URL</label>
+       <controller>url</controller>
+       <action>index</action>
+       <class>global sub-last</class>
+      </lookup>
+     </pages>
+    </bookmarks>
+  
+    <people>
+     <label>People</label>
+     <controller>people</controller>
+     <action>index</action>
+     <pages>
+      <explore>
+       <label>Explore</label>
+       <controller>people</controller>
+       <action>index</action>
+       <class>global sub-last</class>
+      </explore>
+     </pages>
+    </people>
+  
+    <tags>
+     <label>Tags</label>
+     <controller>tags</controller>
+     <action>index</action>
+     <pages>
+      <mine>
+       <label>Mine</label>
+       <controller>tags</controller>
+       <action>%user.name%</action>
+       <class>local</class>
+       <resource>member</resource>
+      </mine>
+      <explore>
+       <label>Explore</label>
+       <controller>tags</controller>
+       <action>index</action>
+       <class>global sub-last</class>
+      </explore>
+     </pages>
+    </tags>
+
+    <!-- Everyone -->
+    <help>
+     <label>Help</label>
+     <controller>help</controller>
+     <action>index</action>
+     <pages>
+      <general>
+       <label>General</label>
+       <controller>help</controller>
+       <action>general</action>
+       <class>global</class>
+      </general>
+      <faq>
+       <label>FAQ</label>
+       <controller>help</controller>
+       <action>faq</action>
+       <class>global</class>
+      </faq>
+      <developers>
+       <label>Developers</label>
+       <controller>help</controller>
+       <action>developers</action>
+       <class>global</class>
+      </developers>
+      <about>
+       <label>About</label>
+       <controller>help</controller>
+       <action>about</action>
+       <class>global</class>
+      </about>
+      <explore>
+       <label>Explore</label>
+       <controller>help</controller>
+       <action>index</action>
+       <class>global sub-last</class>
+      </explore>
+     </pages>
+    </help>
+  <!-- Navigation menu } ***************************** -->
+ </nav>
+</config>

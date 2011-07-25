@@ -1,0 +1,257 @@
+<?php
+/** @file
+ *
+ *  Bookmark Post form partial.
+ *
+ *  Incoming data:
+ *      postInfo        POST form initialization data, if any.
+ *                          [ userId ]
+ *                          [ itemId ]
+ *                          url
+ *                          name
+ *                          description
+ *                          rating
+ *                          isFavorite
+ *                          isPrivate
+ *                          tags
+ *                          mode        'post' | null ('edit')
+ *
+ *      tabs            An array of avaialble tabs and configuration of the
+ *                      form:
+ *                          {%tabId%: {
+ *                              'title':    tab title,
+ *                              'sections': {
+ *                                  %sectionId%: {
+ *                                      'title':   section title,
+ *                                      'script':  section render script,
+ *                                      'config':  section configuration,
+ *                                  },
+ *                                  ...
+ *                              },
+ *                           },
+ *                           ...
+ *                          }
+ *
+ */
+if (! @is_array($this->postInfo))
+    $this->postInfo = array();
+
+/*
+Connexions::log("views/scripts/post/main.phtml: url[ %s ]",
+                Connexions::varExport($this->url));
+Connexions::log("views/scripts/post/main.phtml: tabs[ %s ]",
+                Connexions::varExport($this->tabs));
+// */
+
+$bookmarkPostId = 'bookmarkPost';
+?>
+   <form id='<?= $bookmarkPostId ?>' method='post' class='line'><!-- { -->
+    <?php if (isset($this->postInfo['userId'])): ?>
+    <input name='userId' type='hidden'
+          value='<?= $this->postInfo['userId'] ?>' />
+    <?php endif ?>
+    <?php if (isset($this->postInfo['itemId'])): ?>
+    <input name='itemId' type='hidden'
+          value='<?= $this->postInfo['itemId'] ?>' />
+    <?php endif ?>
+    <div class='item-status unit'><!-- { -->
+     <div class='field favorite'>
+      <label for='isFavorite'>Favorite</label>
+      <input name='isFavorite'
+            type='checkbox' value='true'
+            <?= ($this->postInfo['isFavorite'] ? ' checked' : '') ?> />
+     </div>
+
+     <div class='field private'>
+      <label for='isPrivate'>Private</label>
+      <input name='isPrivate'
+            type='checkbox' value='true'
+            <?= ($this->postInfo['isPrivate'] ? ' checked' : '') ?> />
+     </div>
+    </div><!-- item-status } -->
+
+    <div class='item-data lastUnit'><!-- { -->
+     <div class='field userRating'>
+      <label for='rating'>rating</label>
+      <?= $this->htmlStarRating($this->postInfo['rating'],
+                                'stars-wrapper') ?>
+      <!-- div class='stars-wrapper'>
+       <input name='rating' type='radio' value='1' title='Terrible'
+             <?= ($this->postInfo['rating'] == '1'
+                     ? " checked='true'" : '') ?> />
+       <input name='rating' type='radio' value='2' title='Fair'
+             <?= ($this->postInfo['rating'] == '2'
+                     ? " checked='true'" : '') ?> />
+       <input name='rating' type='radio' value='3' title='Average'
+             <?= ($this->postInfo['rating'] == '3'
+                     ? " checked='true'" : '') ?> />
+       <input name='rating' type='radio' value='4' title='Good'
+             <?= ($this->postInfo['rating'] == '4'
+                     ? " checked='true'" : '') ?> />
+       <input name='rating' type='radio' value='5' title='Excellent'
+             <?= ($this->postInfo['rating'] == '5'
+                     ? " checked='true'" : '') ?> />
+      </div -->
+     </div>
+
+     <div class='field item-name'>
+      <label for='name'>Bookmark name / title</label>
+      <input type='text' class='text required' autocomplete='off'
+             name='name'
+             value='<?= htmlspecialchars($this->postInfo['name'],ENT_QUOTES) ?>'
+                      tabindex='1' />
+     </div>
+     <div class='field item-url<?= (! @empty($this->postInfo['url'])
+                                         ? ' click-to-edit'
+                                         : '') ?>'>
+      <label for='url'>URL to bookmark</label>
+      <input type='text' class='text required' autocomplete='off'
+             name='url'
+             value='<?= htmlspecialchars($this->postInfo['url'],ENT_QUOTES) ?>'
+                      tabindex='2' />
+     </div>
+     <div class='field item-description'>
+      <label for='description'>Description / Notes for this bookmark</label>
+      <textarea class='text'
+                 name='description'
+             tabindex='3'><?=
+        htmlspecialchars($this->postInfo['description'],ENT_QUOTES) ?></textarea>
+     </div>
+     <div class='field item-tags'>
+      <label for='tags'>Tags</label>
+      <textarea class='text required'
+                 name='tags'
+             tabindex='4'><?= $this->postInfo['tags'] ?></textarea>
+     </div>
+    </div><!-- item-data } -->
+
+<? if (is_array($this->tabs)): ?>
+    <div class='suggestions'><!-- suggestions { -->
+
+      <ul><?php
+
+        // Generate the tabs for the suggestion sections
+        $paneHtml    = '';
+        $tabSelected = 0;
+        $tabNum      = 0;
+
+        foreach ($this->tabs as $tabId => $tab)
+        {
+            if ($tabId === $this->section)
+            {
+                $tabSelected = $tabNum;
+            }
+
+            $title = (isset($tab['title'])
+                        ? $tab['title']
+                        : ucfirst($tabId));
+
+            $paneId  = 'suggestions-'. $tabId;
+            $paneUrl = $this->baseUrl .'post/suggestions/'. $tabId;
+            $loadUrl = $this->baseUrl .'post'
+                     .  '?format=partial'
+                     .  '&part='. $tab['script'];
+            $paneCss = (! empty($tab['cssClass'])
+                            ? $tab['cssClass']
+                            : $tabId);
+
+            ?>
+
+        <li><a href='<?= $paneUrl ?>'
+               data-panel.tabs='#<?= $paneId ?>'><span><?= $title ?></span></a></li><?php
+
+            $paneHtml .= "<div id='{$paneId}'>"
+                      .   "<ul id='{$paneId}-sections' class='{$paneCss}'>";
+            foreach ($tab['sections'] as $sectionId => $section)
+            {
+                $fullId = $tabId .'-'. $sectionId;
+
+                $state  = ($section['expanded'] === true
+                            ? 'expanded'
+                            : 'collapsed');
+                $title = (isset($section['title'])
+                            ? $section['title']
+                            : ucfirst($sectionId));
+
+                $sectHtml = '';
+                $sectUrl  = $paneUrl .'/'. $sectionId;
+                $sectData = " data-content.collapsable='{$fullId}-content'";
+                if (isset($section['async']) && ($section['async'] === true))
+                {
+                    // Asynchronously loaded
+                    $loadUrl   = $this->baseUrl .'post'
+                              .     '?format=partial'
+                              .     '&part='. $section['script'];
+                    $sectData .= " data-load.collapsable='{$loadUrl}'";
+                }
+                else
+                {
+                    // Pre-render
+                    $script     = 'post/'. $section['script'] .'.phtml';
+                    $sectData  .= " data-cache.collapsable='{$fullId}-content'";
+                    $sectHtml   = "<div id='{$fullId}-content'>"
+                               .   $this->render($script)
+                               .  "</div>";
+                }
+
+                $paneHtml .= "<li class='collapsable {$fullId}'>"
+                          .   "<h3 class='toggle {$state}'>"
+                          .    "<a href='{$sectUrl}'{$sectData}>"
+                          .     "<span>{$title}</span>"
+                          .    "</a>"
+                          .   "</h3>"
+                          .   $sectHtml
+                          .  "</li>";
+            }
+
+            $paneHtml .=  "</ul>"
+                      .  "</div>";
+
+            $tabNum++;
+        }
+
+        ?>
+
+      </ul>
+      <?= $paneHtml ?>
+    </div><!-- suggestions } -->
+<? endif ?>
+
+    <div class='buttons'>
+     <button name='cancel' tabindex='5'>Cancel</button>
+     <button name='submit' tabindex='6'>Save</button>
+    </div>
+   </form><!-- form } -->
+<?php
+
+/* Establish configuration for and schedule instantiation of a new
+ * Javascript connexions.bookmarkPost() instance targeting the form rendered
+ * just above.
+ */
+$postConfig = array(
+    'isEdit'        => ($this->postInfo['mode'] === 'post'
+                            ? false
+                            : true),
+);
+$postConfig = array_merge($postConfig, $this->postInfo);
+
+$postConfig = Zend_Json::encode($postConfig);
+
+$jsWait = false;
+$jsLoad = "$('#{$bookmarkPostId}').bookmarkPost({$postConfig});";
+if ($jsWait === false)
+{
+    // Instantiate the Javascript widget immediately
+    ?>
+<script type='text/javascript'>
+(function($) {
+    <?= $jsLoad ?>
+ }(jQuery));
+</script>
+    <?php
+}
+else
+{
+    // Wait until DOM-ready to instantiate the Javascript widget
+    $this->jQuery()->addOnLoad( $jsLoad );
+}

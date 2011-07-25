@@ -1,0 +1,26 @@
+<?php
+/** @file
+ *
+ *  Render the recommended tags for the suggestions area of a Bookmark Post
+ *  form.
+ *
+ *  Incoming data:
+ *      tabs                        An array of 'tabs' configuration;
+ *          people                  Configuration for the 'people' tab;
+ *              sections            An array of sections within this tab;
+ *                  network         Configuration for the 'people/network'
+ *                                  section;
+ *                      config      Helper configuration;
+ */
+$tab     =& $this->tabs['people'];
+$section =& $tab['sections']['network'];
+$config  =& $section['config'];
+
+if ($config['items'] !== null)
+{
+    echo $this->htmlItemCloud($config)->render();
+}
+else
+{
+    echo '<p class="ui-state-highlight">Empty</p>';
+}

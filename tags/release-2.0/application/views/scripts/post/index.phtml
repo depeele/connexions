@@ -1,0 +1,115 @@
+<?php
+/** @file
+ *
+ *  Primary view handler for bookmark posting.
+ *
+ *  View variables:
+ *      postInfo    An object containing incoming information about the
+ *                  bookmark;
+ *      closeAction An indication of what action to take when the form
+ *                  is closed, either via successful post or close/cancel;
+ *      error       On error, an indication of what the error was;
+ */
+if (! @is_array($this->postInfo))
+    $this->postInfo = array();
+
+if (isset($this->postInfo['itemId']) && ($this->postInfo['mode'] !== 'post'))
+{
+    $verb = 'Update';
+    $adj  = '';
+}
+else
+{
+    $verb = 'Post';
+    $adj  = 'new';
+}
+
+$containerId = 'post';
+?>
+<div id="<?= $containerId ?>"
+  class='container-bookmarkPost ui-validation-form ribbon-form line'><!-- { -->
+ <div class='context-ribbon'>&nbsp;</div>
+ <div class="legend unit"><!-- { -->
+  <div class='context-bg connexions_sprites bookmark_bg'>
+    &nbsp;
+  </div>
+  <h1><?= $verb ?></h1>
+  <p>a <?= $adj ?> bookmark</p>
+  <div class='status<?= (@isset($this->error) ? ' error' : '') ?>'>
+   <?= (@isset($this->error) ? $this->error : '') ?>
+  </div>
+ </div><!-- legend } -->
+ <div class="userInput lastUnit"><!-- { -->
+   <?= $this->render('post/main.phtml') ?>
+ </div><!-- userInput } -->
+</div><!-- ribbon-form } -->
+<script type='text/javascript'>
+/* Include an event delegate to adjust our legend if the bookmarkPost widget
+ * changes the 'isEdit' state.
+ */
+(function($) {
+    var $container      = $('#<?= $containerId ?>');
+    var formSelector    = '.ui-bookmarkPost';
+
+    //$container.delegate('form', 'isEditChanged', function(e, isEdit) {
+    $container.delegate(formSelector, 'isEditChanged',
+                        function(e, isEdit) {
+        /* Update the title & subtitle of the ribbon-form based upon the new
+         * value of 'isEdit'.
+         */
+        var title       = 'Post';
+        var subTitle    = 'a new bookmark';
+        if (isEdit)
+        {
+            title       = 'Update';
+            subTitle    = 'a bookmark';
+        }
+
+        var $legend = $container.find('.legend:first');
+        $legend.find('h1:first').text(title);
+        $legend.find('p:first').text(subTitle);
+    });
+
+    //$container.delegate('form', 'complete', function() {
+    $container.delegate(formSelector, 'complete',
+                        function() {
+        /* Posting is complete -- either via successful save or cancel
+         *
+         * Our action now is determined by whether or not 'closeAction' was
+         * specified in the request.  Valid closeActions are:
+         *  - 'back'                move back in the browser's history;
+         *  - 'close'               attempt to close the current window;
+         *  - 'hide'                hide the ribbon-form;
+         *  - 'iframe'              attempt to invoke the 'close' function
+         *                          on the containing iframe;
+         *  - 'redirect:%url%'      redirect to the specified %url;
+         *  - 'urlCallback:%url%'   redirect to the specified %url;
+         *  - 'callback:%func%'     invoke the Javascript function %func%;
+         *  - 'ignore'              do nothing;
+         *  - 'redirect'            if the post form contains a non-empty URL,
+         *                          append ":%url%", otherwise, invoke 'back';
+         *
+         * If 'closeAction' was NOT specified, 'back' will be used.
+         */
+        var action  = '<?= $this->closeAction ?>';
+
+        if (action === 'redirect')
+        {
+            // Append ':%url%'
+            var param = $container.find(formSelector)
+                                    .bookmarkPost('option', '$url').val();
+            if (param && param.length)
+            {
+                // Redirect to the URL of the bookmark
+                action = 'redirect:'+ param;
+            }
+            else
+            {
+                action = 'back';
+            }
+        }
+
+        $.closeAction(action, $container);
+    });
+ }(jQuery));
+</script>

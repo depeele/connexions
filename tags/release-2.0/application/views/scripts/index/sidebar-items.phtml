@@ -1,0 +1,37 @@
+<?php
+/** @file
+ *
+ *  View script for IndexController::index to render the items portion of the
+ *  sidebar (i.e. the 'Items' tab).
+ *
+ *  Incoming members:
+ *      url             The full url for the main controller of this page;
+ *      owner           The owner of the current item set -- either a string or
+ *                      a Model_User instance;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      tags            A Model_Set_Tag instance containing information about
+ *                      any requested tags (i.e. tag restrictions);
+ *      sidebar         Configuration for the sidebar presentation;
+ */
+$paneName = 'items';
+$config   =  (is_array($this->sidebar['panes']) &&
+              is_array($this->sidebar['panes'][$paneName])
+                ? $this->sidebar['panes'][$paneName]
+                : array());
+
+
+if ($this->sidebar['initialRender'] === true)
+{
+    ?>
+  <div class='columnHeader'>
+   <div class='context-bg connexions_sprites item_bg ui-corner-left'>
+    &nbsp;
+   </div>
+   <p>Items related to these bookmarks.</p>
+  </div>
+    <?php
+}
+
+$htmlItemCloud = $this->htmlItemCloud($config);
+echo $htmlItemCloud->render();

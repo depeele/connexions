@@ -1,0 +1,210 @@
+<?php
+/** @file
+ *
+ *  Layout the primary page header.  This will also include 'base-header.phtml'
+ *
+ *  Options:
+ *      excludeNav      - if true, exclude the navigational components of the
+ *                        header, exlude the footer, and ensure that the main
+ *                        body has the 'light' class;
+ *      excludeSidebar  - if true, exclude the sidebar;
+ */
+$baseUrl = $this->baseUrl('/'); //Connexions::url('/');
+$jQuery = $this->jQuery();
+
+$jQuery->addOnLoad('$.body_initHandlers();')
+       ->javascriptCaptureStart();
+  ?>
+(function ($) {
+
+    /************************************************
+     * Iniitalize PNG-fix for the document.
+     *
+     * Note: Only effects IE5.5 and IE6.  All others
+     *       will return immediately and shouldn't
+     *       be impacted.
+     */
+    function doc_pngFix()
+    {
+        if (! $.isFunction($.fn.pngFix))
+            return;
+
+        $(document).pngFix( {blankgif: '<?= $baseUrl ?>images/bkank.gif'} );
+    }
+
+    /************************************************
+     * Iniitalize effects for elements in '.body'
+     *
+     */
+    $.body_initHandlers = function() {
+        doc_pngFix();
+
+        // Create a ui.notify widget
+        $.notify = function(vars, opts, template) {
+            $('#notifications').notify('create', template, vars, opts);
+        };
+        $('#notifications').notify();
+
+        /* Handle hover events for any current and future items with the class
+         * .ui-state-default
+         */
+        var $body   = $('.body');   //$('body');
+
+        if (false) {
+        $body.delegate('.ui-state-default', 'mouseenter', function(e) {
+            /*
+            window.console.debug("in: orig[ "+
+                                 this.localName +":"+
+                                 this.className +" ], "+
+                                 e.relatedTarget.localName +":"+
+                                 e.relatedTarget.className);
+            // */
+            e.stopPropagation();
+                        
+            var $el = $(this);
+
+            if (! $el.attr('disabled'))
+            {
+                // remove all others and hover here
+                //$body.find('.ui-state-hover').removeClass('ui-state-hover');
+
+                $el.addClass('ui-state-hover');
+            }
+        });
+
+        $body.delegate('.ui-state-default', 'mouseleave', function(e) {
+            /*
+            window.console.debug("out: orig[ "+
+                                 this.localName +":"+
+                                 this.className +" ], "+
+                                 e.relatedTarget.localName +":"+
+                                 e.relatedTarget.className);
+            // */
+
+            e.stopPropagation();
+                        
+            // remove hover
+            $(this).removeClass('ui-state-hover');
+        });
+        }
+
+        $('#search').search();
+
+        /*********************************************************************
+         * Primarily in support of platforms that do NOT have usable hover
+         * states (e.g. mobile browsers), enable clicking on the parent of any
+         * '.menu-arrow' DOM element.  To support the hover event used for
+         * '#search .searchBox', we also add a 'blur' delegate to '.searchBox
+         * input'.
+         *
+         * When a target item is clicked, check it's current set of CSS classes
+         * to see if it has '.menu-show' (i.e. is in the "sticky" state).
+         *
+         * Toggle between "sticky" and "non-sticky" states:
+         *  - "sticky"      the clicked items has the '.menu-show' CSS class
+         *                  added and all others have '.menu-hide' added.
+         *                  Due to CSS rules, this will cause any CSS-based
+         *                  ':hover' changes to be ignored keeping the clicked
+         *                  item visible and all others hidden;
+         *  - "non-sticky"  both '.menu-show' and '.menu-hide' are removed from
+         *                  all items.  This reverts to the default mode of
+         *                  honoring CSS-based ':hover' changes;
+         *
+         */
+        var $ph     = $('#pageHeader');
+        var $menus  = $ph.find('.menu-arrow,#search .searchBox').parent();
+        function unstick($menu)
+        {
+            $menus.removeClass('menu-show menu-hide');
+            $body.unbind('.sticky');
+        }
+        function stick($menu)
+        {
+            $menus.not($menu).addClass('menu-hide');
+            $menu.addClass('menu-show').removeClass('menu-hide');
+        }
+        function toggleSticky($menu)
+        {
+            var curState    = $menu.hasClass('menu-show');
+
+            if (curState === true)
+            {
+                // New state is non-sticky
+                unstick($menu);
+            }
+            else
+            {
+                /* New state is sticky with $el marked with '.menu-show' and
+                 * all others marked with '.menu-hide'
+                 */
+                stick($menu);
+
+                /* Also add a body-level click handler.  When fired, transition
+                 * to the "non-sticky" state.
+                 */
+                $body.unbind('.sticky');
+                setTimeout(function() {
+                     $body.bind('click.sticky', function(e) {
+                        unstick($menu);
+                    }); }, 100);
+            }
+        }
+
+        $menus.click(function(e) { toggleSticky( $(this) ); });
+        $ph.delegate('#search .searchBox input', 'blur', function(e) {
+            // Handle 'blur' on the search input box and treat it like a click.
+            toggleSticky( $(this).parents('#search:first') );
+        });
+    };
+ }(jQuery));
+  <?php
+$jQuery->javascriptCaptureEnd();
+
+/***************************************************************************
+ * Begin the page.
+ *
+ */
+$extraClass = '';
+if ($this->excludeNav === true)
+{
+    $extraClass .= ' noNav';
+
+    // Notify base-header to use 'light' on body.
+    if (! isset($this->bodyCss))    $this->bodyCss = '';
+    $this->bodyCss .= ' light';
+
+    Connexions::log("layout/header: bodyCss[ %s ]",
+                    $this->bodyCss);
+}
+if ($this->excludeSidebar)  $extraClass .= ' noSidebar';
+
+echo $this->render('base-header.phtml');
+
+?>
+ <div class="page liquid<?= $extraClass ?>"><!-- { page -->
+  <div id="pageHeader" class="head" role="banner"><!-- { head -->
+   <div class='siteAuth'>
+     <div class='siteMarking'>
+      <div class='urCorner'>
+       <div class='urCorner-background'></div>
+       <div class='urCorner-rounded'></div>
+      </div>
+     </div>
+     <?= $this->render('site_auth.phtml') ?>
+     <h1 id='siteName'
+      ><a href="<?= $baseUrl ?>"
+       ><span>conne</span
+       ><img src="<?= $baseUrl ?>images/logo.gif" alt="x" /
+       ><span>ions</span
+      ></a></h1>
+   </div>
+   <div class='siteNav'><!-- { siteNav -->
+    <div class='tabs'><!-- tabs { -->
+     <?php if ( $this->excludeNav !== true ) { ?>
+      <?= $this->render('nav_menu.phtml') ?>
+    <?php } else {?>
+      <div class='ie-corner connexions_sprites corner_outter_left_10'></div>
+    <?php } ?>
+    </div><!-- tabs } -->
+   </div><!-- siteNav } -->
+  </div><!-- head } -->

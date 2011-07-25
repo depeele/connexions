@@ -1,0 +1,10 @@
+.properties .label {
+  width:        7em;
+  font-weight:  bold;
+}
+
+.properties .property:nth-child(even) {
+}
+.properties .property:nth-child(odd) {
+  background-color:   #eee;
+}

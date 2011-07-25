@@ -1,0 +1,17 @@
+<?php
+/** @file
+ *
+ *  HTML rendering of a alphabetic group header in a list of items
+ *      (typically via a View_Helper_List sub-class).
+ *
+ *  Incoming parameters:
+ *      helper          The View_Helper_List instance that initiated this view
+ *                      script.  It provides additional parameters (e.g.
+ *                      namespace, perPageChoices, viewer, paginator, sortBy)
+ *                      as well as group value parsing and rendering of display
+ *                      options and group headers;
+ *      value           The value to use in representing this group;
+ */
+
+?>
+<div class='groupType alpha'><?= $this->value ?></div>
