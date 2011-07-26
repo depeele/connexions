@@ -544,7 +544,20 @@ Connexions::log('views/scripts/help/main-faq.phtml: '
        connexions post form within the current page.  Upon completion of the
        bookmarking activity, the dialog will be removed;</li>
       </ul>
+      <p class='xpiInstall-container'>For <b>Firefox</b> users, there is also
+       an extension that integrates your Connexions bookmarks more directly
+       within the browser.  This extension adds a Connexions bookmarks sidebar
+       as well as menu options that allow easy creation of new bookmarks.
+       <span class='xpiInstall'>
+        <a class="button add installer"
+             href="<?= $this->baseUrl('connexions-2.0.0.xpi') ?>"
+             iconURL="<?= $this->baseurl('images/logo-16.png') ?>"
+             hash="sha1:563107c1472d50fbde8d457f13dbb2446810b1e2"
+             onclick="return xpiInstall(event);"><span>Add to Firefox</span></a>
+       </span>
+      </p>
      </div>
+     
     </li><!-- question-answer } -->
 
     <li class='collapsable'><!-- question-answer { -->
@@ -591,6 +604,35 @@ Connexions::log('views/scripts/help/main-faq.phtml: '
 </ul><!-- outer-list } -->
 
 <script type='text/javascript'>
+/** @brief  Firefox Extension installer.
+ *  @param  event   The triggering event.
+ *
+ */
+function xpiInstall(event)
+{
+    var params  = {
+        'Connexions':   {
+            URL:        event.target.href,
+            IconURL:    event.target.getAttribute('iconURL'),
+            Hash:       event.target.getAttribute('hash'),
+            toString:   function() { return this.URL; }
+        }
+    };
+
+    try {
+        InstallTrigger.install(params);
+    } catch(e) {
+        /* NOT Firefox
+         *
+         * Let the event propagate which should cause the XPI to be downloaded.
+         */
+        return;
+    }
+
+    // Squelch the click event
+    return false;
+}
+
 (function($) {
     var tabsId      = 'help';
     var $tabs       = $('#'+ tabsId);
@@ -642,6 +684,19 @@ Connexions::log('views/scripts/help/main-faq.phtml: '
 
     // Bind to the 'tabsshow' event indicating the the tabs widget is ready
     $tabs.bind('tabsshow', firstShow);
+
+    var isFirefox   = $.browser.mozilla;
+    var xpiOpts = {
+        label:  ($.browser.mozilla
+                    ? 'Add to Firefox'
+                    : 'Download Now'),
+        icons: {
+            primary: ($.browser.mozilla
+                        ? 'ui-icon-plusthick'
+                        : 'ui-icon-arrowthick-1-s')
+        }
+    };
+    $('.xpiInstall a').button( xpiOpts );
 
  }(jQuery));
 </script>
