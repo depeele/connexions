@@ -201,4 +201,13 @@
   .relation {
     @include inlineBlock();
   }
+
+  .xpiInstall-container {
+    padding-top:    2em;
+
+    .xpiInstall {
+      @include inlineBlock();
+      margin-left:  1em;
+    }
+  }
 }
