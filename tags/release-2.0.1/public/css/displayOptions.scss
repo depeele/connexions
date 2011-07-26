@@ -1,0 +1,270 @@
+@import "colors";
+
+.displayOptions {
+  float:        right;
+  padding-top:  0.2em;
+
+  form {
+    position:   absolute;
+    top:        1.75em;
+    right:      0;
+    padding:    0.5em;
+    width:      20em;
+    z-index:    11;
+    select {
+      font-size:    0.9em;
+      font-weight:  normal !important;
+    }
+  }
+  .control {
+    z-index: 10;
+    cursor: pointer;
+    .ui-button-text {
+      padding:  0.15em 1.5em 0.2em 0.5em;
+    }
+    a {
+      font-weight: normal;
+    }
+    .ui-icon {
+      right:  0.2em;
+    }
+  }
+  .buttons {
+    text-align: right;
+    button {
+      display: inline;
+      padding: 0.25em;
+    }
+  }
+  #buttons-global {
+    padding: 0.5em 0.5em 0;
+    border-top: unquote("1px dotted") $borderColor;
+  }
+  .field {
+    display: block;
+    padding-bottom: 0.25em;
+    label {
+      @include inlineBlock();
+
+      width:    6em;
+      padding:  0.25em 0;
+    }
+  }
+  //.sortBy
+  .sortOrder {
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+    border-bottom: unquote("1px dotted") $borderColor;
+    .field {
+      @include inlineBlock();
+      padding-bottom: 0;
+      padding-right: 0.5em;
+      label {
+        @include inlineBlock();
+        width: auto;
+        padding: 0 0.1em;
+        font-size: 0.8em;
+      }
+      input,label {
+        cursor: pointer;
+      }
+    }
+  }
+  .perPage {
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+    border-bottom: unquote("1px dotted") $borderColor;
+  }
+  .displayStyle {
+    display: block;
+    position: relative;
+    width: auto;
+    text-align: left;
+    padding-top: 1em;
+    label {
+      cursor: pointer;
+    }
+    ul.groups {
+      @include inlineBlock();
+      padding: 0;
+      li.field {
+        @include inlineBlock();
+        padding: 0.25em;
+        label {
+          @include inlineBlock();
+          width: auto;
+          padding: 0;
+        }
+      }
+      li.field {
+        cursor: pointer;
+      }
+      li.control {
+        position:   relative;
+        font-size:  1em;
+        padding:    0;
+        .ui-button-text {
+          padding-right:  16px;
+        }
+      }
+      li.ui-state-active {
+        font-weight: bold;
+      }
+      li.toggle {
+        border: none;
+      }
+    }
+  }
+}
+
+// More specific overrides
+.pane .displayOptions .displayStyle fieldset.options {
+  padding-top:  0.5em;
+  border:       none;
+  .item, .user {
+    border:         unquote("1px solid") $borderColor;
+    border-bottom:  none;
+    padding:        0 0 0.1em 0.2em;
+    label {
+      @include inlineBlock();
+      width: auto;
+      padding-left: 0.25em;
+    }
+    .stats {
+      position:     absolute;
+      right:        0;
+      font-weight:  normal;
+      padding:      0;
+      .rating {
+        padding: 0.25em 0.1em 0.25em 0.5em;
+        text-align: left;
+        .info {
+          text-align: left;
+          padding:    0;
+        }
+      }
+    }
+    .data {
+      padding-left:   0;
+      padding-right:  0.1em;
+
+      .avatar {
+        @include inlineBlock();
+        padding:  0 0.75em 0 0;
+
+        label {
+          padding-left: 14px;
+        }
+        .img {
+          position: absolute;
+          left:     14px;
+          top:      0;
+        }
+      }
+      .relation {
+        @include inlineBlock();
+        padding:  0 0.75em 0 0;
+        top:      18px;
+        left:     0px;
+
+        label {
+          padding-left: 14px;
+        }
+        .img {
+          position: absolute;
+          left:     14px;
+          top:      0;
+        }
+      }
+
+      .itemName {
+        @include inlineBlock();
+        font-size:      1.2em;
+        padding-bottom: 0.5em;
+      }
+      .url, .description, .description .full, .description .summary {
+        margin: 0;
+      }
+      .description {
+        padding-bottom: 1em;
+        .full, .summary {
+          padding: 0;
+        }
+      }
+      .tags {
+        @include clearFix();
+        float:          right;
+        vertical-align: top;
+
+        width:          auto;
+        text-align:     left;
+        margin-bottom:  1em;
+        padding:        0;
+        label,.tag {
+          @include inlineBlock();
+          float:        none;
+          font-size:    0.8em;
+        }
+        .tag {
+          padding:      inherit;
+        }
+      }
+      .userId {
+        @include inlineBlock();
+        vertical-align: top;
+        padding:        0 0 0 1em;
+        margin-bottom:  1em;
+        font-size:      0.8em;
+        label {
+          padding-left: 0;
+        }
+        .id {
+          @include inlineBlock();
+        }
+      }
+      .dates {
+        @include inlineBlock();
+        vertical-align: top;
+        font-size:      0.8em;
+        padding:        0 0 0 1em;
+        .updated {
+          width: auto;
+        }
+      }
+    }
+  }
+  .user {
+    .data {
+      @include clearFix();
+      .avatar, .userId, .fullName, .email, .tags, .dates {
+        position: relative;
+        width:    auto;
+        height:   auto;
+        float:    none;
+        padding:  0 0.75em 0 0;
+      }
+      .fullName, .email, .tags, .dates {
+        display:  block;
+      }
+      .avatar, .userId {
+        @include inlineBlock();
+      }
+      .userId {
+        padding-top:  0.25em;
+      }
+      .tags {
+        clear:    none;
+        float:    right;
+        padding:  0.2em 0 0 0;
+      }
+      .fullName {
+        padding-bottom: 0.5em;
+      }
+      .dates {
+        clear:    none;
+        float:    left;
+        padding:  0.5em 0 0 16px;
+      }
+    }
+  }
+}

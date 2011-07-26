@@ -1,0 +1,51 @@
+diff -NBEbwur --strip-trailing-cr --exclude=.svn --exclude=CVS --exclude=.git orig/jquery-ui-1.8.13.js js/jquery-ui-1.8.13.js
+--- orig/jquery-ui-1.8.13.js	2011-06-07 11:25:39.000000000 -0200
++++ js/jquery-ui-1.8.13.js	2011-06-07 11:18:39.000000000 -0200
+@@ -2155,7 +2155,7 @@
+ 	_suggest: function( items ) {
+ 		var ul = this.menu.element
+ 			.empty()
+-			.zIndex( this.element.zIndex() + 1 );
++                    .zIndex(0);
+ 		this._renderMenu( ul, items );
+ 		// TODO refresh should check if the active item is still in the dom, removing the need for a manual deactivate
+ 		this.menu.deactivate();
+@@ -2164,9 +2164,23 @@
+ 		// size and position menu
+ 		ul.show();
+ 		this._resizeMenu();
+-		ul.position( $.extend({
+-			of: this.element
+-		}, this.options.position ));
++
++        // :XXX: Connexions patch: {
++        var position    = this.options.position;
++        if (position.of === undefined) {
++            position.of = this.element;
++        }
++
++        // Locate the maximum z-index in all our parents
++        var zIndex  = 0;
++        position.of.parents().each(function() {
++            var zi  = $(this).zIndex();
++            if (zi > zIndex)    zIndex = zi;
++        });
++
++		ul.position( position )
++          .zIndex( zIndex + 1);
++        // :XXX: Connexions patch: }
+ 
+ 		if ( this.options.autoFocus ) {
+ 			this.menu.next( new $.Event("mouseover") );
+@@ -2191,7 +2205,10 @@
+ 	_renderItem: function( ul, item) {
+ 		return $( "<li></li>" )
+ 			.data( "item.autocomplete", item )
+-			.append( $( "<a></a>" ).text( item.label ) )
++			// :XXX: Connexions patch: {
++			//.append( $( "<a></a>" ).text( item.label ) )
++			.append( $( "<a></a>" ).html( item.label ) )
++			// :XXX: Connexions patch: }
+ 			.appendTo( ul );
+ 	},
+ 

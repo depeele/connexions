@@ -1,0 +1,134 @@
+
+Primary pages and what they present:
+------------------------------------------------------------------------------
+Bookmarks page:         /, /bookmarks/[ <tag(s)> ]
+    All Bookmarks with all the given tag(s).
+
+    Sidebar (related to one or more of the presented Bookmarks):
+        Tags    All related tags
+                    clicking on tag
+                        /bookmarks/<tags(s) +|- tag>
+
+        People  All related people
+                    clicking a  person
+                        /<user>/[ <tag(s)> ]
+
+        Items   All related items
+                    clicking an item
+                        /url/<url-hash>/[ <tag(s)> ]
+
+
+User Bookmarks page:    /<user>/[ <tag(s)> ]
+    All Bookmarks for the identified user with all the given tag(s).
+
+    Sidebar (related to one or more of the presented Bookmarks):
+        Tags    All related tags
+                    clicking on tag
+                        /<user>/<tags(s) +|- tag>
+
+        People  Details/Statistics about the identified user
+                    first visit, last visit, # bookmarks,
+                    # tags, average tags / bookmark, ...
+                    ???
+
+        Items   All related items
+                    clicking an item
+                        /url/<url-hash>/[ <tag(s)> ]
+
+---------------------------------------------
+
+Tags page:              /tags/[ <user(s)> ]
+    All Tags used by all the given user(s).
+
+    Sidebar (related to one or more of the presented Tags):
+        Tags    Details/Statistics about the presented tags
+                    tag min/max length
+                    ???
+
+        People  All related people
+                    clicking a  person
+                        /tags/<user(s) +|- user>/[ <tag(s)> ]
+
+        Items   All related items
+                    clicking an item
+                        /url/<url-hash>/[ <tag(s)> ]
+
+
+People page:            /people/[ <tag(s)> ]
+    All users who have used all the given tag(s).
+
+    Sidebar (related to one or more of the presented Users):
+        Tags    All related tags
+                    clicking on tag
+                        /people/<tags(s) +|- tag>
+
+        People  Details/Statistics about the presented users
+                    first visit, last visit, average # bookmarks,
+                    average # tags, average tags / bookmark, ...
+                    ???
+
+        Items   All related items
+                    clicking an item
+                        /url/<url-hash>/[ <tag(s)> ]
+
+
+Url / Item page:        /url/[ <url | url-hash>/[ <tag(s)> ] ]
+    If no url or url-hash are provided, present a url input page.
+      No sidebar
+
+    Otherwise, all Bookmarks for the identified url/url-hash with all the given
+    tag(s).
+
+      Sidebar (related to one or more of the presented Bookmarks):
+        Tags    All related tags
+                    clicking on tag
+                        /url/<url-hash>/<tags(s) +|- tag>
+
+        People  All related people
+                    clicking a  person
+                        /<user>/[ <tag(s)> ]
+
+        Items   Details/Statistics about the identified item
+                    first tagged, last tagged, average # bookmarks,
+                    average # tags, average tags / bookmark, ...
+                    ???
+
+
+
+Entity relations and where they are presented:
+------------------------------------------------------------------------------
+  user-related:
+    Items       User Bookmarks  : implicitly visible in the presented
+                                  Bookmarks
+
+    Tags        User Bookmarks  : in sidebar tag-cloud;
+                Tags page       : click a user in the sidebar user-cloud
+                                  implicitly shows tag-related users
+
+    Bookmarks   User Bookmarks  : explicitly visible in the presented
+                                  Bookmarks
+
+
+  item-related:
+    Users       Url / Item page : implicitly visible in the presented
+                                  Bookmarks
+
+    Tags        Url / Item page : in sidebar tag-cloud
+
+    Bookmarks   Url / Item page : explicitly visible in the presented
+                                  Bookmarks
+
+
+  tag-related:
+    Users       People page     : click a tag in the sidebar tag-cloud
+
+    Items       Bookmarks page  : click a tag in the sidebar tag-cloud
+                                  implicitly shows tag-related items
+                                  in the list of presented Bookmarks
+
+    Bookmarks   Bookmarks page  : click a tag in the sidebar tag-cloud
+
+
+  Bookmark-related
+    Tags        visible in any Bookmark view if a tag-cloud is presented
+

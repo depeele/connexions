@@ -1,0 +1,18 @@
+@import "sizes";
+
+// For jquery-ui
+@import "ie-jquery-ui";
+
+// For tabs.scss
+#pageHeader {
+  ul.sub {
+    top:        $navTopSub;
+  }
+}
+
+#search {
+  padding-top:  inherit;
+}
+
+// For tabs.scss corners
+@import "ie-corner";

@@ -1,0 +1,67 @@
+#!/usr/bin/env php
+<?php
+define('CLI_DIR', realpath(dirname(__FILE__)));
+
+require_once(CLI_DIR. '/bootstrap.php');
+$prog = array_shift($argv);
+
+$svc = Connexions_Service::factory('Service_User');
+
+// Parameters
+$params = array(
+    'count'     => 50,
+    'offset'    => 0,
+);
+$validParams = array(
+    'threshold' => 'number of bookmarks defining "contributor"',
+    'order'     => 'SQL ordering',
+    'count'     => 'numeric limit/count',
+    'offset'    => 'numeric limit/offset',
+    'tags'      => 'comma-separated list of tags',
+    'items'     => 'comma-separated list of items',
+);
+
+$help = false;
+foreach ($argv as $arg)
+{
+    if (preg_match('/[-]+([^=]+)(?:=(.*))$/', $arg, $matches))
+    {
+        $key = trim($matches[1]);
+        $val = trim($matches[2], " \t\n\r\0\x0B'\"");
+
+        if (isset($validParams[ $key ]))
+        {
+            $params[ $key ] = $val;
+        }
+        else
+        {
+            $help = true;
+        }
+    }
+    else
+    {
+        $help = true;
+    }
+
+    if ($help === true)
+    {
+        printf ("*** Usage: %s\n", basename($prog));
+        foreach ($validParams as $param => $args)
+        {
+            printf ("              [--%-14s] - %s\n", $param.'=args', $args);
+        }
+        return;
+    }
+}
+
+$contributors = $svc->getContributors( $params );
+
+printf (  "%s Contributors:\n"
+        . "%s\n",
+        ($contributors
+            ? count($contributors)
+            : 'No'),
+        ($contributors
+            ? preg_replace('/\],\[/', "],\n[",
+                           Zend_Json::encode($contributors))
+            : "") );

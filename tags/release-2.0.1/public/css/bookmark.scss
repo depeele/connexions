@@ -1,0 +1,343 @@
+@import "sizes";
+@import "colors";
+@import "mixins";
+//@import "uiStars";
+
+/****** bookmark.scss ****** */
+// Styling for a single Bookmark
+// Used by bookmarks.sass as well as urlItems.sass
+
+// Include fieldset.options here so 'form .displayStyle fieldset.options'
+// will be rendered similar to bookmarks
+// (i.e. will visually match the bookmark presentation that it controls)
+.bookmarks {
+  clear: both;
+  padding-top: 0.5em;
+  border-bottom: unquote("1px solid") $borderColor;
+}
+
+.bookmarks {
+  .item {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 0.5em;
+    border-top: unquote("1px solid") $borderColor;
+  }
+}
+
+.bookmarks, .pane .displayStyle fieldset.options {
+  .item {
+    @include clearFix();
+
+    // Item status: Favorite, Private
+    .status {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: $controlBoxWidth;
+      height: 100%;
+      z-index: 2;
+      .checkbox {
+        border: 0;
+      }
+      .avatar,.favorite,.private {
+        position: absolute;
+        cursor: pointer;
+      }
+      .avatar {
+        top:  4px;
+        left: 1px;
+        img {
+          width:  16px;
+        }
+      }
+      .favorite {
+        top:  28px;
+        left: 3px;
+        .star_empty {
+          visibility: hidden;
+        }
+      }
+      .private {
+        top: 48px;
+        left: 3px;
+        .lock_empty {
+          visibility: hidden;
+        }
+      }
+    }
+    // Tagger count, rating, tag date/time
+    .stats {
+      @include clearFix();
+      position: relative;
+      float: right;
+      width: $countBoxWidth;
+      padding: 0 0 0 4px;
+      text-align: right;
+      z-index: 3;
+      a.count,div.count {
+        display: block;
+        background-color: $controlColor;
+        color:            $pageColorBackground;
+        padding:          0.25em;
+        font-weight:      bold;
+        text-align:       center;
+        text-decoration:  none;
+        &:hover {
+          background-color: $navColorHover;
+        }
+      }
+      .rating {
+        display: block;
+        position: relative;
+        .stars {
+          display: block;
+          height: 18px;
+          .average, .average-owner {
+            padding-left: 16px;
+          }
+          .average {
+            .ui-stars-star {
+              cursor: default;
+              a {
+                cursor: default;
+              }
+            }
+            .ui-stars-star-disabled {
+              visibility: hidden;
+            }
+          }
+          .average-owner {
+            position: absolute;
+            top: 3px;
+            left: 1px;
+            @include opacity(70);
+            .ui-stars-star-disabled {
+              visibility: hidden;
+            }
+          }
+          .owner {
+            .ui-stars-star-disabled, .ui-stars-cancel {
+              visibility: hidden;
+            }
+          }
+        }
+        .info {
+          clear: left;
+          color: $controlColor;
+          font-size: 0.75em;
+        }
+      }
+    }
+
+    .data {
+      position: relative;
+      padding: unquote("0.25em 0 0") $controlBoxWidth + 12px;
+
+      // Item Name / title
+      .itemName {
+        padding: 0;
+        a {
+          display:      inline;
+          font-weight:  normal;
+          font-size:    1.2em;
+        }
+      }
+      // Item Url
+      .url {
+        padding: 0 0 0 1em;
+        a {
+          display:      inline;
+          font-size:    0.75em;
+          font-weight:  bold;
+          color:        $linkColorSubdued;
+        }
+      }
+      // Item Description / Description Summary
+      .description {
+        display:  block;
+        padding:  0.25em 0 0.25em 1em;
+        margin:   0 175px 0 0;
+        color:    $controlColor;
+        .full, .summary {
+          display: block;
+        }
+      }
+      .meta {
+        @include clearFix();
+        clear:      both;
+        padding:    0.5em 0 0 0.5em;
+
+        // User and Date information
+        .userDate {
+
+          // UserId
+          .userId {
+            vertical-align: top;
+
+            a {
+              font-size:   0.85em;
+              font-weight: normal;
+              color:       $linkColorSubdued;
+
+              .img {
+                @include inlineBlock();
+                vertical-align:   middle;
+                border:           0;
+                background-color: transparent;
+                img {
+                  width: 16px;
+                  height: 16px;
+                }
+                .ui-icon {
+                  position: relative;
+                  top: -2px;
+                }
+              }
+              .name {
+                @include inlineBlock();
+                vertical-align: middle;
+                font-size:      0.9em;
+                padding-left:   0.25em;
+              }
+            }
+          }
+
+          // Dates (tagged, updated)
+          .dates {
+            @include inlineBlock();
+            vertical-align: top;
+            color:          $controlColor;
+            text-align:     right;
+            padding-top:    0.25em;
+            padding-left:   1.5em;
+            .tagged,.updated {
+              font-size:      0.8em;
+              padding-right:  0.1em;
+            }
+          }
+        }
+
+        // List of tags for this item
+        .tags {
+          text-align:     right;
+          padding:        0;
+
+          // Ensure we receive hover events by being ABOVE stats
+          z-index:        5;
+  
+          .tag {
+            font-size:  0.9em;
+          }
+        }
+
+      }
+
+      // Item controls: edit, delete, save
+      .control {
+        @include clearFix();
+        float:        right;
+        font-size:    0.65em;
+        font-weight:  normal;
+
+        border:       0;
+        padding:      0;
+        margin:       0 0 0 2em;  /* margin vs padding for .confirm width */
+
+        white-space:  pre;
+
+        color:        $controlColor;
+
+        visibility:   hidden;
+        z-index:      4;
+        a {
+          display: inline;
+          font-weight: normal;
+          text-decoration: none;
+          padding: 0.1em;
+        }
+        a:hover {
+          background-color: $linkColor;
+          color: $pageColorBackground;
+          text-decoration: none;
+        }
+      }
+    }
+  }
+  .item:hover {
+    .control {
+      visibility: visible;
+    }
+    .status {
+      .favorite {
+        .star_empty {
+          visibility: visible;
+        }
+      }
+      .private {
+        .lock_empty {
+          visibility: visible;
+        }
+      }
+    }
+    .stats {
+      .rating {
+        .owner {
+          .ui-stars-star-disabled, .ui-stars-cancel {
+            visibility: visible;
+          }
+        }
+      }
+    }
+  }
+
+  // Item (private)
+  .private {
+    .status {
+      background-color: $privateColorBackground;
+      border-left: unquote("1px dotted") $privateColorBorder;
+    }
+  }
+
+  // Item (mine)
+  .mine {
+    min-height: 45px;
+    .status {
+      display: block;
+      min-height: 45px;
+    }
+  }
+
+  // Item (minimized)
+  .minimized {
+    .data {
+      .itemName, .description, .description .summary, .description .full {
+        //@include inlineBlock();
+        display:  inline;
+        margin:   0;
+      }
+      .description {
+        padding:  0 0 0 0.5em;
+      }
+    }
+  }
+
+  // No UserId (bookmarks of a single user OR the user has no avatar)
+  .no-avatar {
+    .status {
+      .favorite {
+        top:  4px;
+      }
+      .private {
+        top:  24px;
+      }
+    }
+  }
+
+  // Item (new-item in an inbox view)
+  .new-item {
+    //background-color: $lightestGrey;
+    background-color: $highlightTopColorBackground;
+    @include corners(0, 0, 0, 20px);
+  }
+}

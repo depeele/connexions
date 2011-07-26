@@ -1,0 +1,24 @@
+<?php
+/** @file
+ *
+ *  HTML rendering of a group header in a list of items
+ *      (typically via a View_Helper_List sub-class).
+ *
+ *  Incoming parameters:
+ *      helper          The View_Helper_List instance that initiated this view
+ *                      script.  It provides additional parameters (e.g.
+ *                      namespace, perPageChoices, viewer, paginator, sortBy)
+ *                      as well as group value parsing and rendering of display
+ *                      options and group headers;
+ *      groupBy         The grouping identifier / field;
+ *      script          The view script to use to render the header details;
+ *      scriptParams    An array of parameters to pass to 'script';
+ */
+
+?>
+<div class='groupHeader'>
+ <div class='group group<?= ucFirst($this->groupBy) ?> ui-corner-tl'>
+  <?= $this->partial($this->script, $this->scriptParams) ?>
+ </div>
+ <div class='groupCorner ui-corner-right'></div>
+</div>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<dataset>
+ <userItem
+      userId="1" itemId="1"
+      name="More than a password manager | Clipperz"
+      description="Testing 1,2 3, 4..."
+      rating="1" isFavorite="0" isPrivate="1"
+      taggedOn="2010-04-05 17:25:19" updatedOn="2010-07-22 10:00:00" />
+ <userItem
+      userId="1" itemId="2"
+      name="OAT Framework"
+      description=""
+      rating="2" isFavorite="1" isPrivate="0"
+      taggedOn="2007-03-30 14:39:52" updatedOn="2007-03-30 14:39:52" />
+ <userItem
+      userId="1" itemId="3"
+      name="OAT: OpenAjax Alliance Compliant Toolkit (Live Links Version)"
+      description=""
+      rating="0" isFavorite="1" isPrivate="1"
+      taggedOn="2007-03-30 14:35:51" updatedOn="2007-03-30 14:35:51" />
+ <userItem
+      userId="1" itemId="4"
+      name="OAT Framework Demo"
+      description=""
+      rating="0" isFavorite="0" isPrivate="0"
+      taggedOn="2007-03-30 14:33:27" updatedOn="2007-03-30 14:33:27" />
+ <userItem
+      userId="1" itemId="5"
+      name="JavaScript Diagram Builder"
+      description=""
+      rating="0" isFavorite="0" isPrivate="0"
+      taggedOn="2007-03-30 13:11:57" updatedOn="2007-03-30 13:11:57" />
+
+ <userItem
+      userId="2" itemId="7"
+      name="nimbus: Nimbus"
+      description=""
+      rating="0" isFavorite="0" isPrivate="0"
+      taggedOn="0000-00-00 00:00:00" updatedOn="2007-03-24 11:45:44" />
+ <userItem
+      userId="2" itemId="14"
+      name="Overview (Java 3D 1.5.0)"
+      description=""
+      rating="0" isFavorite="1" isPrivate="0"
+      taggedOn="0000-00-00 00:00:00" updatedOn="2007-01-24 20:22:40" />
+ <userItem
+      userId="4" itemId="16"
+      name="FullBooks.com - Thousands of Full Text Free Books"
+      description=""
+      rating="0" isFavorite="1" isPrivate="0"
+      taggedOn="0000-00-00 00:00:00" updatedOn="2006-12-19 02:33:05" />
+ <userItem
+      userId="3" itemId="9"
+      name="Home Decorators Collection: Custom framed art and wall decor for your Home Decorating solutions with a money back guarantee"
+      description=""
+      rating="0" isFavorite="0" isPrivate="0"
+      taggedOn="2006-11-12 07:39:23" updatedOn="2006-11-12 07:39:23" />
+ <userItem
+      userId="3" itemId="4"
+      name="OAT Framework"
+      description=""
+      rating="0" isFavorite="0" isPrivate="0"
+      taggedOn="0000-00-00 00:00:00" updatedOn="2006-09-10 00:04:32" />
+ <userItem
+      userId="4" itemId="6"
+      name="IBM doubles CPU cooling capabilities with simple manufacturing change"
+      description=""
+      rating="4" isFavorite="0" isPrivate="0"
+      taggedOn="2006-06-30 18:21:47" updatedOn="2006-06-30 18:21:47" />
+ <userItem
+      userId="2" itemId="13"
+      name="TiddlyWiki Guides - TiddlyWikiGuides"
+      description=""
+      rating="0" isFavorite="0" isPrivate="0"
+      taggedOn="0000-00-00 00:00:00" updatedOn="2006-06-26 15:54:56" />
+ <userItem
+      userId="4" itemId="12"
+      name="Textpattern"
+      description=""
+      rating="0" isFavorite="0" isPrivate="0"
+      taggedOn="0000-00-00 00:00:00" updatedOn="2006-05-21 06:32:33" />
+ <userItem
+      userId="3" itemId="6"
+      name="IBM doubles CPU cooling capabilities with simple manufacturing change"
+      description=""
+      rating="0" isFavorite="0" isPrivate="0"
+      taggedOn="0000-00-00 00:00:00" updatedOn="2006-05-18 14:31:22" />
+ <userItem
+      userId="4" itemId="15"
+      name="Ajaxian » Lily: Graphical data-flow programming environment"
+      description=""
+      rating="0" isFavorite="0" isPrivate="0"
+      taggedOn="0000-00-00 00:00:00" updatedOn="2006-05-15 20:35:14" />
+
+ <userItem
+      userId="3" itemId="8"
+      name="Martin's wiki - Martin Budden's plugins and extensions for TiddlyWiki"
+      description=""
+      rating="0" isFavorite="0" isPrivate="0"
+      taggedOn="0000-00-00 00:00:00" updatedOn="2006-04-17 10:35:42" />
+ <userItem
+      userId="2" itemId="6"
+      name="IBM doubles CPU cooling capabilities with simple manufacturing change"
+      description=""
+      rating="3" isFavorite="0" isPrivate="0"
+      taggedOn="2006-04-09 23:59:27" updatedOn="2006-04-09 23:59:27" />
+ <userItem
+      userId="2" itemId="11"
+      name="The Wii Laptop! - Engadget"
+      description=""
+      rating="3" isFavorite="0" isPrivate="0"
+      taggedOn="0000-00-00 00:00:00" updatedOn="2006-03-30 05:48:26" />
+ <userItem
+      userId="3" itemId="10"
+      name="Air Mattresses at Airbed Discounters: Air Beds, Adjustable Beds, Air Bed, Air Mattress"
+      description=""
+      rating="0" isFavorite="0" isPrivate="0"
+      taggedOn="0000-00-00 00:00:00" updatedOn="2006-03-26 22:46:26" />
+ <userItem
+      userId="4" itemId="7"
+      name="nimbus: Nimbus"
+      description=""
+      rating="0" isFavorite="0" isPrivate="0"
+      taggedOn="0000-00-00 00:00:00" updatedOn="2006-03-21 22:16:08" />
+</dataset>

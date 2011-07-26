@@ -1,0 +1,140 @@
+@import "sizes";
+@import "colors";
+@import "mixins";
+
+$servicesWidth: 455px;
+
+.columnHeader {
+  border-bottom:  unquote("3px solid") $borderColor;
+
+  .seeAlso {
+    font-size:    0.8em;
+    padding-left: 75px;
+  }
+}
+
+.ui-accordion {
+  .ui-accordion-header {
+    .ui-icon {
+      @include inlineBlock();
+    }
+  }
+  .ui-accordion-content {
+    padding:  0 1em 0.5em;
+  }
+}
+
+ul.numbered {
+  margin-left:  2em;
+  li {
+    list-style: decimal;
+  }
+}
+
+.services {
+  width:          $servicesWidth;
+  padding-right:  0.5em;
+  border-right:   unquote("1px solid") $borderColor;
+
+  h3 {
+    padding:    1em 0 0 0;
+    font-weight:bold;
+    font-size:  1.25em;
+
+    .serviceMap {
+      font-size:  0.7em;
+      float:      right;
+      cursor:     pointer;
+    }
+  }
+
+  ul {
+    form {
+      padding:          0.5em;
+      margin:           0 1em;
+      border:           unquote("1px solid") $borderColor;
+      background-color: $lightestGrey;
+    }
+  
+    .service {
+      h4 {
+        font-size:  1.1em;
+        font-weight:bold;
+      }
+      .fields {
+        @include  inlineBlock();
+        width:    20.5em;
+  
+        .field {
+          label {
+            width:  6.5em;
+          }
+        }
+        .required {
+          label {
+            font-weight:  bold;
+          }
+        }
+      }
+      .buttons {
+        @include    inlineBlock();
+        top:        -0.5em;
+        text-align: right;
+  
+        .ui-button {
+          font-size:  0.8em;
+        }
+  
+        .ui-button-text-only .ui-button-text {
+          padding:    0.25em 0.5em;
+        }
+      }
+    }
+  }
+}
+
+.results {
+  padding-left: 0.5em;
+  border-left:  unquote("1px solid") $borderColor;
+  overflow-x:   auto;
+  left:         -1px;
+
+  h3, h4 {
+    font-weight:bold;
+  }
+
+  h3 {
+    padding:    1em 0 0 0;
+    font-size:  1.25em;
+
+    .clear {
+      font-size:  0.7em;
+      float:      right;
+      cursor:     pointer;
+    }
+  }
+  h4 {
+    padding:    0;
+    font-size:  1.1em;
+  }
+
+  .result {
+    border:           unquote("1px solid") $borderColor;
+    background-color: $lightestGrey;
+    min-height:       4em;
+    padding:          1em;
+
+    pre {
+      width:  $minPageWidth - $servicesWidth - ($baseFontSize * 3);
+    }
+    .sub-items {
+      padding:  0 0 0 9em;
+    }
+    .brace    { color: #0a0; }
+    .literal  { color: #f0f; }
+    .string   { color: #f00; }
+    .key      { color: #000; }
+    .keyword  { color: #f0f; }
+    .number   { color: #00f; }
+  }
+}

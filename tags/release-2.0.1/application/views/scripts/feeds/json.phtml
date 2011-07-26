@@ -1,0 +1,12 @@
+<?php
+/** @file
+ *
+ *  Present an explorer view for feeds/json
+ *
+ */
+
+$this->group     = 'json';
+$this->urlMethod = array('GET', 'POST');
+$this->urlParams = true;
+//$this->jsonRpc   = true;
+echo $this->render('smd.phtml');

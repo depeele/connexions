@@ -1,0 +1,102 @@
+<?php
+/** @file
+ *
+ *  View script for InboxController::index to render the main content.
+ *
+ *  Incoming members:
+ *      url             The full url for the main controller of this page;
+ *      owner           The owner of the current item set -- either a string or
+ *                      a Model_User instance;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      tags            A Model_Set_Tag instance containing information about
+ *                      any requested tags (i.e. tag restrictions);
+ *      allTags         'tags' + the 'for:%name%' tag for 'owner';
+ *
+ *      main            An array of settings for the main body:
+ *          namespace       The cookie/parameters/settings namespace for the
+ *                          main body;
+ *          viewer          The Model_User instance representing the current
+ *                          viewer (typically a reference to $view->viewer);
+ *          users           The Model_User or Model_Set_User instance
+ *                          representing the user(s) that partially define the
+ *                          scope of this view
+ *                          (typically a reference to $view->owner);
+ *          tags            A reference to 'allTags';
+ *
+ *          displayStyle    Indicates the current presentation style -- if this
+ *                          is an array, the style is 'custom';
+ *          perPage         The number of results on a single page;
+ *          page            The desired page of results;
+ *          sortBy          Indicates the sort field used to retrieve the
+ *                          current bookmark set;
+ *          sortOrder       Indicates the sort order used to retrieve the
+ *                          current bookmark set;
+ */
+Connexions::log('script/inbox/index.phtml');
+
+/* Initialize the HTML Bookmarks helper, needed here because the Scope Helper
+ * needs access to the bookmarks for count.
+ */
+$htmlBookmarks = $this->htmlBookmarks( $this->main );
+
+// Prepare the Html Item Scope helper
+$name = $this->owner->name;
+
+$scopePath = array($name    => $this->baseUrl('/'. $name),
+                   'inbox'  => $this->baseUrl('/inbox/'. $name));
+
+$htmlItemScope = $this->htmlItemScope( array(
+                    'namespace'         => $this->namespace,
+                    'items'             => $htmlBookmarks->paginator,
+                    'scope'             => $this->tags,
+                    'inputLabel'        => 'Tags',
+                    'inputName'         => 'Tags',
+                    'path'              => $scopePath,
+                    'jsonRpc'           =>  array(
+                        'method'    =>   'bookmark.autocompleteTag',
+                        'params'    =>   array(
+                            'tags'  => $this->allTags->__toString(),
+                        ),
+                    ),
+                 ));
+
+
+?>
+<div class='columnHeader'>
+ <div class='context-bg connexions_sprites inbox_bg
+             ui-corner-left ui-corner-tr'>&nbsp;</div>
+ <p><?php
+        printf ("%s's inbox", $this->owner);
+
+        if ( (! empty($this->owner->pictureUrl)) )
+        {
+            printf ("<img class='avatar' src='%s' title='%s' />",
+                    $this->owner->pictureUrl,
+                    $this->owner->fullName);
+        }
+
+        // /*
+        $nTags = count($this->tags);
+        if ( $nTags > 1 )
+        {
+            printf ("<span class='restrictions'>with tags '%s'.</span>",
+                    $this->tags);
+        }
+        else if ( $nTags > 0 )
+        {
+            printf ("<span class='restrictions'>with tag '%s'.</span>",
+                    $this->tags);
+        }
+        else
+        {
+            echo ".";
+        }
+        // */
+    ?>
+ </p>
+ <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>
+</div>
+
+<?= $htmlItemScope->render() ?>
+<?= $this->render('inbox/main.phtml') ?>

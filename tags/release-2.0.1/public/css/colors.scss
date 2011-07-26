@@ -1,0 +1,81 @@
+$lightest:            #fff;
+$darkest:             #172322;
+$themeDark:           #182524;  //#1b2726;
+$themeWaveLight:      #222d2c;
+$themeText:           #222;
+
+$pageColorBackground: $lightest;
+
+$linkColor:           #06c;
+$linkColorVisited:    #005a9c;
+$linkColorSubdued:    #369;  //#396C9B;
+$controlColor:        #999;
+$borderColor:         #ccc;
+$lightGrey:           #ddd;
+$lightestGrey:        #eee;
+
+// From css/themes/connexions/jquery-ui.css : .ui-state-error
+$errorColor:                  #cd0a0a;  // jquery-ui.css fcError
+$warningColor:                #363636;  // jquery-ui.css fcHighlight
+$successColor:                #667e32;
+$confirmColor:                $darkest; //#d1e3a9;
+
+$errorColorBackground:        #fef1ec;  // jquery-ui.css bgColorError
+$warningColorBackground:      #ffd;     // #fbec88
+                                        // jquery-ui.css bgColorHighlight
+$successColorBackground:      #fbec88;  // jquery-ui.css bgColorHighlight
+$updateColorBackground:       $lightestGrey;
+
+$navColorBackground:          $themeDark;
+$navColorWelcomeBackground:   #3d7cc2;  // $linkColorSubdued; #142940;
+$navColorJoinBackground:      #9fc54e;
+$navColor:                    $lightest;
+$navColorHover:               #b0d730;
+$navColorSelected:            #b0d730;
+$navColorSub:                 #2786c2;
+$navColorSubHover:            #7fcdfe;
+$navColorBorder:              #666;
+$navBg:                       $navColorBackground unquote("url(themes/connexions/images/ui-bg_gloss-wave_10_172322_500x100.png)/*{bgImgUrlHeader}*/ 50%/*{bgHeaderXPos}*/ 50%/*{bgHeaderYPos}*/ repeat-x/*{bgHeaderRepeat}*/");
+$navBorder:                   unquote("1px dotted") $navColorBorder;
+
+$groupHeaderColorBackground:  #edf4fb;        //#eef;
+$groupHeaderColor:            $controlColor;
+$groupHeaderYearColor:        $groupHeaderColorBackground - #111100;
+$groupHeaderAlphaColor:       $groupHeaderColorBackground - #333300;
+
+$privateColorBackground:  #fff0f0;
+$privateColorBorder:      #f99;
+
+$tagColorBackground:  #eee;
+$tagColorHighlight:   #999;
+$tagColor:            $navColorBackground;
+
+$highlightTopColorBackground: #f3f3ff;
+$highlightTopHeaderColor:     $navColorBackground;
+$highlightTopTagColor:        $navColorSub;
+$highlightTopTagCountColor:   $controlColor;
+
+$tagsHeaderColorBackground:       $highlightTopColorBackground;
+$tagsHeaderColorBorder:           $tagsHeaderColorBackground - #101000;
+
+//!fieldInfoColor             = !validationInputColor
+$fieldInfoColor:      $controlColor;
+$fieldTextColor:      #555;
+$formBackgroundColor: #86c9ef;
+
+$validationInputColor:        #aaa;
+$validationFocusColor:        $fieldTextColor;
+$validationFocusBorderColor:  $validationInputColor;
+$validationValidColor:        $successColor;
+
+$inputChangedColor:           #ccc856;
+
+$columnHeaderBorderColor: #eee;
+
+$contextColorBackground:  #3d7cc2;
+
+$li_oddColor:   $highlightTopColorBackground;
+$li_evenColor:  none;
+
+$collapsableColor:            $controlColor;
+$collapsableColorBackground:  #eee;

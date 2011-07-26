@@ -1,0 +1,60 @@
+<?php
+/** @file
+ *
+ *  View script for TagsController::index to render the main content.
+ *
+ *  Incoming members:
+ *      url             The full url for the main controller of this page;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      users           A Model_Set_User instance containing information about
+ *                      any request users (i.e. user restrictions);
+ *
+ *      main            An array of settings for the main body:
+ *          namespace       The cookie/parameters/settings namespace for
+ *                          the the main body;
+ *          viewer          The Model_User instance representing the current
+ *                          viewer (typically a reference to $view->viewer);
+ *          users           The Model_Set_User instance representing the
+ *                          user(s) that define the scope of this view
+ *                          (typically a reference to $view->users);
+ *          tags            The Model_Set_Tag instance representing the
+ *                          tag(s) to be presented;
+ *
+ *
+ *          displayStyle    Indicates the current presentation style --
+ *                          if this is an array, the style is 'custom';
+ *          perPage         The number of results on a single page;
+ *          page            The desired page of results;
+ *          sortBy          The desired sort field;
+ *          sortOrder       The desired sort order;
+ *          highlightCount  The number of tags to highlight;
+ *
+ *          showRelation    Show the relation indicator?;
+ *          itemType        The type of item being presented
+ *                          (View_Helper_HtmlItemCloud::ITEM_TYPE_*);
+ *
+ *          items           The Model_Set_Tag instance representing the
+ *                          tag(s) to be presented;
+ *          paginator       The item paginator;
+ *
+ *          itemBaseUrl     The baseUrl for item links;
+ *
+ *          weightName      The name to use for item weights;
+ *          weightTitle     The title of item weights;
+ *          titleTitle      The title of item names/titles;
+ *
+ *          currentSortBy   The current sortBy for 'items';
+ *          currentSortOrder
+ *                          The current sortOrder for 'items';
+ *
+ *  Prepare the HTML Item Cloud helper and present the current set of tags.
+ */
+//Connexions::log('view/scripts/tags/main.phtml');
+
+$htmlCloud = $this->htmlItemCloud( $this->main );
+
+// Render the main view.
+echo $htmlCloud->render();
+
+//Connexions::log('view/scripts/tags/main.phtml: Cloud rendered');

@@ -1,0 +1,75 @@
+diff -NBEbwur --strip-trailing-cr --exclude=.svn --exclude=CVS --exclude=.git ZendFramework-1.10.5/library/Zend/Controller/Response/Abstract.php Zend/Controller/Response/Abstract.php
+--- ZendFramework-1.10.5/library/Zend/Controller/Response/Abstract.php	2010-03-02 20:01:38.000000000 -0300
++++ Zend/Controller/Response/Abstract.php	2011-04-07 13:43:43.000000000 -0200
+@@ -317,8 +317,17 @@
+     {
+         $ok = headers_sent($file, $line);
+         if ($ok && $throw && $this->headersSentThrowsException) {
++            // :XXX: Connexions patch: {
++            //       Don't throw another exception if we're already IN an
++            //       exception
++            if (! $this->isException())
++            {
++            // :XXX: Connexions patch: }
+             require_once 'Zend/Controller/Response/Exception.php';
+             throw new Zend_Controller_Response_Exception('Cannot send headers; headers already sent in ' . $file . ', line ' . $line);
++            // :XXX: Connexions patch: {
++            }
++            // :XXX: Connexions patch: }
+         }
+ 
+         return !$ok;
+diff -NBEbwur --strip-trailing-cr --exclude=.svn --exclude=CVS --exclude=.git ZendFramework-1.10.5/library/Zend/Db/Adapter/Abstract.php Zend/Db/Adapter/Abstract.php
+--- ZendFramework-1.10.5/library/Zend/Db/Adapter/Abstract.php	2010-01-05 23:05:09.000000000 -0300
++++ Zend/Db/Adapter/Abstract.php	2011-04-07 13:42:36.000000000 -0200
+@@ -843,7 +843,19 @@
+             foreach ($value as &$val) {
+                 $val = $this->quote($val, $type);
+             }
+-            return implode(', ', $value);
++            // :XXX: Connexions patch: {
++            //
++            //       Enclose any imploded array in parenthesis.
++            //       This allows multi-key values that should be formatted as:
++            //          ((a,b,...), (c,d,...), (e,f,...), ...)
++            //
++            //       Note: This requires an SQL syntax of
++            //                  ' IN ?'   instead of
++            //                  ' IN (?)'
++            //
++            return '('. implode(', ', $value) .')';
++            //return implode(', ', $value);
++            // :XXX: Connexions patch: }
+         }
+ 
+         if ($type !== null && array_key_exists($type = strtoupper($type), $this->_numericDataTypes)) {
+diff -NBEbwur --strip-trailing-cr --exclude=.svn --exclude=CVS --exclude=.git ZendFramework-1.10.5/library/Zend/Json/Server/Response.php Zend/Json/Server/Response.php
+--- ZendFramework-1.10.5/library/Zend/Json/Server/Response.php	2010-01-05 23:05:09.000000000 -0300
++++ Zend/Json/Server/Response.php	2011-04-26 08:36:10.000000000 -0200
+@@ -178,8 +178,25 @@
+                 'id'     => $this->getId(),
+             );
+         } else {
++            $result   = $this->getResult();
++            // :XXX: Connexions patch: {
++            //       if the result can be simplified, do it
++            if (is_object($result))
++            {
++                if (method_exists($result, 'toArray'))
++                {
++                    // Don't perform deep conversion
++                    $result = $result->toArray( array('deep' => false) );
++                }
++                else if (method_exists($result, '__toString'))
++                {
++                    $result = $result->__toString();
++                }
++            }
++            // :XXX: Connexions patch: }
++
+             $response = array(
+-                'result' => $this->getResult(),
++                'result' => $result,
+                 'id'     => $this->getId(),
+                 'error'  => null,
+             );

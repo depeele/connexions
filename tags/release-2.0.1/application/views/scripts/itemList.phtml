@@ -1,0 +1,249 @@
+<?php
+/** @file
+ *
+ *  HTML rendering of the an "Item Cloud" as a list of items.
+ *
+ *  Incoming parameters:
+ *      itemList        The Connexions_Model_Set_Adapter_ItemList instance
+ *                      representing the items to present;
+ *      weightName      The name of the weight field
+ *                      (null == don't include weight);
+ *      weightTitle     The title describing the weight field;
+ *      titleName       The name of the title field;
+ *      titleTitle      The title describing the title field;
+ *      itemType        The type of item
+ *                      (View_Helper_HtmlItemCloud::ITEM_TYPE_USER |
+ *                                                  ITEM_TYPE_ITEM);
+ *      showControls    Whether or not management controls should be presented
+ *                      (i.e. the viewer is also the owner of the items being
+ *                            presented).
+ *                      This is used primarily when
+ *                          itemType === ITEM_TYPE_ITEM.
+ *
+ */
+$itemList      =& $this->itemList;
+
+$includeWeight =  ($this->weightName !== null);
+$titleTitle    =  ($this->titleTitle !== null
+                    ? $this->titleTitle
+                    : ($this->itemType ===
+                            View_Helper_HtmlItemCloud::ITEM_TYPE_USER
+                        ? 'User'
+                        : 'Item'
+                    )
+                  );
+$weightTitle   =  ($this->weightTitle !== null
+                    ? $this->weightTitle
+                    : 'Weight');
+
+$itemClass     = ($this->itemType ===
+                            View_Helper_HtmlItemCloud::ITEM_TYPE_USER
+                    ? 'user'
+                    : 'item');
+/*
+Connexions::log('view/scripts/itemList: '
+                . 'showControls[ %s ], '
+                . 'itemType[ %s ], '
+                . 'includeWeight[ %s ], '
+                . 'title Title[ %s ] / Weight[ %s ]',
+                Connexions::varExport($this->showControls),
+                ($itemType === View_Helper_HtmlItemCloud::ITEM_TYPE_USER
+                    ? 'user'
+                    : 'item'),
+                Connexions::varExport($includeWeight),
+                $titleTitle,
+                $weightTitle);
+// */
+?>
+<ul class='Item_List' data-type='<?= $this->itemType ?>'>
+ <li class='header'><span class='item'><?= $titleTitle ?></span><?php
+
+if ($includeWeight)
+{
+    ?><span class='itemCount'><?= $weightTitle ?></span><?php
+}
+
+?></li><?php
+
+//$this->showRelations = false;
+$showRelations =
+    ( ($this->showControls === true)                                    &&
+      ($this->itemType === View_Helper_HtmlItemCloud::ITEM_TYPE_USER)   &&
+      is_object($this->viewer)                                          &&
+      ($this->viewer->isAuthenticated()) );
+
+$idex = 0;
+foreach ($itemList as $item)
+{
+    $oddEven    = (++$idex % 2 ? 'even' : 'odd');
+    $url        = $item->getParam('url');
+    $weight     = number_format(round($item->getWeight()));
+    $title      = $item->getTitle();
+    $attributes = "data-id='{$item}'";
+
+    //echo "<li class='{$oddEven}' data-id='{$item->getId()}'>";
+    //echo "<li class='{$oddEven}' data-id='{$item->__toString()}'>";
+    ?><li class='<?= $oddEven ?> <?= $itemClass ?>' data-id='<?= $item ?>'><?php
+
+    $img = '';
+    if ($item instanceof Model_User)
+    {
+        // Include the user's avatar
+        $img = '<div class="img icon-highlight">';
+        if (! empty($user->pictureUrl))
+        {
+            $img .= "<img src='{$user->pictureUrl}' />";
+        }
+        else
+        {
+            $img .= "<div class='ui-icon ui-icon-person'>&mbsp;</div>";
+        }
+        $img .= '</div>';
+    }
+
+    $itemContent = $img . $title;
+
+    if (empty($url))
+    {
+        ?><span class='item' <?= $attributes ?>><?= $itemContent ?></span><?php
+
+    }
+    else
+    {
+        ?><a class='item' 
+              href='<?= htmlSpecialChars($url) ?>'
+              <?= $attributes ?>><?= $itemContent ?></a><?php
+    }
+
+    if ($this->showControls === true)
+    {
+        $show     = array(
+            'add'   => false,
+            'edit'  => false,
+            'del'   => false,
+        );
+
+        $ctlHtml  = '<div class="control">';
+        if ( $showRelations )
+        {
+            // Show user relations
+            $relation = $this->viewer->networkRelation( $item );
+
+            if (empty($relation) || in_array('none', $relation))
+            {
+                $relationStr = 'no relation';
+                $spriteCss   = 'relation-none';
+                $show['add'] = array(
+                    'title' => 'add to my network',
+                    'text'  => 'ADD',
+                );
+            }
+            else if (in_array('self', $relation))
+            {
+                $relationStr = 'you';
+                $spriteCss   = 'relation-self';
+            }
+            else if (in_array('mutual', $relation))
+            {
+                $relationStr = 'mutual followers';
+                $spriteCss   = 'relation-mutual';
+                $show['del'] = array(
+                    'title' => 'remove from my network',
+                    'text'  => 'REMOVE',
+                );
+            }
+            else if (in_array('amIn', $relation))
+            {
+                $relationStr = 'follower';
+                $spriteCss   = 'relation-amIn';
+                $show['add'] = array(
+                    'title' => 'add to my network',
+                    'text'  => 'ADD',
+                );
+            }
+            else
+            {
+                $relationStr = 'following';
+                $spriteCss   = 'relation-isIn';
+                $show['del'] = array(
+                    'title' => 'remove from my network',
+                    'text'  => 'REMOVE',
+                );
+            }
+
+            $ctlHtml  .=  "<div class='relation' title='{$relationStr}'>"
+                      .    "<!-- ". implode(' ', $relation) ." -->"
+                      .    "<div class='connexions_sprites {$spriteCss}'>"
+                      .    $relationStr
+                      .    "</div>"
+                      .   "</div>";
+        }
+        else
+        {
+            $show['edit'] = array(
+                'title' => 'rename',
+                'text'  => 'RENAME',
+            );
+            $show['del']  = array(
+                'title' => 'delete',
+                'text'  => 'DELETE',
+            );
+        }
+
+        if ($show['edit'] !== false)
+        {
+            $ctlHtml  .=  '<span class="item-edit" '
+                      .         'title="'. $show['edit']['title'] .'">'
+                      .      '<span class="title">'
+                      .          $show['edit']['text']
+                      .      '</span>'
+                      .      '<span class="icon connexions_sprites '
+                      .                                  'item-edit">'
+                      .      '</span>'
+                      .   '</span>';
+        }
+        if ($show['add'] !== false)
+        {
+            $ctlHtml  .=  '<span class="item-add" '
+                      .         'title="'. $show['add']['title'] .'">'
+                      .      '<span class="title">'
+                      .          $show['add']['text']
+                      .      '</span>'
+                      .      '<span class="icon connexions_sprites '
+                      .                                  'item-add">'
+                      .      '</span>'
+                      .   '</span>';
+        }
+        if ($show['del'] !== false)
+        {
+            $ctlHtml  .=  '<span class="item-delete" '
+                      .         'title="'. $show['del']['title'] .'">'
+                      .      '<span class="title">'
+                      .          $show['del']['text']
+                      .      '</span>'
+                      .      '<span class="icon connexions_sprites '
+                      .                                  'item-delete">'
+                      .      '</span>'
+                      .   '</span>';
+        }
+        $ctlHtml .= '</div>';
+
+
+        echo $ctlHtml;
+    }
+
+
+    if ($includeWeight)
+    {
+        $elTitle = ($this->weightTitle !== null
+                        ? " title='". htmlspecialchars($this->wieghtTitle) ."'"
+                        : '');
+
+        ?><span class='itemCount'<?= $elTitle ?>><?= $weight ?></span><?php
+    }
+
+    ?></li><?php
+}
+
+?>
+</ul>

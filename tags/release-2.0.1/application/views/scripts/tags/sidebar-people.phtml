@@ -1,0 +1,35 @@
+<?php
+/** @file
+ *
+ *  View script for TagsController::index to render the people portion of the
+ *  sidebar (i.e. the 'People' tab).
+ *
+ *  Incoming members:
+ *      url             The full url for the main controller of this page;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *      users           A Model_Set_User instance containing information about
+ *                      any requested users (i.e. user restrictions);
+ *      sidebar         Configuration for the sidebar presentation;
+ */
+$paneName = 'people';
+$config   =  (is_array($this->sidebar['panes']) &&
+              is_array($this->sidebar['panes'][$paneName])
+                ? $this->sidebar['panes'][$paneName]
+                : array());
+
+if ($this->sidebar['initialRender'] === true)
+{
+    ?>
+  <div class='columnHeader'>
+   <div class='context-bg connexions_sprites user_bg ui-corner-left'>
+    &nbsp;
+   </div>
+   <p>People who also used one or more of these tags.</p>
+  </div>
+    <?php
+}
+
+// Tag-related users
+$htmlItemCloud = $this->htmlItemCloud($config);
+echo $htmlItemCloud->render();

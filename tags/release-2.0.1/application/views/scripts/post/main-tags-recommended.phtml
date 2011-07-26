@@ -1,0 +1,33 @@
+<?php
+/** @file
+ *
+ *  Render the recommended tags for the suggestions area of a Bookmark Post
+ *  form.
+ *
+ *  Incoming data:
+ *      tabs                        An array of 'tabs' configuration;
+ *          tags                    Configuration for the 'tags' tab;
+ *              sections            An array of sections within this tab;
+ *                  recommended     Configuration for the 'tags/recommended'
+ *                                  section;
+ *                      config      Helper configuration;
+ */
+$tab     =& $this->tabs['tags'];
+$section =& $tab['sections']['recommended'];
+$config  =& $section['config'];
+
+/*
+Connexions::log("views/scripts/post/main-tags-recommended.phtml: "
+                .   "config[ %s ]",
+                Connexions::varExport($config));
+// */
+
+if ($config['items'] !== null)
+{
+    echo $this->htmlItemCloud($config)->render();
+}
+else
+{
+    echo '&nbsp;';
+    //echo '<p class="ui-state-highlight">Empty</p>';
+}

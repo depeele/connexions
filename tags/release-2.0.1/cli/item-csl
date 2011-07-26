@@ -1,0 +1,19 @@
+#!/usr/bin/env php
+<?php
+define('CLI_DIR', realpath(dirname(__FILE__)));
+
+require_once(CLI_DIR. '/bootstrap.php');
+$prog = array_shift($argv);
+
+$svc = Connexions_Service::factory('Service_Item');
+foreach ($argv as $items)
+{
+    $itemSet = $svc->csList2set($items);
+
+    printf ("items[ %s ]: %s\n",
+            $items,
+            ($itemSet instanceof Model_Set_Item
+                ? $itemSet->debugDump()
+                : "NOT FOUND") );
+}
+

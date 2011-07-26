@@ -1,0 +1,68 @@
+<?php
+/** @file
+ *
+ *  Render the Account ApiKey section.
+ *
+ *  Incoming members:
+ *      baseUrl         The base url for the main controller of this page
+ *                      without any differentiating parameters
+ *                      (e.g. tag restrictions);
+ *      url             The full url for the main controller of this page
+ *                      with differentiating parameters;
+ *      viewer          The Model_User instance representing the current
+ *                      viewer;
+ *
+ *      section         The settings section;
+ *      setting         The specific setting;
+ *      sections        An array of avaialble sections and commands of the
+ *                      form:
+ *                          {section: {
+ *                              'title':    section title,
+ *                              'script':   section render script
+ *                              'settings': [
+ *                                  {'title':   command title,
+ *                                   'script':  command render script},
+ *                                  ...
+ *                              ],
+ *                           },
+ *                           ...
+ *                          }
+ */
+
+$jQuery = $this->jQuery();
+$jQuery->addOnLoad('$.account_apikey_onLoad();')
+       ->javascriptCaptureStart();
+?>
+(function($) {
+
+    $.account_apikey_onLoad = function() {
+        $('#account-apiKey').apiKey();
+    };
+
+}(jQuery));
+<?php
+$jQuery->javascriptCaptureEnd();
+
+?>
+<div class='line'>
+ <form id='account-apiKey'>
+  <div class='legend unit'>Current API Key:</div>
+  <div class='data lastUnit'>
+   <h3 class='apiKey'><?= $this->viewer->apiKey ?></h3>
+   <div class='buttons'>
+    <button name='submit'>Regenerate</button>
+   </div>
+  </div>
+ </form>
+ <div class='warning'>
+  <p><span class='title'>Note:</span> Your API Key is used to protect you from
+  <?= Connexions::wikipedia_a('Cross-site scripting', 'cross-site scripting') ?>
+  attacks that would allow an unscrupulous site to retrieve your private
+  connexions information.</p>
+
+  <p>See <a href='<?=
+  $this->baseUrl('help/faq/tools_and_extras/what_is_my_apikey_and_why_do_i_need_it')
+  ?>'>What is my apiKey and why do I need it?</a> in the <a href='<?=
+  $this->baseUrl('help/faq') ?>'>FAQ</a> for more information.</p>
+ </div>
+</div>
