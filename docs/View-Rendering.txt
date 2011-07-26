@@ -1,0 +1,814 @@
+===============================================================================
+Connexions_Controller_Action        extends Zend_Controller_Action
+===============================================================================
+  The base Connexions controller, used as the super class of nearly all
+  Connexions controllers.  This provides primary rendering for all controllers
+  and actions, triggering most of the other view helpers documented here.
+
+    _request    The incoming request;
+    _viewer     The current viewer, possibly authenticated;
+
+    _rootUrl    The site's base URL (same as _baseUrl);
+    _baseUrl    The site's base URL (same as _rootUrl);
+    _url        The current request URL;
+
+    _streaming  Does the current request include 'streaming=true'.  If so,
+                Bootstrap will have disabled output buffering and layouts;
+
+    _format     The rendering format [ "html" ];
+    _partials   An array of partial rendering information used to select the
+                view script to render as well as controller methods to invoke
+                in prepration of that rendering.  Initialized by
+                _handleFormat(), if '_format' is "partial", this will be take
+                from the value of "part".  Otherwise, it will be [ "index" ];
+    _namespace  The form/cookie namespace [ '' ];
+
+
+    View Scripts
+    ---------------------------------------------------------------------------
+    application/views/scripts/%controller%/%partial-parts%.phtml
+    application/views/scripts/sidebar.phtml
+
+        Uses the 'sidebar' view variables, in particular the 'panes'
+        definition, to render the panes of the sidebar.  If sidebar['async'] is
+        false, this will directly invoke the partial responsible for each pane:
+            application/view/scripts/%controller%/sidebar-%id%.phtml
+
+        Invokes Javascript class(es):
+            connexions.sidebar.js
+                ui.tabs
+
+
+    Methods
+    ---------------------------------------------------------------------------
+    postDispatch()      - invoked after dispatch of the target action via the
+                          Zend dispatcher, this is used to centralize the
+                          invokation of _handleFormat();
+    _handleFormat()     - generate '_partials' and handle the processing of
+                          '_format' via _renderPartial()
+                          (invoked automatically via postDispatch());
+    _renderPartial()    - performs view preparation and rendering based upon
+                          '_partials'
+                          (invoked automatically via _handleFormat());
+    _renderSidebar()    - performs sidebar rendering for the top-level "index"
+                          page (invoked automatically);
+    _preparePartial()   - performs view preparation based upon '_partials'
+                          (invoked automatically via _renderPartial());
+
+    _prepare_main()     - provides common preparation for the rendering of the
+                          main view (invoked automatically);
+    _prepare_sidebar()  - provides common preparation for the rendering of the
+                          theh sidebar (invoked automatically);
+    _prepare_post()     - provides common validation of the request method for
+                          any "post" partial (invoked automatically);
+
+
+
+===============================================================================
+View_Helper_HtmlPaginationControl   extends Zend_View_Helper_Abstract
+===============================================================================
+  Present an HTML version of a pagination control.
+
+    namespace           State namespace for paging-related cookies
+                                                [ '' ];
+    perPageChoices      The per-page choices to present
+                                                [ array(10,  25,  50,
+                                                        100, 250, 500) ];
+
+
+    View Scripts
+    ---------------------------------------------------------------------------
+    application/views/scripts/paginator.phtml
+
+
+    Methods
+    ---------------------------------------------------------------------------
+    setPerPageChoices()     - set the per-page choices to the provided array of
+                              values;
+    render()                - use the provided Zend_Paginator, additional CSS
+                              classes, and boolean indicating whether or not
+                              paging information should be excluded
+                              (e.g.  current page, perPage count, total item
+                                     count) to pass to the view script for
+                              rendering an HTML representation of a pagination
+                              control;
+
+
+===============================================================================
+View_Helper_HtmlDisplayOptions      extends Zend_View_Helper_Abstract
+===============================================================================
+  Present user-selectable display options used to adjust the presentation of
+  a list.
+
+    namespace           State namespace for displayOption-related cookies;
+
+    fields              An array of namespaced form fields, indexed by CSS
+                        class with the requored HTML, used to present option
+                        controls;
+
+    groups              The available display groups -- named groupings of
+                        presentation components that allow quick selection of a
+                        pre-defined group;
+
+    definitions         An array of key/value pairs representing the available
+                        presentation components and the string used to identify
+                        each
+                        (i.e. the portions of items that can be shown/hidden);
+
+
+    View Scripts
+    ---------------------------------------------------------------------------
+    application/views/scripts/displayOptions.phtml
+        Uses helpers:
+            View_Helper_HtmlDisplayOptions
+                getBestGroupMatch()
+                renderOptionGroupsElement()
+
+    Methods
+    ---------------------------------------------------------------------------
+    getConfig()             - Retrieve primary configuration information;
+    getNamespace()          - Retrieve a non-null namespace;
+    getGroup()              - given an identification string, retrieve the
+                              matching group;
+    getGroupSelector()      - given an identification string, retrieve the
+                              CSS selector string representing the matching
+                              group;
+    getGroupsMap()          - retrieve a key/value array, keyed by group name
+                              with the CSS selector of each;
+    getGroupValue()         - retrieve the current value of an identified
+                              field;
+    getBestGroupMatch()     - retrieve the group that best matches the current
+                              set of values;
+    getGroupValues()        - retrieve the current values;
+
+    addFormField()          - add a new, namespaced form field;
+
+    render()                - render the HTML of the display options control
+                                (via the displayOptions.phtml partial)
+
+    renderOptionGroupsElement()
+                            - render a single element;
+
+
+
+===============================================================================
+View_Helper_List                    extends Zend_View_Helper_Abstract
+===============================================================================
+  Base class for presenting a generic sortable, pagable list of items.
+
+    namespace           State namespace, primarily for forms and cookies
+                                                [ '' ];
+    viewer              Model_User instance     [ null ];
+    listName            The name of the property identifying the list to
+                        present                 [ 'items' ];
+    page                Current page            [ 1 ];
+    perPage             Items per page          [ 50 ];
+    sortBy              Requested sort field    [ null ];
+    sortOrder           Requested sort order    [ 'ASC' ];
+    numericGrouping     Number of items per group for numeric grouping
+                                                [ 10 ];
+
+    paginator           Late-binding retrieval of a paginator that represents
+                        the list of items using 'page', 'perPage', 'sortBy',
+                        and 'sortOrder'         [ null ];
+
+    _listScript         View script to use for rendering the list
+                                                [ null ];
+    _itemScript         View script to use for rendering each item within the
+                        list (MUST be set BEFORE invoking render())
+                                                [ null ];
+
+    View Scripts
+    ---------------------------------------------------------------------------
+    * none *
+
+
+    Methods
+    ---------------------------------------------------------------------------
+    render()        - return a rendered representation of the list
+                        (via the partial identified by '_listScript';
+                         NOT used for all views, e.g. Feeds);
+    renderItem()    - return a rendered representation of a single item
+                        (via the partial identified by '_itemScript';
+                         NOT used for all views, e.g. Feeds);
+    groupValue()    - provides the ability to group
+                        (NOT used for all views, e.g. Feeds);
+
+
+
+===============================================================================
+View_Helper_Bookmarks               extends View_Helper_List
+===============================================================================
+  Base class for presenting a list of bookmarks.
+
+    listName                                    [ 'bookmarks' ];
+    sortBy                                      [ 'taggedOn' ];
+    sortOrder                                   [ 'DESC' ];
+
+    multipleUsers       Presenting bookmarks from multiple users?
+                                                [ true ];
+
+    users               If provided, a Model_Set_User instance representing the
+                        set of users (to be) used to restrict the set of
+                        bookmarks               [ null ];
+    tags                If provided, a Model_Set_Tag instance representing the
+                        set of tags (to be) used to restrict the set of
+                        bookmarks               [ null ];
+    where               Additional 'where' conditions (to be) used to restrict
+                        the set of bookmarks    [ null ];
+    bookmarks           The Model_Set_Bookmark instance representing the set of
+                        bookmarks to be presented.  If 'null', the bookmark set
+                        will be retrieved on first access (via getBookmarks());
+                            
+
+    View Scripts
+    ---------------------------------------------------------------------------
+    * none *
+
+
+    Methods
+    ---------------------------------------------------------------------------
+    bookmarks()         - configure or render;
+    setMultipleUsers()  - set 'multipleUsers' to true;
+    setSingleUser()     - set 'multipleUsers' to false;
+    setUsers()          - establish the set of users associated with this set
+                          of bookmarks.  If the incoming value is a
+                          Model_Set_User with more than 1 items, set
+                          'multipleUsers' to true, otherwise false;
+    getBookmarks()      - a late-binding retrieval of the set of bookmarks to
+                          be presented using 'sortBy', 'sortOrder', 'perPage',
+                          'page', 'where', 'users', 'tags';
+
+
+
+===============================================================================
+View_Helper_HtmlBookmarks           extends View_Helper_Bookmarks
+===============================================================================
+  Concrete class for the presentation of a list of bookmarks as HTML.
+
+    namespace                                   [ 'bookmarks' ];
+    _listScript                                 [ 'list.phtml' ];
+    _itemScript                                 [ 'bookmark.phtml' ];
+
+
+    cookieUrl           The URL to use when setting cookies
+                                                [ null ];
+    displayStyle        The current display style
+                                                [ 'regular' ];
+    includeScript       Directly include supporting Javascript?
+                                                [ true ];
+    panePartial         The name of the view partial script to use
+                                                [ 'main' ];
+    ulCss               The CSS class to use for the main list <ul>
+                                                [ 'bookmarks' ];
+    html                An array of additional HTML to be appended to the
+                        container of the list
+                                                [ null ];
+
+
+    _displayOptions     A View_Helper_HtmlDisplayOptions instance used to
+                        present, and allow control of, the valid display
+                        options                 [ null ];
+
+    View Scripts
+    ---------------------------------------------------------------------------
+    application/views/scripts/list.phtml
+        Uses helpers:
+            View_Helper_HtmlPaginationControl
+                setNamespace()
+                setPerPageChoices()
+                render()
+
+            View_Helper_HtmlBookmarks
+                renderDisplayOptions()
+                groupValue()
+                renderGroupHeader()
+                renderItem()
+
+        Invokes Javascript class(es):
+            connexions.itemsPane.js     subclass of connexions.pane.js
+                connexions.paginator.js
+                connexions.dropdownForm.js          (for Display Options)
+                    connexions.optionGroups.js
+                
+
+    application/views/scripts/bookmark.phtml
+        Uses helpers:
+            View_Helper_HtmlStarRating
+
+    application/views/scripts/user.phtml
+
+    application/views/scripts/list_group.phtml
+      Present a grouping header based upon configuration using one of the
+      following:
+        application/views/scripts/list_groupDate.phtml
+        application/views/scripts/list_groupAlpha.phtml
+        application/views/scripts/list_groupNumeric.phtml
+
+
+    Methods
+    ---------------------------------------------------------------------------
+    getDisplayOptions()     - Retrieve a configured HtmlDisplayOptions helper;
+    getDisplayOptionsConfig()
+                            - Retrieve configuration information for the
+                              HtmlDisplayOptions;
+    getItemListConfig()     - Retrieve any special configuration information
+                              that should be passed to the Javascript
+                              connexions.itemList widget;
+    getShowMeta()           - Retrieve meta information about what the display
+                               options say should be presented
+                               (_displayOptions->getGroupValues());
+
+    renderGroupHeader()     - Render a grouping header;
+    renderDisplayOptions()  - Render the current display options
+                                (_displayOptions->render());
+
+
+
+===============================================================================
+View_Helper_FeedBookmark            extends Zend_View_Helper_Abstract
+===============================================================================
+  Concrete class for the rendering of s single RSS or Atom Feed item from a
+  single Model_Bookmark instance.
+
+
+    View Scripts
+    ---------------------------------------------------------------------------
+    * none *
+
+
+    Methods
+    ---------------------------------------------------------------------------
+    feedBookmark()          - Set the desired bookmark and render;
+
+
+
+===============================================================================
+View_Helper_FeedBookmarks           extends View_Helper_Bookmarks
+===============================================================================
+  Concrete class for the presentation of a list of bookmarks as an RSS or Atom
+  Feed.  Relies on View_Helper_FeedBookmark for the rendering of individual
+  feed items.  Renders the list of items via 'paginator'.
+
+    feedType            The type of feed to be presented ( 'Rss | 'Atom' )
+                                                [ 'Atom' ];
+                                    
+    View Scripts
+    ---------------------------------------------------------------------------
+    * none *
+
+
+    Methods
+    ---------------------------------------------------------------------------
+    setFeedType()           - Set the desired feed type;
+    getFeedType()           - Get the current feed type;
+
+
+
+===============================================================================
+View_Helper_Users                   extends View_Helper_List
+===============================================================================
+  Base class for presenting a list of users.
+
+    listName                                    [ 'users' ];
+    sortBy                                      [ 'name' ];
+    sortOrder                                   [ 'ASC' ];
+
+    tags                If provided, a Model_Set_Tag instance representing the
+                        set of tags (to be) used to restrict the set of
+                        users                   [ null ];
+    where               Additional 'where' conditions (to be) used to restrict
+                        the set of users        [ null ];
+    users               If provided, a Model_Set_User instance representing the
+                        set of users to be presented.  If 'null', the user set
+                        will be retrieved on first access (via getUsers());
+                            
+
+    View Scripts
+    ---------------------------------------------------------------------------
+    * none *
+
+
+    Methods
+    ---------------------------------------------------------------------------
+    users()             - configure or render;
+    getUsers()          - a late-binding retrieval of the set of users to
+                          be presented using 'sortBy', 'sortOrder', 'perPage',
+                          'page', 'where', 'tags';
+
+
+
+===============================================================================
+View_Helper_HtmlUsers               extends View_Helper_Users
+===============================================================================
+  Concrete class for the presentation of a list of users as HTML.
+
+    namespace                                   [ 'users' ];
+    _listScript                                 [ 'list.phtml' ];
+    _itemScript                                 [ 'user.phtml' ];
+
+
+    cookieUrl           The URL to use when setting cookies
+                                                [ null ];
+    displayStyle        The current display style
+                                                [ 'regular' ];
+    includeScript       Directly include supporting Javascript?
+                                                [ true ];
+    panePartial         The name of the view partial script to use
+                                                [ 'main' ];
+    ulCss               The CSS class to use for the main list <ul>
+                                                [ 'users' ];
+    ignoreDeleted       Should the Javascript pane ignore 'deleted' events for
+                        items (i.e. NOT remove them from the presented list)?
+                                                [ false ];
+    html                An array of additional HTML to be appended to the
+                        container of the list
+                                                [ null ];
+
+
+    _displayOptions     A View_Helper_HtmlDisplayOptions instance used to
+                        present, and allow control of, the valid display
+                        options                 [ null ];
+
+    View Scripts
+    ---------------------------------------------------------------------------
+    application/views/scripts/list.phtml
+        Uses helpers:
+            View_Helper_HtmlPaginationControl
+                setNamespace()
+                setPerPageChoices()
+                render()
+
+            View_Helper_HtmlUsers
+                renderDisplayOptions()
+                groupValue()
+                renderGroupHeader()
+                renderItem()
+
+    application/views/scripts/user.phtml
+
+    application/views/scripts/list_group.phtml
+      Present a grouping header based upon configuration using one of the
+      following:
+        application/views/scripts/list_groupDate.phtml
+        application/views/scripts/list_groupAlpha.phtml
+        application/views/scripts/list_groupNumeric.phtml
+
+
+    Methods
+    ---------------------------------------------------------------------------
+    getDisplayOptions()     - Retrieve a configured HtmlDisplayOptions helper;
+    getDisplayOptionsConfig()
+                            - Retrieve configuration information for the
+                              HtmlDisplayOptions;
+    getItemListConfig()     - Retrieve any special configuration information
+                              that should be passed to the Javascript
+                              connexions.itemList widget;
+    getShowMeta()           - Retrieve meta information about what the display
+                               options say should be presented
+                               (_displayOptions->getGroupValues());
+
+    renderGroupHeader()     - Render a grouping header;
+    renderDisplayOptions()  - Render the current display options
+                                (_displayOptions->render());
+
+
+
+===============================================================================
+View_Helper_HtmlGroupUsers          extends View_Helper_HtmlUsers
+===============================================================================
+  Adapter for View_Helper_HtmlUsers to present the items of a 'user'
+  Model_Group.
+
+    group               The Model_Group instance representing the "user" group
+                        being presented.  Most often used to present the
+                        "System:Network" "user" group of the currently
+                        authenticated user.     [ null ];
+
+
+    View Scripts
+    ---------------------------------------------------------------------------
+    * Those used by super-classes *
+
+
+    Methods
+    ---------------------------------------------------------------------------
+    getUsers()          - override View_Helper_Users to provide a late-binding
+                          retrieval of the set of users from to
+                          be presented using 'sortBy', 'sortOrder', 'perPage',
+                          'page', 'where', 'tags';
+    getUsers()              - Set the desired feed type;
+    getFeedType()           - Get the current feed type;
+
+
+
+
+===============================================================================
+View_Helper_FeedUser                extends Zend_View_Helper_Abstract
+===============================================================================
+  Concrete class for the rendering of s single RSS or Atom Feed item from a
+  single Model_User instance.
+
+
+    View Scripts
+    ---------------------------------------------------------------------------
+    * none *
+
+
+    Methods
+    ---------------------------------------------------------------------------
+    feedUser()              - Set the desired user and render;
+
+
+
+===============================================================================
+View_Helper_FeedUsers               extends View_Helper_Users
+===============================================================================
+  Concrete class for the presentation of a list of users as an RSS or Atom
+  Feed.  Relies on View_Helper_FeedUser for the rendering of individual
+  feed items.  Renders the list of items via 'paginator'.
+
+    feedType            The type of feed to be presented ( 'Rss | 'Atom' )
+                                                [ 'Atom' ];
+                                    
+    View Scripts
+    ---------------------------------------------------------------------------
+    * none *
+
+
+    Methods
+    ---------------------------------------------------------------------------
+    setFeedType()           - Set the desired feed type;
+    getFeedType()           - Get the current feed type;
+
+
+
+===============================================================================
+View_Helper_HtmlItemCloud           extends Zend_View_Helper_Abstract
+===============================================================================
+  Helper for presenting a generic, "cloud" of items in either a word cloud or
+  simple list form.
+
+    namespace           State namespace, primarily for forms and cookies
+                                                [ 'tags' ];
+    cookieUrl           The URL to use when setting cookies
+                                                [ null ];
+
+    page                Current page            [ 1 ];
+    perPage             Items per page          [ 100 ];
+
+    sortBy              Requested sort field    [ 'title' ];
+    sortOrder           Requested sort order    [ 'ASC' ];
+
+    currentSortBy       The current sort field of 'items'
+                                                [ null ];
+    currentSortOrder    The current sort order of 'items'
+                                                [ null ];
+
+    panePartial         The name of the view partial script to use
+                                                [ 'main' ];
+    showRelation        Include a "relation" indicator (graphical arrow used to
+                        indicate that a sidebar is related to the main view)
+                                                [ true ];
+    showOptions         Should display options be included
+                        (via View_Helper_HtmlDisplayOptions)?
+                                                [ true ];
+    showControls        Should item management controls be presented
+                        (i.e. is the current, authenticated viewer the owner of
+                              all items)?       [ false ];
+    itemType            The type of item being presented ( 'user' | 'item' )
+                                                [ 'item' ];
+    displayStyle        The current display style ( 'list' | 'cloud' )
+                                                [ 'cloud' ];
+    highlightCount      The number of items to highlight in a top-level
+                        "quick view"            [ 5 ];
+
+
+    items               If provided, a Connexions_Model_Set
+                        (Model_Set_User, Model_Set_Tag, Model_Set_Item)
+                        instance representing the set of items being presented;
+                                                [ null ];
+    paginator           Late-binding retrieval of a paginator that represents
+                        the list of items using 'page', 'perPage', 'sortBy',
+                        and 'sortOrder'         [ null ];
+
+
+    selected            If provided, a Connexions_Model_Set instnace
+                        representing those items those items that are currently
+                        "selected" -- SHOULD be a sub-set of 'items'
+                        Passed to the itemCloud view script to use when
+                        generating an ItemList adapter for the set of items
+                        being presented         [ null ];
+    itemBaseUrl         The base URL to use when generated completed items.
+                        Passed to the itemCloud view script to use when
+                        generating an ItemList adapter for the set of items
+                        being presented         [ null ];
+    weightName          The name of the field/member that represents the weight
+                        of an item.  Passed to the itemCloud view script to use
+                        when generating an ItemList adapter for the set of
+                        items being presented   [ null ];
+
+    weightTitle         The title describing "weight" of an item.  Passed to
+                        the itemList view script to use when presenting the
+                        list                    [ null ];
+    titleTitle          The title describing "title/name" of an item.  Passed
+                        to the itemList view script to use when presenting the
+                        list                    [ null ];
+
+
+    _hiddenItems        An array of strings containing entries from 'items'
+                        that should NOT be presented
+                                                [ array() ];
+    _displayOptions     A View_Helper_HtmlDisplayOptions instance used to
+                        present, and allow control of, the valid display
+                        options                 [ null ];
+
+
+    View Scripts
+    ---------------------------------------------------------------------------
+    application/views/script/itemCloud.phtml
+        Uses helpers:
+            View_Helper_HtmlItemCloud
+                hasHiddenItems()
+                isHiddenItem()
+                sortItemList()
+
+            View_Helper_HtmlPaginationControl
+                setNamespace()
+                setPerPageChoices()
+                render()
+
+        Uses additional adapters:
+            Connexions_Model_Set_Adapter_ItemList
+
+
+        For display type 'cloud':
+            application/views/script/highlights.phtml
+
+            Zend_Tag_Cloud
+                => View_Helper_HtmlItemCloudItem
+
+        For display type 'list':
+            application/views/script/itemList.phtml
+
+        Invokes Javascript class(es):
+            connexions.cloudPane.js     subclass of connexions.pane.js
+                connexions.paginator.js
+                connexions.dropdownForm.js          (for Display Options)
+                    connexions.optionGroups.js
+                
+
+
+    Methods
+    ---------------------------------------------------------------------------
+    addHiddenItem()         - add a single string to the array of hidden items;
+    hasHiddenItems()        - are there items that should be hidden?
+    isHiddenItem()          - is the provided item to be hidden?
+
+    sortItemList()          - Ensure that the sort order of the provided
+                              itemList is in accordance with the 'sortBy' and
+                              'sortOrder' settings;
+                                This is needed since a cloud typically includes
+                                only the "heaviest" items that may then need to
+                                be sorted for presentation.
+
+    renderDisplayOptions()  - Render the current display options
+                                (_displayOptions->render());
+    render()                - return a rendered representation of the list;
+
+
+
+===============================================================================
+View_Helper_HtmlItemCloudItem       extends Zend_Tag_Cloud_Decorator_HtmlTag
+===============================================================================
+  Helper for rendering the items of an HTML word cloud.
+
+    showControls        Should item management controls be presented
+                        (i.e. is the current, authenticated viewer the owner of
+                              all items)?       [ false ];
+    itemType            The type of item being presented ( 'user' | 'item' )
+                                                [ 'item' ];
+    viewer              Model_User instance representing the current viewing
+                        user                    [ null ];
+
+    View Scripts
+    ---------------------------------------------------------------------------
+    application/views/script/itemCloud_items.phtml
+        Uses helpers:
+            View_Helper_HtmlItemCloudItem
+                getShowControls()
+                getItemType()
+                getClassList()
+                getFontSizeUnit()
+                getEncoding()
+                getHtmlTags()
+
+    Methods
+    ---------------------------------------------------------------------------
+    getShowControls()       - retrieve the "showControls" value;
+    getItemType()           - retrieve the current item type;
+    getViewer()             - retrieve the current viewer;
+    render()                - return a rendered representation of all items;
+
+
+
+===============================================================================
+View_Helper_HtmlItemScope           extends Zend_View_Helper_Abstract
+===============================================================================
+    namespace           State namespace for paging-related cookies
+                                                [ '' ];
+    hideInput           Should the scope input control be hidden?
+                                                [ false ];
+    inputLabel          The text to present when the scope input control is
+                        empty                   [ 'Items' ];
+    inputName           The form-name for the input control
+                                                [ 'items' ];
+    path                An associative array of name/url pairs representing the
+                        "path" to the current scope.  Similar to a bread crumb
+                                                [ null ];
+    jsonRpc             JSON-RPC call data to use for auto-completion within
+                        the input control       [ null ];
+    items               The set of items to be presented.  This MUST implement
+                        either getTotalItemCount() or getTotalCount() method
+                                                [ null ];
+    scope               A Connexions_Model_Set of items that define the current
+                        scope.  MUST implement the getSource() method
+                                                [ null ];
+
+    _hiddenItems        An array of simple strings containing any items
+
+
+    View Scripts
+    ---------------------------------------------------------------------------
+    application/views/script/itemScope.phtml
+        Uses helpers:
+            View_Helper_HtmlItemScope
+                isHiddenItem()
+
+        Invokes/Uses Javascript class(es):
+            connexions.itemScope.js
+                connexions.paginator.js
+                connexions.dropdownForm.js          (for Display Options)
+                    connexions.optionGroups.js
+
+    Methods
+    ---------------------------------------------------------------------------
+    addHiddenItem()         - Add the name/string of a scope item that should
+                              be hidden;
+    isHiddenItem()          - Does the given name/string match a hidden item?
+    render()                - return a rendered representation of the item
+                              scope (via the itemScope.phtml view script);
+
+
+===============================================================================
+View_Helper_HtmlStarRating          extends Zend_View_Helper_Abstract
+===============================================================================
+  Present an HTML version of a star rating control.
+
+    ratingTitles        An array of titles related to the indexed value
+                                                [ array('Terrible', 'Fair',
+                                                        'Average',  'Good',
+                                                        'Excellent') ];
+
+
+    View Scripts
+    ---------------------------------------------------------------------------
+    * none *
+
+
+    Methods
+    ---------------------------------------------------------------------------
+    htmlStarRating()        - render using the provided parameters
+                              (rating, css, titles, readOnly, count,
+                               starWidth);
+
+
+
+===============================================================================
+Additional View Scripts
+===============================================================================
+sidebar-user.phtml
+    Used by IndexController when rendering the sidebar-people partial IF
+    presenting the bookmarks of a single owner.
+        Invokes Javascript class(es):
+            connexions.user.js
+                
+
+
+
+:TODO: Cleanup
+===============
+Move HTML from View_Helper_HtmlStarRating to a view script.
+
+Rename 'displayStyles' to 'displayOptions' in:   ??
+    View_Helper_HtmlBookmarks
+    View_Helper_HtmlUsers
+
+Expand Cloud Item types (View_Helper_HtmlItemCloud):
+    'user', 'tag', 'item'
+
+Rename classes:
+    View_Helper_HtmlItemCloudItem   to View_Helper_HtmlItemCloudItems
+
+    Requires a change to application/scripts/itemCloud.phtml as well
+

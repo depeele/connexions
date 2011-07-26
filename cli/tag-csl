@@ -1,0 +1,19 @@
+#!/usr/bin/env php
+<?php
+define('CLI_DIR', realpath(dirname(__FILE__)));
+
+require_once(CLI_DIR. '/bootstrap.php');
+$prog = array_shift($argv);
+
+$svc = Connexions_Service::factory('Service_Tag');
+foreach ($argv as $tags)
+{
+    $tagSet = $svc->csList2set($tags);
+
+    printf ("tags[ %s ]: %s\n",
+            $tags,
+            ($tagSet instanceof Model_Set_Tag
+                ? $tagSet->debugDump()
+                : "NOT FOUND") );
+}
+

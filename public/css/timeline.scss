@@ -1,0 +1,92 @@
+@import "colors";
+@import "mixins";
+
+.ui-timeline {
+  position:       relative;
+  border:         unquote("1px solid") $borderColor;
+  padding:        2em 8em 0 0;
+  margin:         0 0 0 0.25em;
+
+  .timeline-plot {
+    padding:        0;
+    margin-bottom:  0.5em;
+    canvas {
+      z-index:      1;
+    }
+
+    .timeline-tooltip {
+      z-index:          2;
+      background-color: $pageColorBackground;
+      @include opacity(75);
+    }
+  }
+
+  .timeline-controls {
+    position: absolute;
+    top:      1em;
+    right:    2px;
+    z-index:  2;
+  }
+
+  .timeline-legend {
+    padding:      0;
+    margin:       0;
+
+    .legendColorBox, .legendLabel {
+      vertical-align: top;
+    }
+    .legendLabel {
+      padding:  0.2em 0 0.2em 0.5em;
+      width:    100%;
+    }
+
+    .timeline-stat {
+      color:      $controlColor;
+    }
+  }
+
+  .timeline-legend, .timeline-controls, .timeline-annotation,
+  .timeline-tooltip, .tickLabels {
+    font-size:  0.8em;
+  }
+
+  .timeline-annotation {
+    color:      $controlColor;
+    text-align: center;
+  }
+
+  .tickLabels {
+    position: absolute;
+    top:      0;
+    left:     0;
+    width:    100%;
+    height:   100%;
+    z-index:  0;
+
+    .xAxis, .yAxis {
+      position: absolute;
+      width:    100%;
+      height:   100%;
+    }
+  }
+}
+
+.rightCol {
+  .ui-timeline {
+    // Reduce the font sizes, and restrict the plot height
+    padding:        2em 0 0 0;
+
+    .timeline-legend, .timeline-controls, .timeline-annotation,
+    .timeline-tooltip, .tickLabels {
+      font-size:  0.7em;
+    }
+
+    .timeline-controls {
+      top:        0.75em;
+    }
+
+    .timeline-legend {
+      padding:    0 0 0.5em 4em;
+    }
+  }
+}

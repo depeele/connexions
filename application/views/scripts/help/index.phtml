@@ -1,0 +1,120 @@
+<?php
+
+//Connexions::log("Help: topic[ %s ]", $this->topic);
+
+$this->headTitle('Help');
+$this->headLink()->appendStylesheet($this->baseUrl('/css/help.min.css'));
+
+$widgetId = 'help';
+$helpUrl  = $this->baseUrl('/help');
+?>
+<div class='columnHeader'>
+ <div class='context-bg connexions_sprites help_bg
+             ui-corner-left ui-corner-tr'>&nbsp;</div>
+ <p>Help</p>
+ <div class='error'><?= (@isset($this->error) ? $this->error : '') ?></div>
+</div>
+<div id='<?= $widgetId ?>' class='help' style='display:none;'>
+ <ul>
+  <?php
+    $paneHtml    = '';
+    $tabSelected = 0;
+    $tabNum      = 0;
+
+    foreach ($this->tabs as $tabId => $tab)
+    {
+        if ($tabId === $this->topic)
+        {
+            $tabSelected = $tabNum;
+        }
+
+        $paneUrl = $this->baseUrl('/help/'. $tabId);
+        $loadUrl = $this->view->url
+                 .  '?format=partial'
+                 .  '&part='. $tab['script'];
+        $paneCss = (! empty($tab['cssClass'])
+                        ? $tab['cssClass']
+                        : $tabId);
+        ?>
+  <li><a href='<?= $paneUrl ?>'
+         data-panel.tabs='#help-<?= $tabId ?>'
+         data-load.tabs='#<?= $loadUrl ?>'><span><?= $tab['title'] ?></span></a></li><?php
+
+        $paneHtml .= "<div id='help-{$tabId}' class='{$paneCss}'>";
+
+        $script    = 'help/'. $tab['script'] .'.phtml';
+        $paneHtml .=  "<div id='{$tabId}-content'>"
+                  .    $this->render( $script )
+                  .   "</div>";
+
+        $paneHtml .= "</div>";
+
+        $tabNum++;
+    }
+  ?>
+ </ul>
+ <?= $paneHtml ?>
+</div>
+<?php
+
+/*********************************************************************
+ * Now that we've had a chance to see which tab should be selected,
+ * generate the Javascript to create a ui.tabs instance.
+ */
+$jQuery = $this->jQuery();
+$jQuery->addJavascriptFile($this->baseUrl('js/connexions-full.js'))
+       ->addOnLoad("help_onLoad();")
+       ->javascriptCaptureStart();
+?>
+/************************************************
+ * Initialize the help tabs
+ *
+ */
+function help_onLoad()
+{
+    var $el         = $('#<?= $widgetId ?>');
+
+    // Add 'loading' indicators for tabs and collapsables
+    $el.tabs({
+        cache:      true,
+        cookie:     'help',
+        selected:   <?= $tabSelected ?>,
+        ajaxOptions: {
+            beforeSend: function() {
+                $(this).mask();
+            },
+            complete:   function() {
+                $(this).unmask();
+            }
+        }
+    });
+
+    $el.find('.collapsable').collapsable({
+        cache:  true,
+        cookie: 'help',
+        ajaxOptions: {
+            beforeSend: function() {
+                $(this).mask();
+            },
+            complete:   function() {
+                $(this).unmask();
+            }
+        }
+    });
+
+    $el.show();
+
+    /* Catch any click on a help link and directly switch the the target tab
+    $('body').delegate('a[href^=<?= $helpUrl ?>]', 'click', function(e) {
+        var $a  = $(this);
+        var url = $a.attr('href');
+        $.log('help:a.click url[ '+ url +' ]');
+
+        e.preventDefault();
+        return false;
+    });
+    // */
+}
+
+<?php
+    $jQuery->javascriptCaptureEnd();

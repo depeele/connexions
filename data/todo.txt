@@ -1,0 +1,21 @@
+Optimizations:
+    - Allow queries without stats;
+    - For queries that may be counted and also involve sub-selects, expand the
+      sub-selects immediately and use the results directly in a new, optimized
+      query;
+    - Leverage the "dirty" status available for all fields in a
+      Connexions_Model, particularly during update();
+
+-----------------------------------------------------------------------------
+meta ==> stats
+
+displayStyle == list of on/off with predefined sets (e.g. regular, full).
+
+always render all parts, just hide some?
+
+easy mapping between displayStyle choices and CSS selectors.
+
+show displayStyle changes immediately instead of re-rendering
+(since displayStyle doesn't effect sort order, this should be trivial if we
+ always render all parts of a bookmark);
+

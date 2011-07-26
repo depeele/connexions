@@ -1,0 +1,61 @@
+#!/usr/bin/env php
+<?php
+define('CLI_DIR', realpath(dirname(__FILE__)));
+
+require_once(CLI_DIR. '/bootstrap.php');
+$prog = array_shift($argv);
+
+$svc = Connexions_Service::factory('Service_User');
+
+// Parameters
+$params = array();
+$validParams = array(
+    'users'     => 'comma-separated-list of users',
+    'grouping'  => 'grouping indicator',
+    'order'     => 'SQL ordering',
+    'count'     => 'numeric limit/count',
+    'offset'    => 'numeric limit/offset',
+    'from'      => 'YYY-MM-DD HH:mm:ss from',
+    'until'     => 'YYY-MM-DD HH:mm:ss until',
+);
+
+$help = false;
+foreach ($argv as $arg)
+{
+    if (preg_match('/[-]+([^=]+)(?:=(.*))$/', $arg, $matches))
+    {
+        $key = trim($matches[1]);
+        $val = trim($matches[2], " \t\n\r\0\x0B'\"");
+
+        if (isset($validParams[ $key ]))
+        {
+            $params[ $key ] = $val;
+        }
+        else
+        {
+            $help = true;
+        }
+    }
+    else
+    {
+        $help = true;
+    }
+
+    if ($help === true)
+    {
+        printf ("*** Usage: %s\n", basename($prog));
+        foreach ($validParams as $param => $args)
+        {
+            printf ("              [--%-13s] - %s\n", $param.'=args', $args);
+        }
+        return;
+    }
+}
+
+$timeline = $svc->getTimeline( $params );
+
+printf (  "Timeline:\n"
+        . "%s\n",
+        ($timeline
+            ? preg_replace('/\],\[/', "],\n[", Zend_Json::encode($timeline))
+            : "") );

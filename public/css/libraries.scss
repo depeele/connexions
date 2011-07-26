@@ -1,0 +1,154 @@
+/****** libraries.scss ****** */
+/* Copyright (c) 2008, Yahoo! Inc. All rights reserved.
+ * Code licensed under the BSD License:
+ * http://developer.yahoo.net/yui/license.txt
+ * version: 3.0.0pr2 */
+// reset
+html {
+  color:      black;
+  background: white;
+}
+
+// Full Reset including HTML5 (html5doctor.com
+html,body,div,span,object,iframe,
+h1,h2,h3,h4,h5,h6,p,blockquote,pre,
+abbr,address,cite,code,
+del,dfn,em,img,ins,kbd,q,samp,
+small,strong,sub,sup,var,
+a,b,i,
+dl,dt,dd,ol,ul,li,
+form,fieldset,label,legend,input,textarea,
+table,caption,tbody,tfoot,thead,tr,th,td,
+article,aside,figure,footer,header,hgroup,menu,nav,section,
+time,mark,audio,video {
+  position:       relative;
+  margin:         0;
+  padding:        0;
+  border:         0;
+  outline:        0;
+  font-size:      100%;
+  vertical-align: baseline;
+  background:     transparent;
+
+  // Make the box models nearly match across browsers
+  box-sizing:         border-box;
+  -moz-box-sizing:    border-box;
+  -webkit-box-sizing: border-box;
+  -ms-box-sizing:     border-box;
+}
+
+article,aside,figure,footer,header,hgroup,nav,section {
+  display:  block;
+}
+
+body {
+  line-height:  1;
+}
+
+ol, ul, li {
+  list-style: none;
+}
+
+blockquote, q {
+  quotes:     none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+  content:    '';
+  content:    none;
+}
+
+// Remember to define focus styles
+:focus {
+  outline:    0;
+}
+
+table {
+  border-collapse:  collapse;
+  border-spacing:   0;
+}
+
+fieldset,img {
+  border: 0;
+}
+
+address,caption,cite,code,dfn,em,strong,th,var {
+  font-style:   normal;
+  font-weight:  normal;
+}
+
+caption,th {
+  text-align:   left;
+}
+
+h1,h2,h3,h4,h5,h6 {
+  font-size:    100%;
+  font-weight:  normal;
+}
+
+abbr,acronym {
+  border: 0;
+  font-variant: normal;
+}
+
+sup {
+  vertical-align: text-top;
+}
+
+sub {
+  vertical-align: text-bottom;
+}
+
+input,textarea,select {
+  font-family:  inherit;
+  font-size:    inherit;
+  font-weight:  inherit;
+  *font-size: 100%;
+}
+
+input,select {
+  vertical-align: middle;
+}
+
+legend {
+  color: black;
+}
+
+// fonts
+body {
+  //font: 13px/1.231 arial,helvetica,clean,sans-serif
+  font: $baseFontSize unquote("/1.231 arial,helvetica,clean,sans-serif");
+
+  *font-size: small;
+  *font: x-small;
+}
+
+select,input,button,textarea {
+  font: 99% arial, helvetica, clean, sans-serif;
+}
+
+table {
+  font-size:  inherit;
+  font:       100%;
+}
+
+pre,code,kbd,samp,tt {
+  font-family:  monospace;
+  line-height:  100%;
+  *font-size:   108%;
+}
+
+// Webkit font smoothing
+html { -webkit-font-smoothing: antialiased; }
+
+// Force scroll bars so pages will have a consistent width regardless of length
+html { overflow-y: scroll; }
+
+// float clear
+br.clear {
+  clear:        both;
+  display:      block;
+  height:       0;
+  line-height:  0px;
+  //visibility:   hidden;
+}

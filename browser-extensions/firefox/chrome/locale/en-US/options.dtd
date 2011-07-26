@@ -1,0 +1,27 @@
+<!ENTITY connexions.title                   "connexions">
+<!ENTITY connexions.prefs.title             "connexions preferences">
+<!ENTITY connexions.prefs.tab.general       "General">
+<!ENTITY connexions.prefs.account.caption   "Connexions account">
+
+<!ENTITY connexions.prefs.account.status        "Signed in as">
+<!ENTITY connexions.prefs.account.signout       "Sign out">
+<!ENTITY connexions.prefs.account.signin        "Sign in">
+<!ENTITY connexions.prefs.account.register      "Create a new account">
+<!ENTITY connexions.prefs.account.signin.diff   "Change user">
+<!ENTITY connexions.prefs.account.register.diff "Create another account">
+
+<!ENTITY connexions.prefs.sync.caption          "Sync bookmarks">
+<!ENTITY connexions.prefs.sync.period.pre       "Check for updates every">
+<!ENTITY connexions.prefs.sync.period.post      "minutes.">
+
+<!ENTITY connexions.prefs.sync.now              "Sync Now">
+<!ENTITY connexions.prefs.sync.now.description  'Check for updates to your bookmarks without reloading all of your bookmarks.'>
+
+<!ENTITY connexions.prefs.sync.full             "Full Sync">
+<!ENTITY connexions.prefs.sync.full.description 'Clear out the local copy of your bookmarks and reload them from connexions.'>
+
+<!ENTITY connexions.prefs.sync.del              "Delete All">
+<!ENTITY connexions.prefs.sync.del.description  'Clear out the local copy of your bookmarks (does NOT effect your bookmarks on connexions).'>
+
+<!ENTITY connexions.prefs.sync.status.last      "Last Sync">
+<!ENTITY connexions.prefs.sync.cancel           "Cancel">

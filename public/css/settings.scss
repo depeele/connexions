@@ -1,0 +1,845 @@
+@import "sizes";
+@import "colors";
+@import "mixins";
+@import "urls";
+@import "sprites";
+@import 'jquery_Jcrop';
+@import 'ui-fileUploader';
+@import 'users';
+
+/****** settings.sass ****** */
+// Styling for the settings
+.columnHeader {
+  .userName {
+    padding-left: 75px;
+    font-weight:  bold;
+    font-size:    1em;
+  }
+}
+.settings {
+
+  margin-right:  1em;
+
+  .section {
+    padding-bottom: 1em;
+    border-bottom:  unquote("1px dashed") $borderColor;
+
+    p, .field {
+      padding:  0.5em 2em 1em;
+    }
+  }
+
+  ul.steps {
+    list-style: disc;
+
+    li {
+      list-style:   disc;
+      margin-left:  3em;
+    }
+
+    .field {
+      padding-left: 0;
+    }
+  }
+
+  .ui-tabs-panel ul {
+    padding:  0;
+
+    .collapsable .content {
+      padding:  0.5em;
+    }
+  }
+
+  #tabs-left {
+    position:     relative;
+    padding-left: 6.5em;
+  }
+  #tabs-left .ui-tabs-nav {
+    position: absolute;
+    left:     0.25em;
+    top:      0.25em;
+    bottom:   0.25em;
+    width:    6em;
+    padding:  0.2em 0 0.2em 0.2em;
+  }
+  #tabs-left .ui-tabs-nav li {
+    right:                1px;
+    width:                100%;
+    border-right:         none;
+    border-bottom-width:  1px !important;
+    overflow:             hidden;
+    @include corners(4px, 0px, 0px 4px);
+  }
+  #tabs-left .ui-tabs-nav li.ui-tabs-selected {
+    border-right:         1px solid transparent;
+  }
+  #tabs-left .ui-tabs-nav li a {
+    float:      right;
+    width:      100%;
+    text-align: right;
+  }
+  #tabs-left > div {
+    height:     35em;
+  }
+
+  .note {
+    font-size:  0.9em;
+    color:      $controlColor;
+
+    padding:    0.5em 3em 0;
+  }
+
+  .warning {
+    color:      $controlColor;
+    font-size:  0.9em;
+
+    p {
+      margin-left:  8em;
+      text-align:   left;
+
+      .title {
+        position: absolute;
+        font-size:    1.2em;
+        font-weight:  bold;
+        left:         -5em;
+      }
+    }
+  }
+}
+
+.account {
+  .ui-validation-form {
+    border-color:   $pageColorBackground;
+    .legend {
+      font-size:    0.8em;
+      text-align:   center;
+
+      .avatar {
+        width:    48px;
+        cursor:   pointer;
+        img {
+          width:  100%;
+        }
+      }
+      .user-date {
+        font-size:  0.9em;
+      }
+    }
+
+    .userInput {
+      padding-top:      0;
+      width:            35em;
+      label {
+        position:       absolute;
+        left:           -6em;
+        width:          5.75em;
+        padding:        0 0 1em;
+        vertical-align: middle;
+      }
+      .field {
+        margin-left:    6em;
+        .text {
+          width:          100%;
+          color:          $darkest;
+          vertical-align: middle;
+        }
+        .ui-field-info {
+          padding:        0 0.75em 0 0;
+        }
+      }
+      .user-fullName {
+        padding-top:    0;
+        padding-left:   0;
+        padding-right:  0;
+
+        input {
+          font-size:      1.2em;
+          font-weight:    bold;
+        }
+      }
+      .user-email {
+      }
+      .user-profile {
+      }
+    }
+  }
+
+  .account-credentials {
+    .ui-validation-form {
+      float:  none;
+      width:  55em;
+    }
+    li {
+      padding:  0 0 0.25em 0;
+    }
+    .field {
+      vertical-align: top;
+    }
+    .type {
+      // From sprites.scss
+      width:                  16px;
+      height:                 16px;
+      overflow:               hidden;
+      text-indent:            16px;
+      white-space:            nowrap;
+
+      background-image:       $connexions_sprites_url;
+      background-repeat-x:    no-repeat;
+      background-repeat-y:    no-repeat;
+      background-attachment:  scroll;
+      background-position:    0px 0px;
+    }
+    .type, .name, .credential, .control, .typeSelection {
+      @include inlineBlock();
+    }
+    .type {
+      margin-right: 8px;
+    }
+
+    li .pki {
+      background-position:  -120px 0px;
+    }
+    li .openid {
+      background-position:  -136px 0px;
+    }
+    li .password {
+      background-position:  -152px 0px;
+    }
+
+    .change .field {
+      padding-top:          0.25em;
+    }
+
+    .typeSelection {
+      z-index:  5;
+
+      .control {
+        position: absolute;
+        right:    -4px;
+      }
+      .options {
+        position: absolute;
+        display:  block;
+        width:    8em;
+        display:  none;
+
+        .current {
+          font-weight:  bold;
+        }
+        .option {
+          padding:  0.25em;
+          border:   none;
+          cursor:   pointer;
+          .type, .label {
+            @include inlineBlock();
+          }
+          .label {
+            width:        5em;
+            padding-left: 0.5em;
+          }
+        }
+      }
+    }
+
+    .name {
+      input {
+        // width:  8em;
+      }
+    }
+    .credential {
+      width:    35em;
+      input {
+        width:      99%;
+      }
+    }
+    .control {
+      color:          $controlColor;
+      a {
+        font-size:    0.9em;
+        font-weight:  normal;
+        color:        $controlColor;
+      }
+    }
+    .leftControls {
+      width:          12em;
+      .autoSignin {
+        margin: 2em 0 0 0;
+        label {
+          display:  inline;
+        }
+      }
+    }
+
+    .warning {
+      @include       inlineBlock();
+      vertical-align: top;
+
+      p {
+        width:        20em;
+      }
+    }
+
+    .buttons {
+      padding:  0.25em 5em 1em 36px;
+
+      button {
+        float:    right;
+      }
+    }
+  }
+
+  .account-apikey {
+    .legend {
+      padding-top:  0.25em;
+    }
+    .data {
+      padding-left: 0.5em;
+      width:        10em;
+      text-align:   center;
+    }
+    h3.apiKey  {
+      padding:      0;
+      font-size:    1.5em;
+      font-weight:  bold;
+    }
+  }
+}
+
+#account-info-avatar {
+  h3 {
+    padding:      1em 0 0;
+    font-size:    1.2em;
+    font-weight:  bold;
+  }
+  .instructions {
+    ol {
+      margin-left:      1.25em;
+    }
+    ol, li {
+      list-style-type:  decimal;
+    }
+    p {
+      padding:  0;
+    }
+  }
+
+  .avatar-type-selection {
+    margin-left:    1em;
+
+    #avatar-type-file, #avatar-type-url {
+      position: relative;
+      height:   4em;
+
+      .field input {
+        width:  100%;
+      }
+    }
+  }
+
+  .avatar-cropping {
+    margin-left:    1em;
+
+    height:         212px;
+    min-width:      320px;
+    padding-bottom: 1em;
+    z-index:        5;
+
+    .avatar-full {
+      max-width:  266px;
+      max-height: 200px;
+      width:      266px;
+      height:     200px;
+      border:     unquote("1px solid") $borderColor;
+      z-index:    6;
+    }
+
+    .avatar-preview {
+      position:   absolute;
+      top:        0;
+      left:       280px;
+      border:     unquote("1px solid") $borderColor;
+      padding:    0.25em 0.5em 0.5em;
+
+      h3 {
+        padding:    0;
+        text-align: center;
+      }
+
+      .avatar-crop {
+        width:      50px;
+        height:     50px;
+        border:     unquote("1px solid") $borderColor;
+
+        overflow:   hidden;
+        z-index:    6;
+      }
+    }
+
+    .details {
+      position: absolute;
+      top:      75px;
+      left:     280px;
+    }
+  }
+}
+
+#bookmarks-settings {
+  border:  none;
+}
+#bookmark-import, #bookmark-export {
+  h3 {
+    font-size:    1.2em;
+    font-weight:  bold;
+    padding:      1em 1em 0 1em;
+  }
+
+  .buttons {
+    padding:  0.5em 2em 1em;
+  }
+}
+
+#bookmark-export {
+  .field {
+    padding:  0 2em;
+
+    label {
+      display:  inline;
+      padding:  0 0.5em;
+    }
+  }
+}
+
+#bookmark-import {
+  overflow-x: hidden;
+
+  .field {
+    label {
+      display:  block;
+    }
+    input,textarea {
+      margin-left:  1em;
+    }
+
+    .field {
+      /* Field within a field (radio / checkbox group) */
+      padding:  0 0 0 1em !important;
+
+      label {
+        @include inlineBlock();
+        padding:  0 0.25em;
+      }
+    }
+  }
+
+  #tags {
+    width:          25em;
+    height:         3em;
+    padding:        0.25em;
+    vertical-align: top;
+  }
+
+  .browser-instructions {
+    padding:      0 0 0 2em;
+
+    h4 {
+      font-size:    1.1em;
+      font-weight:  bold;
+      padding:      0.5em 0 0 0;
+      color:        $linkColor;
+    }
+
+    ol {
+      padding:      0 0 0 2em;
+
+      li {
+        list-style: decimal;
+      }
+    }
+  }
+
+  .results-section iframe {
+    width:      95%;
+    height:     50em;
+    margin:     1em 2%;
+
+    border:     unquote("1px solid") $borderColor;
+
+    overflow-x: hidden;
+    overflow-y: hidden;
+  }
+}
+
+// For the iframe contents
+#bookmark-import-results {
+  overflow-x:       hidden;
+  overflow-y:       hidden;
+  background-color: $pageColorBackground;
+
+  h3 {
+    .tags {
+      @include inlineBlock();
+      background-color: $tagColorBackground;
+      color:            $tagColor;
+    }
+    .private {
+      @include inlineBlock();
+      background-color: $privateColorBackground;
+      border:           unquote("1px solid") $privateColorBorder;
+    }
+  }
+
+  .note {
+    padding:    0.5em;
+    float:      right;
+  }
+
+  #filter-label {
+    font-size:  1.2em;
+    padding:    1em 0.5em 0;
+  }
+
+  ul.bookmarks {
+    clear:      right;
+    border:     unquote("1px solid") $borderColor;
+    height:     35em;
+    margin:     0 1em 1em;
+    overflow-y: scroll;
+    overflow-x: hidden;
+
+    .item {
+      z-index:    1;
+      border-top: unquote("1px solid") $borderColor;
+
+      .status {
+        position: absolute;
+        top:      0;
+        left:     0;
+        width:    $controlBoxWidth;
+        height:   100%;
+        z-index:  2;
+        .favorite, .private {
+          @include inlineBlock();
+        }
+      }
+
+      .stats {
+        @include    clearFix();
+        position:   relative;
+        float:      right;
+        width:      $countBoxWidth;
+        padding:    0 0 0 4px;
+        text-align: right;
+        z-index:    3;
+        .count {
+          display: block;
+          background-color:   $controlColor;
+          color:              $pageColorBackground;
+          padding:            0.25em;
+          font-weight:        bold;
+          text-align:         center;
+          text-decoration:    none;
+          &:hover {
+            background-color: $navColorHover;
+          }
+        }
+        .rating {
+          display:    block;
+          position:   relative;
+          .stars {
+            display:  block;
+            height:   18px;
+          }
+        }
+      }
+
+      .data {
+        position:     relative;
+        margin-left:  $controlBoxWidth;
+        padding:      0 0.5em;
+
+        // Item Name / title
+        .itemName {
+          padding:  0;
+          a {
+            display:      inline;
+            font-weight:  normal;
+            font-size:    1.2em;
+          }
+        }
+        // Item Url
+        .url {
+          padding:  0 0 0 1em;
+          clear:    right;
+          a {
+            display:      inline;
+            font-size:    0.75em;
+            font-weight:  bold;
+            //color:        $linkColorSubdued;
+          }
+        }
+        // Item Description / Description Summary
+        .description {
+          padding:  0 0 0 1em;
+          margin:   0 175px 0 0;
+          color:    $controlColor;
+          .full, .summary {
+            display: block;
+          }
+        }
+        // Item meta-information (tags and dates)
+        .meta {
+          @include clearFix();
+          clear:        both;
+          margin-left:  14em;
+          padding-top:  0.25em;
+
+          // List of tags for this item
+          .tags {
+            display:        block;
+            vertical-align: top;
+            float:          right;
+            text-align:     right;
+            padding:        0;
+    
+            // Ensure we receive hover events by being ABOVE stats
+            z-index:        5;
+    
+            .tag {
+              font-size:  0.9em;
+            }
+          }
+
+          // Dates (tagged, updated)
+          .dates {
+            @include inlineBlock();
+            vertical-align: top;
+            color:          $controlColor;
+            width:          7.5em;
+            text-align:     right;
+            .tagged,.updated {
+              font-size:      0.8em;
+              padding-right:  0.1em;
+            }
+          }
+        }
+      }
+
+      .import-stats {
+        clear:        all;
+        margin-left:  $controlBoxWidth;
+        padding:      0 0.5em 0.5em 16em;
+        text-align:   left;
+
+        color:        $controlColor;
+
+        .state, .import-lines {
+          @include inlineBlock();
+          font-size:    0.9em;
+        }
+      }
+    }
+
+    .private {
+      .status {
+        background-color: $privateColorBackground;
+        border-left:      unquote("1px dotted") $privateColorBorder;
+      }
+    }
+
+    .new {
+      .import-stats {
+        color:  $successColor;
+      }
+    }
+
+    .updated {
+      background-color: $updateColorBackground;
+      .import-stats {
+        color:  $successColor;
+      }
+    }
+
+    .ignored {
+      background-color: $warningColorBackground;
+      color:            $warningColor;
+    }
+
+    .error {
+      background-color: $errorColorBackground;
+      color:            $errorColor;
+    }
+    .warning {
+      background-color: $warningColorBackground;
+      color:            $warningColor;
+    }
+  }
+
+  .import-status {
+    margin: 0 2em;
+
+    // Status / Progress table
+    table {
+      border: unquote("1px solid") $controlColor;
+
+      th,td {
+        padding:          0.25em;
+        border:           unquote("1px solid") $controlColor;
+        vertical-align:   top;
+      }
+      td {
+        text-align:   right;
+        width:        5em;
+      }
+
+      .empty {
+        background-color: $controlColor;
+      }
+
+      thead {
+        th {
+          font-weight:      bold;
+          text-align:       center;
+          background-color: $borderColor;
+        }
+      }
+      tbody {
+        th {
+          font-weight:      bold;
+          background-color: $borderColor;
+        }
+      }
+    }
+  }
+}
+
+#tags-manage {
+  .tagFilter {
+    border-bottom:  unquote('1px solid') $borderColor;
+    margin-bottom:  0.25em;
+    padding-bottom: 0.25em;
+    padding-left:   1em;
+
+    input,button {
+      vertical-align: middle;
+    }
+
+    .field {
+      @include  inlineBlock();
+      width:    50%;
+
+      input {
+        width:  100%;
+      }
+    }
+  }
+  .cloud {
+    font-size:  100%;
+    padding:    0.25em 2em;
+  }
+  .Item_List {
+    li {
+      padding:    0.1em 0.25em;
+      .check-action {
+        @include        inlineBlock();
+        vertical-align: middle;
+        margin:         0 1em 0 0;
+      }
+      .item {
+        @include        inlineBlock();
+        vertical-align: middle;
+        margin-right:   1em;
+      }
+      .control {
+        position:       relative;
+        top:            auto;
+        right:          auto;
+        vertical-align: middle;
+      }
+      .edit-item {
+        .buttons {
+          text-align: center;
+        }
+      }
+    }
+  }
+
+  .paginator-top {
+    .pager, .info {
+      @include        inlineBlock();
+      vertical-align: top;
+    }
+    .info {
+      padding:        0 0 0 1em;
+
+      .perPage, .itemRange {
+        @include      inlineBlock();
+      }
+    }
+  }
+
+  .person {
+    font-size:      0.8em;
+
+    a {
+      font-weight:  normal;
+    }
+
+    .avatar, .userId, .fullName, .email, .email .ui-icon, .dates {
+      @include        inlineBlock();
+      vertical-align: middle;
+    }
+
+    .email {
+      .ui-icon {
+      }
+    }
+  }
+}
+
+#people-network {
+  .networkControl {
+    border-bottom:  unquote('1px solid') $borderColor;
+    margin-bottom:  0.25em;
+    padding-bottom: 0.25em;
+    padding-left:   1em;
+    height:         4em;
+    z-index:        1;
+
+    .networkAdd {
+      margin-right: 18em;
+      z-index:       1;
+      input,button {
+        vertical-align: middle;
+      }
+
+      .field {
+        @include  inlineBlock();
+        width:    40em;
+
+        input {
+          width:  100%;
+        }
+      }
+    }
+    .networkVisibility {
+      position:     absolute;
+      top:          0;
+      right:        0;
+      z-index:      2;
+      font-size:    0.8em;
+
+      .label {
+        text-align: center;
+        color:      $controlColor;
+      }
+      .options {
+        text-align: center;
+      }
+    }
+  }
+
+  .users {
+    padding-left: 18px;
+  }
+}
+
