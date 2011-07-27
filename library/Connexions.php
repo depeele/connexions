@@ -401,7 +401,7 @@ class Connexions
      */
     public static function wikipedia($term)
     {
-        return self::getExternalUrl('wikipedia') ."/${term}";
+        return str_replace('%term%', $term, self::getExternalUrl('wikipedia'));
     }
 
     /** @brief  Given a Wikipedia term, return the HTML of a link to the
@@ -428,7 +428,12 @@ class Connexions
      */
     public static function rfc($number)
     {
-        return self::getExternalUrl('rfc') ."${term}";
+        list($number, $section) = explode('#', $number);
+
+        $url = str_replace('%number%', $number, self::getExternalUrl('rfc'));
+        if (! empty($section))  $url .= '#'. $section;
+
+        return $url;
     }
 
     /** @brief  Given an RFC number, return the HTML of a link to the RFC.
