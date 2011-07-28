@@ -56,6 +56,110 @@ class Connexions_Model_Set_Adapter_ItemList extends Zend_Tag_ItemList
         }
     }
 
+    /** @brief  Spread values in the items relative to their weight
+     *  @param  array $values   The "buckets" to spread weights between;
+     *
+     *  @throws Zend_Tag_Exception When value list is empty
+     *
+     *  @return void
+     */
+    public function spreadWeightValues(array $values)
+    {
+        // Don't allow an empty value list
+        if (count($values) === 0)
+        {
+            require_once 'Zend/Tag/Exception.php';
+            throw new Zend_Tag_Exception('Value list may not be empty');
+        }
+
+        // Re-index the array
+        $values = array_values($values);
+
+        // If just a single value is supplied simply assign it to to all tags
+        if (count($values) === 1)
+        {
+            foreach ($this->_items as $item)
+            {
+                $item->setParam('weightValue', $values[0]);
+            }
+        }
+        else
+        {
+            /* Spread the tags as evenly as possibly across the "buckets"
+             * represented by 'values'.
+             *
+             *
+             * First, generate an ordered list of weights / items
+             */
+            $nBuckets   = count($values) - 1;
+            $nItems     = count($this->_items);
+            $weights    = array();
+            foreach ($this->_items as $item)
+            {
+                $weight = $item->getWeight();
+
+                if (! is_array($weights[ $weight ]))
+                {
+                    $weights[$weight] = array();
+                }
+
+                array_push($weights[$weight], $item);
+            }
+            ksort($weights);
+
+            /* Now, using the weights, evenly fill (as closely as possible) all
+             * buckets.
+             */
+            $nWeights     = count($weights);
+            $remaining    = $nItems;
+            $perBucket    = $remaining / $nBuckets;
+            $bucketIdex   = 0;
+            $inBucket     = 0;
+
+            /*
+            Connexions::log("Connexions_Model_Set_Adapter_ItemList::"
+                            . "spreadWeightValues(): "
+                            . "%s items, %s buckets, %s weights, "
+                            . "~%s per bucket",
+                            $nItems, $nBuckets, $nWeights, $perBucket);
+            // */
+
+            foreach ($weights as $weight => $items)
+            {
+                if ( ($inBucket   >= $perBucket) &&
+                     ($bucketIdex <  $nBuckets))
+                {
+                    /* Moving to the next bucket.
+                     *
+                     * Adjust our 'perBucket' setting based upon how many items
+                     * were place in this bucket and how many are left.
+                     */
+                    $remaining -= $inBucket;
+                    $perBucket  = ($remaining / ($nBuckets - $bucketIdex));
+
+                    $bucketIdex++;
+                    $inBucket = 0;
+                }
+
+                /*
+                Connexions::log("Connexions_Model_Set_Adapter_ItemList::"
+                                . "spreadWeightValues(): "
+                                . "weight:%s, bucket:%s [ %s ], add %s items",
+                                $weight, $bucketIdex,
+                                $inBucket,
+                                count($items));
+                // */
+
+                // Place all items in this group into the current bucket.
+                foreach ($items as $item)
+                {
+                    $item->setParam('weightValue', $values[$bucketIdex]);
+                    $inBucket++;
+                }
+            }
+        }
+    }
+
     /*************************************************************************
      * ArrayIterator interface :: sorting
      *
