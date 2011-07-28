@@ -41,35 +41,9 @@ abstract class Connexions_Model_Mapper
     protected           $_filter        = null;
 
     /** @brief  Create a new mapper.
-     *  @param  config  Configuration:
-     *                      accessor        The name of a Data Accessor class,
-     *                                      or the Data Accessor Object
-     *                                      instance to use
-     *                                      (e.g.  Model_Mapper_*)
-     *                      modelName       The name of the domain model
-     *                                      [ $this->_modelName ];
-     *                      modelSetName    The name of the Data Set class to
-     *                                      use when retrieving multiple items
-     *                                      (by default, this will be
-     *                                       constructed from the name of the
-     *                                       concrete class of this Mapper).
      */
-    public function __construct($config = array())
+    public function __construct()
     {
-        $config = (array)$config;
-
-        foreach ($config as $key => $val)
-        {
-            $method = 'set'. ucfirst($key);
-            if (! method_exists( $this, $method ))
-            {
-                throw new Exception(get_class($this)
-                                    . ": Unknown property '{$key}'");
-            }
-
-            $this->{$method}($val);
-        }
-
         // Register this instance with the factory
         self::factory($this);
     }

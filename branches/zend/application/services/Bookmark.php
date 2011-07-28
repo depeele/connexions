@@ -77,9 +77,14 @@ class Service_Bookmark extends Service_Base
 
             // Create a NEW item!
             $iService = $this->factory('Service_Item');
-            $item     = $iService->get( array('url' => $id['url'] ));
+            //$item     = $iService->get( array('url' => $id['url'] ));
+            $item     = $iService->get( $id['url'] );
             if (! $item->isBacked())
+            {
+                // Ensure that 'url' is set.
+                if (empty($item->url))  $item->url = $id['url'];
                 $item = $item->save();
+            }
 
             unset($id['url']);
             unset($normId['url']);
@@ -712,6 +717,9 @@ class Service_Bookmark extends Service_Base
      *  @param  tags        If non-empty, the (new) set of tags;
      *  @param  url         If non-empty, the (new) URL associated with this
      *                      bookmark (MAY create a new Item);
+     *  @param  overrides   Should we allow updates to bookmarks NOT owned by
+     *                      the currently authenticated user? [ false ];
+     *                      This is primarily for maintenance utilities.
      *
      *  @return Model_Bookmark
      */
@@ -722,7 +730,8 @@ class Service_Bookmark extends Service_Base
                            $isFavorite      = null,
                            $isPrivate       = null,
                            $tags            = null,
-                           $url             = null)
+                           $url             = null,
+                           $overrides       = false)
     {
         /*
         Connexions::log("Service_Bookmark::update() "
@@ -749,7 +758,8 @@ class Service_Bookmark extends Service_Base
         {
             $id['userId'] = $this->_curUser()->userId;
         }
-        else if ($id['userId'] !== $this->_curUser()->userId)
+        else if ( ($overrides === false) &&
+                  ($id['userId'] !== $this->_curUser()->userId) )
         {
             throw new Exception("Cannot update bookmarks of/for others");
         }
@@ -762,6 +772,15 @@ class Service_Bookmark extends Service_Base
         if (  $isFavorite !== null) $id['isFavorite']   = $isFavorite;
         if (  $isPrivate  !== null) $id['isPrivate']    = $isPrivate;
         if (! empty($tags))         $id['tags']         = $tags;
+
+        if (is_array($overrides))
+        {
+            // Additional creation parameters
+            foreach ($overrides as $key => $val)
+            {
+                $id[$key] = $val;
+            }
+        }
 
         /*
         Connexions::log("Service_Bookmark::update(): "
@@ -824,7 +843,7 @@ class Service_Bookmark extends Service_Base
 
         // SUCCESS - return the (new/updated) bookmark
 
-        // /*
+        /*
         Connexions::log("Service_Bookmark::update(): "
                         . "%s[ %s ]",
                         $action, $bookmark->debugDump());
