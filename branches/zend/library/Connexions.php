@@ -707,6 +707,9 @@ class Connexions
      *
      *  Recognized 'namespace's are:
      *      user    - can accept a selector identifying any field.
+     *      html    - include '< />' surrounding the provided element.
+     *      url     - the selector will be passed to Connexions::url() to
+     *                generate a full site URL with any 'base' prefix.
      *
      *  @return A string with replacements.
      */
@@ -740,8 +743,8 @@ class Connexions
                     break;
                 }
 
-                $str = preg_replace('/%(25)?'. $nameSpace .'.'
-                                             . $selector  .'%(25)?/i',
+                $pat = preg_quote($nameSpace .'.'. $selector, '/');
+                $str = preg_replace('/%(25)?'. $pat .'%(25)?/i',
                                     $replacement, $str);
             }
         }
