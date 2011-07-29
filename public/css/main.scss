@@ -106,7 +106,7 @@ body.light {
     border-top:   unquote("3px solid") $navColorBackground;
     background:   $navBg;
 
-    .siteMarking {
+    .siteNotification {
       position:         absolute;
       top:              0;
       right:            $tabWidth;
@@ -114,7 +114,13 @@ body.light {
       width:            100%;
       background-color: $pageColorBackground;
 
-      font-size:        10px;
+      .message {
+        position:       absolute;
+        top:            0.5em;
+        right:          20px;
+        padding:        0.5em;
+        font-size:      1.2em;
+      }
 
       .urCorner {
         position:       absolute;

@@ -9,6 +9,12 @@
  *                        body has the 'light' class;
  *      excludeSidebar  - if true, exclude the sidebar;
  */
+$config          = Zend_Registry::get('config');
+$notification    = $config->site->notification;
+$notificationCss = (! empty($notification)
+                        ? $config->site->notificationCss
+                        : '');
+
 $baseUrl = $this->baseUrl('/'); //Connexions::url('/');
 $jQuery = $this->jQuery();
 
@@ -184,7 +190,9 @@ echo $this->render('base-header.phtml');
  <div class="page liquid<?= $extraClass ?>"><!-- { page -->
   <div id="pageHeader" class="head" role="banner"><!-- { head -->
    <div class='siteAuth'>
-     <div class='siteMarking'>
+     <div class='siteNotification'>
+      <div class='message ui-corner-all <?= $notificationCss ?>'
+        ><?= $notification ?></div>
       <div class='urCorner'>
        <div class='urCorner-background'></div>
        <div class='urCorner-rounded'></div>
