@@ -99,7 +99,7 @@ if (isset($this->lastVisitFor))
      <div class='avatar'>
        <a  href='<?= $userHref ?>'
           title='<?= $bookmark->user->fullName ?>'>
-         <img src='<?= $bookmark->user->pictureUrl ?>' />
+         <img src='<?= Connexions::httpUrl($bookmark->user->pictureUrl) ?>' />
        </a>
      </div><?php
 

@@ -92,7 +92,8 @@ foreach ($itemList as $item)
         $img = '<div class="img icon-highlight">';
         if (! empty($user->pictureUrl))
         {
-            $img .= "<img src='{$user->pictureUrl}' />";
+            $img .= "<img src='"
+                        . Connexions::httpUrl($user->pictureUrl) ."' />";
         }
         else
         {

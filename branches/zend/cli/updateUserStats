@@ -5,19 +5,35 @@ define('CLI_DIR', realpath(dirname(__FILE__)));
 require_once(CLI_DIR. '/bootstrap.php');
 $prog = array_shift($argv);
 
-$svc = Connexions_Service::factory('Service_User');
+$svc    = Connexions_Service::factory('Service_User');
+$offset = 0;
+if ( ($argc === 2) && (preg_match('/([0-9]+)\+/', $argv[0], $matches)) )
+{
+    // Looking for all entries at or above the given offset
+    $offset = $matches[1] - 1;
+    array_shift($argv);
+    $argc = count($argv);
+}
+
 if ($argc < 2)
 {
-    // ALL users
-    $users = $svc->fetch();
+    // All entries from the given offset
+    $entries  = $svc->fetch(null, null, null, $offset);
+    $nEntries = count($entries);
 
-    $nUsers = count($users);
-    printf ("Updating statistics for ALL %d user%s:\n",
-            $nUsers, ($nUsers === 1 ? '' : 's'));
-    foreach ($users as $user)
+    printf ("Updating statistics for users %s - %s [ %s user%s ]:\n",
+            number_format($offset), number_format($offset + $nEntries),
+            number_format($nEntries), ($nEntries === 1 ? '' : 's'));
+    foreach ($entries as $idex => $user)
     {
+        if (($idex > 0) && (($idex % 50) === 0))
+        {
+            printf (" %6s / %6s\n",
+                    number_format($idex), number_format($nEntries));
+        }
+
         echo ".";
-        $user->updateStatistics();
+        //$user->updateStatistics();
     }
     echo "\n";
 }
@@ -25,9 +41,9 @@ else
 {
     // Specific user(s)
 
-    $nUsers = $argc - 1;
+    $nEntries = $argc - 1;
     printf ("Updating statistics for %d specific user%s:\n",
-            $nUsers, ($nUsers === 1 ? '' : 's'));
+            $nEntries, ($nEntries === 1 ? '' : 's'));
     foreach ($argv as $id)
     {
         printf ("  %s: ", $id);
