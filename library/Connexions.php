@@ -514,7 +514,26 @@ class Connexions
                         $name);
     }
 
-    /** @breif  Retrieve or establish a named URL to Path mapping.
+    /** @brief  Given an HTTP URL, if it is absolute, return it, otherwise,
+     *          ensure that it is a full site URL with any 'base' prefix.
+     *  @param  url     The URL string.
+     *
+     *  @return The absolue HTTP URL OR full site URL.
+     */
+    public static function httpUrl($url)
+    {
+        if (! preg_match('#^https?://#', $url))
+        {
+            /* The url has no http[s] protocol so ASSUME it's a site URL that
+             * should be made full.
+             */
+            $url = self::url($url);
+        }
+
+        return $url;
+    }
+
+    /** @brief  Retrieve or establish a named URL to Path mapping.
      *  @param  key     The name of the mapping.
      *  @param  entry   null for retrieval or an array of
      *                  {url: %url%, path: %path%} to set.

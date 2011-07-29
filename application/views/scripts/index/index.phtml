@@ -97,7 +97,7 @@ $htmlItemScope = $this->htmlItemScope( array(
         if (! empty($this->owner->pictureUrl))
         {
             printf ("<img class='avatar' src='%s' title='%s' />",
-                    $this->owner->pictureUrl,
+                    Connexions::httpUrl($this->owner->pictureUrl),
                     $this->owner->fullName);
         }
     }

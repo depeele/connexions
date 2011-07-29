@@ -113,7 +113,7 @@ if ($showParts['minimized'])    array_push($css, 'minimized');
 
         if (! empty($avatarUrl))
         {
-            echo "<img src='", $avatarUrl, "' />";
+            echo "<img src='", Connexions::httpUrl($avatarUrl), "' />";
         }
         else
         {

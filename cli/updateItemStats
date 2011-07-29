@@ -5,19 +5,35 @@ define('CLI_DIR', realpath(dirname(__FILE__)));
 require_once(CLI_DIR. '/bootstrap.php');
 $prog = array_shift($argv);
 
-$svc = Connexions_Service::factory('Service_Item');
+$svc    = Connexions_Service::factory('Service_Item');
+$offset = 0;
+if ( ($argc === 2) && (preg_match('/([0-9]+)\+/', $argv[0], $matches)) )
+{
+    // Looking for all entries at or above the given offset
+    $offset = $matches[1] - 1;
+    array_shift($argv);
+    $argc = count($argv);
+}
+
 if ($argc < 2)
 {
-    // ALL items
-    $items = $svc->fetch();
+    // All entries from the given offset
+    $entries  = $svc->fetch(null, null, null, $offset);
+    $nEntries = count($entries);
 
-    $nItems = count($items);
-    printf ("Updating statistics for ALL %d item%s:\n",
-            $nItems, ($nItems === 1 ? '' : 's'));
-    foreach ($items as $item)
+    printf ("Updating statistics for items %s - %s [ %s item%s ]:\n",
+            number_format($offset), number_format($offset + $nEntries),
+            number_format($nEntries), ($nEntries === 1 ? '' : 's'));
+    foreach ($entries as $idex => $item)
     {
+        if (($idex > 0) && (($idex % 50) === 0))
+        {
+            printf (" %6s / %6s\n",
+                    number_format($idex), number_format($nEntries));
+        }
+
         echo ".";
-        $item->updateStatistics();
+        //$item->updateStatistics();
     }
     echo "\n";
 }
@@ -25,9 +41,9 @@ else
 {
     // Specific item(s)
 
-    $nItems = $argc - 1;
+    $nEntries = $argc - 1;
     printf ("Updating statistics for %d specific item%s:\n",
-            $nItems, ($nItems === 1 ? '' : 's'));
+            $nEntries, ($nEntries === 1 ? '' : 's'));
     foreach ($argv as $id)
     {
         printf ("  %s: ", $id);
@@ -36,7 +52,7 @@ else
         if ($item instanceof Model_Item)
         {
             printf ("[ %s ] ... ", $item);
-            $item->updateStatistics();
+            //$item->updateStatistics();
             echo "updated\n";
         }
         else

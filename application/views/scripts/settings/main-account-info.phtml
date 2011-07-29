@@ -31,7 +31,8 @@
 
 $avatar = (empty($this->viewer->pictureUrl)
             ? "<div class='connexions_sprites user_bg'>&nbsp;</div>"
-            : "<img src='{$this->viewer->pictureUrl}' />" );
+            : "<img src='"
+                    . Connexions::httpUrl($this->viewer->pictureUrl) ."' />" );
 
 $jQuery = $this->jQuery();
 $jQuery->addOnLoad('$.account_info_onLoad();')
