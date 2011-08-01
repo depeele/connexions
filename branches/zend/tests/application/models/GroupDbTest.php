@@ -694,6 +694,11 @@ class GroupDbTest extends DbTestCase
             'canTransfer'    => 1,
         );
 
+        $uService = Connexions_Service::factory('Service_User');
+        $user     = $uService->find( $expected['ownerId'] );
+        $this->_setAuthenticatedUser($user);
+        $this->assertTrue($user->isAuthenticated());
+
         $group = new Model_Group( array(
                         'name'        => $expected['name'],
                         'ownerId'     => $expected['ownerId'],
@@ -703,6 +708,9 @@ class GroupDbTest extends DbTestCase
 
         $this->assertEquals($expected,
                             $group->toArray(self::$toArray_shallow_all));
+
+        // De-authenticate $user
+        $this->_unsetAuthenticatedUser($user);
     }
 
     public function testTagGroupAdd1()

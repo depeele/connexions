@@ -74,6 +74,12 @@ class Model_Filter_Tag extends Connexions_Model_Filter
         //$value = mb_strtolower($value, self::ENCODING);
         $value = strtolower($value);
 
+        // Do NOT allow a fully numeric tag.
+        if (is_numeric( $value ))
+        {
+            $value = '_'. $value;
+        }
+
         // Filter down to the proper length
         $value = preg_replace('/(.{'. self::MIN_LENGTH .','
                                     . self::MAX_LENGTH .'}).*'.'/',

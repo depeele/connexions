@@ -191,6 +191,108 @@ class TagFilterTest extends BaseTestCase
         //$this->_outputInfo($filter, $data);
     }
 
+    public function testTagFilterNumeric1()
+    {
+        $data       = array(
+            'tagId'         => 1,
+            'tag'           => '7',
+        );
+        $expected        = $data;
+        $expected['tag'] = '_'. $data['tag'];
+
+        $filter  = new Model_Filter_Tag($data);
+
+        /*
+        $this->assertTrue ( $filter->hasInvalid() );
+        $this->assertFalse( $filter->hasMissing() );
+        $this->assertFalse( $filter->hasUnknown() );
+
+        $this->assertTrue ( $filter->hasValid() );
+        $this->assertFalse( $filter->isValid()  );
+
+        //$this->_outputInfo($filter, $data);
+        // */
+
+        $this->assertFalse( $filter->hasInvalid() );
+        $this->assertFalse( $filter->hasMissing() );
+        $this->assertFalse( $filter->hasUnknown() );
+
+        $this->assertTrue ( $filter->hasValid() );
+        $this->assertTrue ( $filter->isValid()  );
+
+        $this->assertEquals($expected, $this->_getParsed($filter));
+
+        //$this->_outputInfo($filter, $data);
+    }
+
+    public function testTagFilterNumeric2()
+    {
+        $data       = array(
+            'tagId'         => 1,
+            'tag'           => '1234.32',
+        );
+        $expected        = $data;
+        $expected['tag'] = '_'. $data['tag'];
+
+        $filter  = new Model_Filter_Tag($data);
+
+        /*
+        $this->assertTrue ( $filter->hasInvalid() );
+        $this->assertFalse( $filter->hasMissing() );
+        $this->assertFalse( $filter->hasUnknown() );
+
+        $this->assertTrue ( $filter->hasValid() );
+        $this->assertFalse( $filter->isValid()  );
+
+        //$this->_outputInfo($filter, $data);
+        // */
+
+        $this->assertFalse( $filter->hasInvalid() );
+        $this->assertFalse( $filter->hasMissing() );
+        $this->assertFalse( $filter->hasUnknown() );
+
+        $this->assertTrue ( $filter->hasValid() );
+        $this->assertTrue ( $filter->isValid()  );
+
+        $this->assertEquals($expected, $this->_getParsed($filter));
+
+        //$this->_outputInfo($filter, $data);
+    }
+    public function testTagFilterNumeric3()
+    {
+        $data       = array(
+            'tagId'         => 1,
+            'tag'           => '7 wins',
+        );
+        $expected        = $data;
+        $expected['tag'] = $data['tag'];
+
+        $filter  = new Model_Filter_Tag($data);
+
+        /*
+        $this->assertTrue ( $filter->hasInvalid() );
+        $this->assertFalse( $filter->hasMissing() );
+        $this->assertFalse( $filter->hasUnknown() );
+
+        $this->assertTrue ( $filter->hasValid() );
+        $this->assertFalse( $filter->isValid()  );
+
+        //$this->_outputInfo($filter, $data);
+        // */
+
+        $this->assertFalse( $filter->hasInvalid() );
+        $this->assertFalse( $filter->hasMissing() );
+        $this->assertFalse( $filter->hasUnknown() );
+
+        $this->assertTrue ( $filter->hasValid() );
+        $this->assertTrue ( $filter->isValid()  );
+
+        $this->assertEquals($expected, $this->_getParsed($filter));
+
+        //$this->_outputInfo($filter, $data);
+    }
+
+
     public function testTagFilterNormalize1()
     {
         $data       = array(

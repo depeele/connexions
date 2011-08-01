@@ -10,15 +10,15 @@ class GroupTest extends BaseTestCase
     public function testGroupConstructorInjectionOfProperties()
     {
         $expected   = array(
-            'groupId'           => null,
+            'groupId'           => 0,
             'name'              => 'Group1',
             'groupType'         => 'tag',
-            'ownerId'           => null,
+            'ownerId'           => 0,
 
             'controlMembers'    => 'owner',
             'controlItems'      => 'group',
             'visibility'        => 'public',
-            'canTransfer'       => null,
+            'canTransfer'       => 0,
         );
         $data = array(
             'name'        => $expected['name'],
@@ -62,8 +62,7 @@ class GroupTest extends BaseTestCase
 
         $filter = $group->getFilter();
 
-        //$this->assertType('Model_Filter_Group', $filter);
-        $this->assertEquals(Connexions_Model::NO_INSTANCE, $filter);
+        $this->assertInstanceOf('Model_Filter_Group', $filter);
     }
 }
 
