@@ -218,6 +218,46 @@ class Service_Tag extends Service_Base
     }
 
     /*********************************************************************
+     * Protected methods
+     *
+     */
+
+    /** @brief  Convert a comma-separated string into an array.
+     *  @param  str     The comma-separated string.
+     *
+     *  Override Connexions_Service::_csList2array() since we need to deal with
+     *  the difference between an array of integer tagIds and numeric tag
+     *  names.
+     *
+     *  @return A matching array.
+     */
+    protected function _csList2array($str)
+    {
+        $list = parent::_csList2array($str);
+
+        /* See if 'str' is a comma-separated list of numeric values
+         * (i.e. a list of integer tagIds)
+         */
+        if ( is_string($str) && preg_match('/^[0-9\s,]+$/', $str) )
+        {
+            // Convert each item to an integer value.
+            foreach ($list as &$val)
+            {
+                $val = (int)$val;
+            }
+        }
+
+        /*
+        Connexions::log("Service_Tag::_csList2array( %s ): "
+                        . "[ %s ]",
+                        $str,
+                        Connexions::varExport($list));
+        // */
+
+        return $list;
+    }
+
+    /*********************************************************************
      * Static methods
      *
      */
