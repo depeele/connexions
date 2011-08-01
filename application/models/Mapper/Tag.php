@@ -30,7 +30,7 @@ class Model_Mapper_Tag extends Model_Mapper_Base
      */
     public function normalizeId($id)
     {
-        if (is_int($id) || is_numeric($id))
+        if (is_int($id))
         {
             $id = array('tagId' => $id);
         }
@@ -151,7 +151,12 @@ class Model_Mapper_Tag extends Model_Mapper_Base
          * Add identity map entries for both tagId and tag
          */
         parent::_setIdentity($model->tagId, $model);
-        parent::_setIdentity($model->tag,   $model);
+
+        // ONLY set an entry for 'tag' if it is NOT fully numeric.
+        if (! ctype_digit($model->tag))
+        {
+            parent::_setIdentity($model->tag,   $model);
+        }
 
         /*
         Connexions::log("Model_Mapper_Tag::_setIdentity(): "

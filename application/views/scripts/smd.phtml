@@ -145,17 +145,37 @@ $jQuery->addJavascriptFile($this->baseUrl('js/jsDump.js'))
         // Include all parameters
         $form.find('input:not(:hidden,:submit)').each(function() {
             var $field  = $(this);
+            var name    = $field.attr('name');
 
             switch ($field.attr('type'))
             {
             case 'checkbox':
             case 'radio':
-                rpc.params[ $field.attr('name') ] =
-                                            $field.attr('checked');
+                rpc.params[ name ] = $field.attr('checked');
                 break;
 
             default:
-                rpc.params[ $field.attr('name') ] = $field.val();
+                /* For tags, if searching for a tagId, it MUST be passed as an
+                 * integer.  To deal with this generally, for 'id' field, if
+                 * the value is fully digits, convert it to an integer.  If it
+                 * is quoted, remove the quotes and treat it as a string.
+                 */
+                var val = $field.val();
+                if (name === 'id')
+                {
+                    var matches;
+
+                    if (val.match(/^[0-9]+$/))
+                    {
+                        val = parseInt(val);
+                    }
+                    else if ((matches = val.match(/^\s*['"](.+)['"]\s*$/)))
+                    {
+                        val = matches[1];
+                    }
+                }
+
+                rpc.params[ name ] = val;
                 break;
             }
         });
