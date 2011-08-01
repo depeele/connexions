@@ -10,7 +10,7 @@ class GroupServiceTest extends DbTestCase
     private     $_groups    = array(
         // New item
         array(
-            'groupId'           => false,
+            'groupId'           => 0,
             'name'              => 'Group5',
             'groupType'         => 'tag',
             'ownerId'           => 1,
@@ -18,7 +18,7 @@ class GroupServiceTest extends DbTestCase
             'controlMembers'    => 'owner',
             'controlItems'      => 'owner',
             'visibility'        => 'private',
-            'canTransfer'       => false,
+            'canTransfer'       => 0,
         ),
         // Duplicate of data from the source DataSet
         array(
