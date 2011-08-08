@@ -13,7 +13,7 @@
  *                      present:
  *                          minimized
  *                          item:data:userId
- *      summaryMax      The maximum number of characters in a summary [ 40 ];
+ *      summaryMax      The maximum number of characters in a summary [ 160 ];
  *      sortBy          The current sorting order if this bookmark is being
  *                      rendered in a list;
  *      tags            A Model_Set_Tag instance of tags that should be
@@ -29,7 +29,7 @@ $viewer        =& $this->viewer;
 $showParts     =& $this->showParts;
 $summaryMax    =  (isset($this->summaryMax) && ($this->summaryMax > 0)
                     ? $this->summaryMax
-                    : 40);
+                    : 160);
 
 $highlightTags = ($this->tags && ($this->tags instanceof Model_Set_Tag)
                     ? $this->tags->__toString()
