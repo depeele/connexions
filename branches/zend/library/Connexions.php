@@ -977,12 +977,12 @@ class Connexions
      *          the text to the last full word before the 'maxChars'th
      *          character.
      *  @param  text        The text to "summarieze";
-     *  @param  maxChars    The maximum number of characters [ 40 ];
+     *  @param  maxChars    The maximum number of characters [ 160 ];
      *
      *  @return The summary string.
      */
     public static function getSummary($text,
-                                      $maxChars = 40)
+                                      $maxChars = 160)
     {
         $summary = html_entity_decode($text, ENT_QUOTES);
         if (strlen($summary) > $maxChars)
