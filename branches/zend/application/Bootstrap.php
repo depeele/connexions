@@ -442,9 +442,15 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
     protected function _commonConnection()
     {
         $connectionInfo = array(
-            'domain'    => $_SERVER['SERVER_NAME'],
-            'clientIp'  => $_SERVER['REMOTE_ADDR'],
-            'referer'   => $_SERVER['HTTP_REFERER'],
+            'domain'    => (isset($_SERVER['SERVER_NAME'])
+                                ? $_SERVER['SERVER_NAME']
+                                : 'localhost'),
+            'clientIp'  => (isset($_SERVER['REMOTE_ADDR'])
+                                ? $_SERVER['REMOTE_ADDR']
+                                : '127.0.0.1'),
+            'referer'   => (isset($_SERVER['HTTP_REFERER'])
+                                ? $_SERVER['HTTP_REFERER']
+                                : ''),
             'https'     => (isset($_SERVER['HTTPS']) &&
                             ($_SERVER['HTTPS'] === 'on')
                                 ? true
