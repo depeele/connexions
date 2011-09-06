@@ -461,7 +461,10 @@ class Connexions
     {
         if (@is_string($url))
         {
-            if ($url[0] == '/')
+            /* Special-case for avatar images from the original site
+             * having a relative url beginning with 'images/avatar/'.
+             */
+            if (($url[0] == '/') || (substr($url, 0, 14) === 'images/avatar/'))
             {
                 // Convert to a site-absolute URL
                 // $front  =& Zend_Controller_Front::getInstance();
@@ -479,7 +482,14 @@ class Connexions
                 }
 
                 if (strpos($url, $baseUrl) !== 0)
+                {
+                    if ($url[0] !== '/')
+                    {
+                        $url = '/'. $url;
+                    }
+
                     $url = $baseUrl . $url;
+                }
             }
 
         }
