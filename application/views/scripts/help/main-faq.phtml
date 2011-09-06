@@ -100,6 +100,51 @@ Connexions::log('views/scripts/help/main-faq.phtml: '
       structured groups.  It's completely up to the users.</p>
      </div>
     </li><!-- question-answer } -->
+
+    <li class='collapsable'><!-- question-answer { -->
+     <h3 id='basics_whats_new_with_version_2'
+         class='toggle faq-question<?= Connexions_Help::rest_collapsed($this, 'basics_whats_new_with_version_2', true) ?>'
+         ><a href='<?= $url ?>/basics/whats_new_with_version_2'
+             data-cache.collapsable='whats_new_with_version_2_content'>What's new with version 2?</a></h3>
+     <div id='whats_new_with_version_2_content'
+          class='help-content faq-answer'>
+      <p>Connexions has been completely re-designed making use of modern
+      web designe and user interface advances.  Hopefully,  you will find the
+      new layout more usable as well as more aesthetically pleasing.<?php
+        if ($contact->services && $contact->services->support)
+        {
+            $support =& $contact->services->support;
+
+            ?>
+      Don't hesitate to voice your input via
+      <a href='<?= $support->url ?>'><?= $support->name ?></a>.
+            <?php
+        }
+        ?></p>
+
+      <p>Connexions no longer automatically creates an account when a user
+      first visits.  If a new visitor wants an account, they will now need to
+      explicitly <a href='<?= $this->baseUrl("auth/register") ?>'>join</a>.
+      This will help maintain a more accurate measure of how many people have
+      engaged with the service, and provides a choice for those that would
+      prefer not to have an account automatically created.</p>
+
+      <p>Finally, there have been major changes in how we handle
+      authentication.  While
+      <?= Connexions::wikipedia_a('Public_key_infrastructure', 'PKI') ?>
+      is still the primary authentication method, passwords are now also
+      supported.  As part of this support, users are given the option of
+      <b>not</b> automatically signing in using their PKI certificate.  In
+      fact, <span class='ui-state-highlight'>current users may notice on their
+      first visit that they were <i>not</i> automatically signed-in</span>.
+      Automatic PKI-based sign-in is a new, cookie-based option that is
+      settable on the
+      <a href='<?= $this->baseUrl('auth/signIn') ?>'>sign-in page</a> and, once
+      set, may be changed in your
+      <a href='<?= $this->baseUrl('settings/account/credentials')
+       ?>'>credentials settings</a>.</p>
+     </div>
+    </li><!-- question-answer } -->
    
    </ul><!-- inner-list } -->
   </div>
