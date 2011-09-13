@@ -101,8 +101,10 @@ class   Connexions_Profile
 
             if ( ! isset(self::$_profiles[$uid]) )
             {
+                /*
                 printf ("*** Profile::%s: unknown uid[ %s ]\n",
                         $action, $uid);
+                // */
                 return false;
             }
         }
