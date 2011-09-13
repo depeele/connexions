@@ -598,8 +598,16 @@ Connexions::log('views/scripts/help/main-faq.phtml: '
              href="<?= $this->baseUrl('connexions-2.0.0.xpi') ?>"
              iconURL="<?= $this->baseurl('images/logo-16.png') ?>"
              hash="sha1:563107c1472d50fbde8d457f13dbb2446810b1e2"
-             onclick="return xpiInstall(event);"><span>Add to Firefox</span></a>
+             ><span>Add to Firefox</span></a>
        </span>
+
+       <div class='warning'>
+        <p><span class='title'>note:</span>
+        Your browser will likely block the inital install attempt,<br />
+        popping up a block notification at the top of the window.<br />
+        If this occurs, you will need to click "allow" to complete<br />
+        the installation.</p>
+       </div>
       </p>
      </div>
      
@@ -650,16 +658,16 @@ Connexions::log('views/scripts/help/main-faq.phtml: '
 
 <script type='text/javascript'>
 /** @brief  Firefox Extension installer.
- *  @param  event   The triggering event.
+ *  @param  $a  The jQuery/DOM anchor element.
  *
  */
-function xpiInstall(event)
+function xpiInstall($a)
 {
     var params  = {
         'Connexions':   {
-            URL:        event.target.href,
-            IconURL:    event.target.getAttribute('iconURL'),
-            Hash:       event.target.getAttribute('hash'),
+            URL:        $a.attr('href'),
+            IconURL:    $a.attr('iconURL'),
+            Hash:       $a.attr('hash'),
             toString:   function() { return this.URL; }
         }
     };
@@ -730,7 +738,7 @@ function xpiInstall(event)
     // Bind to the 'tabsshow' event indicating the the tabs widget is ready
     $tabs.bind('tabsshow', firstShow);
 
-    var isFirefox   = $.browser.mozilla;
+    // Handle the XPI install button
     var xpiOpts = {
         label:  ($.browser.mozilla
                     ? 'Add to Firefox'
@@ -741,7 +749,10 @@ function xpiInstall(event)
                         : 'ui-icon-arrowthick-1-s')
         }
     };
-    $('.xpiInstall a').button( xpiOpts );
+    $('.xpiInstall a').button( xpiOpts )
+                      .click( function(e) {
+                        return xpiInstall( $(this) );
+                      });
 
  }(jQuery));
 </script>
