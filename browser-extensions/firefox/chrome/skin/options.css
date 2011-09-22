@@ -1,62 +1,62 @@
-.title {
+#connexions-prefs-pane .title {
   font-size:    2em;
   font-weight:  bold;
 }
-.link {
+#connexions-prefs-pane .link {
   text-decoration:  underline !important;
   color:            #00f;
   cursor:           pointer;
 }
-.userName {
+#connexions-prefs-pane .userName {
   font-size:  1.2em;
 }
-.sync-box {
+#connexions-prefs-pane .sync-box {
 }
 
-.sync-box label, .sync-box .sync-period {
+#connexions-prefs-pane .sync-box label, .sync-box .sync-period {
   display:        inline-block;
   vertical-align: middle;
 }
 /*.sync-period .textbox-input-box .textbox-input */
-.sync-period {
+#connexions-prefs-pane .sync-period {
   position:       relative;
   width:          4em;
 }
-.sync-period .textbox-input-box {
+#connexions-prefs-pane .sync-period .textbox-input-box {
   width:          3em;
   padding-right:  2px;
   margin-right:   0;
 }
-.sync-period spinbuttons {
+#connexions-prefs-pane .sync-period spinbuttons {
   vertical-align: middle;
   margin-left:    -3px;
   margin-top:     -3px;
 }
 
-.syncNow-box {
+#connexions-prefs-pane .syncNow-box {
 }
-.syncFull-box {
+#connexions-prefs-pane .syncFull-box {
   margin-top: 0.5em;
 }
-.bordered {
+#connexions-prefs-pane .bordered {
   width:        100%;
   margin-top:   1em;
   padding-top:  1em;
   border-top:   1px solid #999;
 }
-.syncStatus-box {
+#connexions-prefs-pane .syncStatus-box {
   padding:      1em;
   min-height:   8.5em;
 }
-.syncStatus-box .syncStatus {
+#connexions-prefs-pane .syncStatus-box .syncStatus {
   font-size:    1.2em;
 }
-.syncStatus-box .progressMeter-box {
+#connexions-prefs-pane .syncStatus-box .progressMeter-box {
   min-height:   2em;
   margin-left:  0.5em;
   width:        100%;
 }
-.syncStatus-box .syncDetails {
+#connexions-prefs-pane .syncStatus-box .syncDetails {
   margin-left:  2em;
   font-size:    0.8em;
   min-height:   2em;

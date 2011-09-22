@@ -1,10 +1,10 @@
-.properties .label {
+#sidebar-bookmark-properties .properties .label {
   width:        7em;
   font-weight:  bold;
 }
 
-.properties .property:nth-child(even) {
+#sidebar-bookmark-properties .properties .property:nth-child(even) {
 }
-.properties .property:nth-child(odd) {
+#sidebar-bookmark-properties .properties .property:nth-child(odd) {
   background-color:   #eee;
 }
