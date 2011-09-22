@@ -144,6 +144,12 @@
        <action>faq</action>
        <class>global</class>
       </faq>
+      <tools>
+       <label>Tools</label>
+       <controller>help</controller>
+       <action>faq/tools_and_extras/what_bookmarking_tools_are_available</action>
+       <class>global</class>
+      </tools>
       <developers>
        <label>Developers</label>
        <controller>help</controller>
