@@ -1446,7 +1446,7 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
             break;
 
         case 'redirect':    // Redirect to the specified URL
-        case 'urlCallback':
+        case 'urlcallback':
             if (param && param.length)
             {
                 location.href = param;
