@@ -806,7 +806,10 @@ class Service_Bookmark extends Service_Base
                 $errors   = array();
                 foreach ($messages as $field => $message)
                 {
-                    array_push($errors, sprintf("%s: %s", $field, $message));
+                    array_push($errors,
+                               sprintf("%s: %s",
+                                       $field,
+                                       Connexions::varExport($message)));
                 }
 
                 $error = "Invalid field". (count($errors) === 1 ? '' : 's')

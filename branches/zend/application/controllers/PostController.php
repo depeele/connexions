@@ -74,11 +74,15 @@ class PostController extends Connexions_Controller_Action
         $bookmark =  null;
         $postInfo =  array(
             'url'           => trim($request->getParam('url',         null)),
-            'name'          => trim($request->getParam('name',        null)),
+            'name'          => trim($request->getParam('name',
+                                    //Backward compatability
+                                    $request->getParam('title',       null))),
             'description'   => trim($request->getParam('description', null)),
             'rating'        => $request->getParam('rating',           null),
             'isFavorite'    => $request->getParam('isFavorite',       null),
-            'isPrivate'     => $request->getParam('isPrivate',        null),
+            'isPrivate'     => $request->getParam('isPrivate',
+                                    //Backward compatability
+                                    $request->getParam('private',     null)),
             'tags'          => trim($request->getParam('tags',        null)),
             'mode'          => $request->getParam('mode',             null),
         );

@@ -195,9 +195,9 @@
       // UserId
       .userId {
         @include inlineBlock();
-        padding: 0;
-        font-size: 1.25em;
-        width: 6em;
+        padding:    0;
+        font-size:  1.25em;
+        width:      12em;
         a {
           display: inline;
           font-weight: bold;
