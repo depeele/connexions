@@ -1,16 +1,16 @@
-.sidebar-tools {
+#connexions-sidebar .sidebar-tools {
   background-color: -moz-Dialog;
   -moz-appearance:  toolbox;
 }
 
-.sidebar-tools textbox {
+#connexions-sidebar .sidebar-tools textbox {
 }
 
-.sidebar-header {
+#connexions-sidebar .sidebar-header {
   padding:          0 0.25em;
   background-color: -moz-Dialog;
 }
-.sidebar-header .sidebar-context-image {
+#connexions-sidebar .sidebar-header .sidebar-context-image {
   width:          16px;
   height:         16px;
 
@@ -19,21 +19,21 @@
   background-color:       transparent;
   background-position:    -24px -24px;
 }
-.sidebar-bookmarks-section .sidebar-context-image {
+#connexions-sidebar .sidebar-bookmarks-section .sidebar-context-image {
   background-image: url("chrome://connexions/skin/toolbar-button-bookmark.png");
 }
-.sidebar-tags-section .sidebar-context-image {
+#connexions-sidebar .sidebar-tags-section .sidebar-context-image {
   background-image: url("chrome://connexions/skin/toolbar-button-tag.png");
 }
 
-.sidebar-count {
+#connexions-sidebar .sidebar-count {
   font-size:      0.8em;
 }
 
-.sort-order, .sort-by {
+#connexions-sidebar .sort-order, .sort-by {
   cursor: pointer;
 }
-.sort-order {
+#connexions-sidebar .sort-order {
   width:  16px;
   height: 16px;
 
@@ -43,41 +43,41 @@
   background-color:       transparent;
   background-position:    0 0;
 }
-.sort-asc {
+#connexions-sidebar .sort-asc {
   background-position:    0 0;
 }
-.sort-desc {
+#connexions-sidebar .sort-desc {
   background-position:    0 -16px;
 }
 
-.list {
+#connexions-sidebar .list {
   padding:      2px;
 }
-.list listitem {
+#connexions-sidebar .list listitem {
 }
 
-.list listitem:nth-child(even) {
+#connexions-sidebar .list listitem:nth-child(even) {
 }
-.list listitem:nth-child(odd) {
+#connexions-sidebar .list listitem:nth-child(odd) {
   background-color:   #eee;
 }
 
 /* From firefox/toolkit/themes/winstrip/global/listbox.css { */
-.list listitem[selected="true"] {
+#connexions-sidebar .list listitem[selected="true"] {
   background-color:   -moz-cellhighlight;
   color:              -moz-cellhighlighttext;
 }
-.list:focus > listitem[selected="true"] {
+#connexions-sidebar .list:focus > listitem[selected="true"] {
   background-color:   Highlight;
   color:              HighlightText;
 }
 /* From firefox/toolkit/themes/winstrip/global/listbox.css } */
 
-.bookmarks {
+#connexions-sidebar .bookmarks {
 }
-.bookmarks .bookmark-name {
+#connexions-sidebar .bookmarks .bookmark-name {
 }
-.bookmarks .bookmark-properties {
+#connexions-sidebar .bookmarks .bookmark-properties {
   margin:     0;
   padding:    0;
 
@@ -87,20 +87,20 @@
   background-color:       transparent;
   background-position:    0 -48px;
 }
-.bookmarks .favorite {
+#connexions-sidebar .bookmarks .favorite {
   background-position:  0 0;
 }
-.bookmarks .private {
+#connexions-sidebar .bookmarks .private {
   background-position:  0 -16px;
 }
-.bookmarks .favorite-private {
+#connexions-sidebar .bookmarks .favorite-private {
   background-position:  0 -32px;
 }
 
-.tags {
+#connexions-sidebar .tags {
 }
-.tags .tag-name {
+#connexions-sidebar .tags .tag-name {
 }
-.tags .tag-frequency {
+#connexions-sidebar .tags .tag-frequency {
     font-size:      0.8em;
 }

@@ -99,3 +99,17 @@ zip -r "${extName}.xpi" ${files} > /dev/null 2>&1
 rm -rf ${files}
 
 popd > /dev/null
+cp "build/${extName}.xpi" .
+
+hash=`openssl sha1 "${extName}.xpi" | awk '{print $2}' 2>/dev/null`
+if [ $? -eq 0 ]; then
+    echo "Update 'extensions.firefox.hash' in"
+    echo "       '${config}'..."
+    sed -e "s/^\(extensions.firefox.hash[ ]*=[ ]*\).*$/\\1\"sha1:${hash}\"/" \
+        "${config}" > "${config}.tmp"
+    mv "${config}.tmp" "${config}"
+else
+    echo ">>> Make sure you update the SHA1 value for the XPI install"
+    echo ">>>      extensions.firefox.hash in"
+    echo ">>>      '${config}'..."
+fi

@@ -1,6 +1,9 @@
 <?php
+$config    =  Zend_Registry::get('config');
+$contact   =& $config->contact;
+$extension =& $config->extensions->firefox;
 $url       =  $this->baseUrl('help/faq');
-$viewerUrl = $this->baseUrl( $this->viewer->__toString() );
+$viewerUrl =  $this->baseUrl( $this->viewer->__toString() );
 
 $jsSectionId = '';
 if ($this->section)
@@ -597,7 +600,7 @@ Connexions::log('views/scripts/help/main-faq.phtml: '
         <a class="button add installer"
              href="<?= $this->baseUrl('connexions-2.0.0.xpi') ?>"
              iconURL="<?= $this->baseurl('images/logo-16.png') ?>"
-             hash="sha1:563107c1472d50fbde8d457f13dbb2446810b1e2"
+             hash="<?= $extension->hash ?>"
              ><span>Add to Firefox</span></a>
        </span>
 
