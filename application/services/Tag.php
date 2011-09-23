@@ -230,14 +230,18 @@ class Service_Tag extends Service_Base
      *  names.
      *
      *  @return A matching array.
-     */
+     *
+     *  *** DO NOT enable this method.  It disables the use of numeric tags.
+     *  *** If a service caller wishes to retrieve tags by id, they MUST pass
+     *  *** the tags as integer values.  In that case, this method wouldn't
+     *  *** even be used.
+     *
     protected function _csList2array($str)
     {
         $list = parent::_csList2array($str);
 
-        /* See if 'str' is a comma-separated list of numeric values
-         * (i.e. a list of integer tagIds)
-         */
+        // See if 'str' is a comma-separated list of numeric values
+        // (i.e. a list of integer tagIds)
         if ( is_string($str) && preg_match('/^[0-9\s,]+$/', $str) )
         {
             // Convert each item to an integer value.
@@ -247,15 +251,9 @@ class Service_Tag extends Service_Base
             }
         }
 
-        /*
-        Connexions::log("Service_Tag::_csList2array( %s ): "
-                        . "[ %s ]",
-                        $str,
-                        Connexions::varExport($list));
-        // */
-
         return $list;
     }
+    // */
 
     /*********************************************************************
      * Static methods
