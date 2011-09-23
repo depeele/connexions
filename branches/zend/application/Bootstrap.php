@@ -652,7 +652,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
             /* We don't already have a request assigned so create one ASSUMING
              * HTTP.
              */
-            $request = new Zend_Controller_Request_Http();
+            $request = new Connexions_Controller_Request_Http();
             $front->setRequest($request);
 
             Connexions::setRequest($request);
