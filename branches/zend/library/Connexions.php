@@ -1006,7 +1006,7 @@ class Connexions
 
             $summary .= '...';
         }
-        $summary = htmlentities($summary, ENT_QUOTES);
+        $summary = htmlspecialchars($summary, ENT_QUOTES);
 
         /*
         Connexions::log("getSummary(): text[ %s ], max[ %d ] == [ %s ]",
