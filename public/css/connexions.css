@@ -177,6 +177,10 @@ a:visited { color: #005a9c; }
 
 .star_fill { width: 15px; height: 15px; background-position: -15px -44px; }
 
+.share_empty { width: 15px; height: 15px; background-position: 0 -59px; }
+
+.share_fill { width: 15px; height: 15px; background-position: -15px -59px; }
+
 .button_delete_on { width: 16px; height: 16px; background-position: -72px 0; }
 
 .button_delete_off { width: 16px; height: 16px; background-position: -88px 0; }
@@ -239,9 +243,7 @@ a:visited { color: #005a9c; }
 
 .envelope_dim { width: 17px; height: 13px; background-position: -32px -44px; }
 
-.magnifier { width: 17px; height: 16px; background-position: 0 -71px; }
-
-.magnifier_small { width: 15px; height: 15px; background-position: -16px -71px; }
+.magnifier { width: 15px; height: 15px; background-position: 0 -74px; }
 
 .type-certificate { width: 16px; height: 16px; background-position: -120px 0; }
 
@@ -296,10 +298,6 @@ a:visited { color: #005a9c; }
 .scope_go { height: 24px; width: 16px; background-position: -44px -240px; }
 
 .scope_root_item { height: 24px; width: 16px; background-position: -64px -240px; }
-
-.star_small_empty { width: 13px; height: 12px; background-position: 0 -59px; }
-
-.star_small_fill { width: 13px; height: 12px; background-position: -13px -59px; }
 
 /* smallIcons.gif 15x44 */
 .smallIcon_bookmark { background: url("sprites/smallIcons.gif") no-repeat scroll 3px 0px transparent; }

@@ -121,6 +121,19 @@
   background-position: -15px -44px;
 }
 
+// Share / Unshare
+.share_empty {
+  width: 15px;
+  height: 15px;
+  background-position: 0 -59px;
+}
+
+.share_fill {
+  width: 15px;
+  height: 15px;
+  background-position: -15px -59px;
+}
+
 // Delete (x)
 .button_delete_on {
   width: 16px;
@@ -307,15 +320,9 @@
 
 // Search
 .magnifier {
-  width: 17px;
-  height: 16px;
-  background-position: 0 -71px;
-}
-
-.magnifier_small {
   width: 15px;
   height: 15px;
-  background-position: -16px -71px;
+  background-position: 0 -74px;
 }
 
 // Settings
@@ -479,18 +486,6 @@
 }
 
 // Misc
-.star_small_empty {
-  width: 13px;
-  height: 12px;
-  background-position: 0 -59px;
-}
-
-.star_small_fill {
-  width: 13px;
-  height: 12px;
-  background-position: -13px -59px;
-}
-
 /* smallIcons.gif 15x44 */
 .smallIcon_bookmark {
   background: url("sprites/smallIcons.gif") no-repeat scroll 3px 0px transparent;
