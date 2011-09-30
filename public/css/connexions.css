@@ -329,7 +329,7 @@ a:visited { color: #005a9c; }
 #pageHeader .siteAuth .authInfo .inbox-indicator .ui-icon { height: 16px; }
 #pageHeader .siteAuth .authInfo .inbox-indicator .count { position: absolute; bottom: -8px; left: -9px; width: 36px; font-size: 9px; text-align: center; color: #b0d730; }
 #pageHeader .siteAuth .authInfo .userName { padding-left: 0.5em; }
-#pageHeader .siteAuth .authInfo .authMenu { border-right: 1px dotted #666666; }
+#pageHeader .siteAuth .authInfo .authMenu { border-right: 1px dotted #666666; cursor: pointer; }
 #pageHeader .siteAuth .authInfo .authMenu .menu { display: none; position: absolute; top: 14px; right: -1px; padding: 0 1em; z-index: 2; border-left: 1px dotted #666666; border-right: 1px dotted #666666; border-bottom: 1px dotted #666666; -moz-border-radius: 0 0 10px 10px; -webkit-border-radius: 0 0 10px 10px; -ms-border-radius: 0 0 10px 10px; -khtml-border-radius: 0 0 10px 10px; border-radius: 0 0 10px 10px; background-color: #182524; }
 #pageHeader .siteAuth .authInfo .authMenu .menu li { text-align: left; }
 #pageHeader .siteAuth .authInfo .authMenu .menu li a { display: block; padding: 0.5em; border-top: 1px dotted #666666; font-weight: normal; color: #2786c2; }
@@ -614,7 +614,7 @@ a:visited { color: #005a9c; }
 .paginator .info .perPage .pageCount, .paginator .info .itemRange .pageCount { font-size: 1.1em; }
 .paginator .info .itemRange .count { margin-right: 0; }
 
-.paginator-top { float: left; padding: 0.25em 0; }
+.paginator-top { float: left; padding: 0.25em 0 1em; }
 .paginator-top .pager { display: inline; }
 
 /*fieldInfoColor             = !validationInputColor */
@@ -776,16 +776,17 @@ a:visited { color: #005a9c; }
 
 /*fieldInfoColor             = !validationInputColor */
 /****** users.scss ****** */
-.items .groupHeader { position: relative; color: #999999; left: -1.5em; padding-top: 1.5em; }
-.items .groupHeader .group { position: relative; background-color: #edf4fb; height: 20px; }
-.items .groupHeader .groupCorner { position: absolute; bottom: 0; right: -1.5em; height: 20px; width: 1.5em; background-color: #edf4fb; }
-.items .groupHeader .date { position: relative; }
-.items .groupHeader .date .year { position: absolute; left: 1.2em; top: -0.45em; font-size: 3em; font-weight: bold; color: #dce3fb; z-index: 4; }
-.items .groupHeader .date .dateBox { position: relative; left: 0.1em; font-size: 1em; font-weight: bold; }
-.items .groupHeader .date .dateBox .month { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; }
-.items .groupHeader .date .dateBox .day { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; padding: 0 0.25em; }
-.items .groupHeader .date .dateBox .day-of-week { display: block; font-size: 0.8em; font-weight: bold; z-index: 4; }
-.items .groupHeader .alpha, .items .groupHeader .numeric { left: 0.25em; top: -0.45em; font-size: 3em; font-weight: bold; color: #bac1fb; z-index: 0; }
+.items .groupHeader { position: relative; color: #999999; left: -1.5em; margin-top: 1.5em; }
+.items .groupHeader .group { position: relative; }
+.items .groupHeader .group .groupType { height: 1.1em; }
+.items .groupHeader .group .date { position: relative; }
+.items .groupHeader .group .date .year { position: absolute; left: 1.2em; top: -0.45em; font-size: 3em; font-weight: bold; color: #dce3fb; z-index: 4; }
+.items .groupHeader .group .date .dateBox { position: relative; left: 0.1em; font-size: 1em; font-weight: bold; color: #999999; }
+.items .groupHeader .group .date .dateBox .month { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; }
+.items .groupHeader .group .date .dateBox .day { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; padding: 0 0.25em; }
+.items .groupHeader .group .date .dateBox .day-of-week { display: block; font-size: 0.8em; font-weight: bold; z-index: 4; }
+.items .groupHeader .group .alpha, .items .groupHeader .group .numeric { position: absolute; left: 0.25em; top: -0.65em; font-size: 3em; font-weight: bold; color: #bac1fb; z-index: 0; }
+.items .groupHeader .groupCorner { position: absolute; bottom: 0; right: -1.5em; height: 100%; width: 1.5em; }
 
 /*fieldInfoColor             = !validationInputColor */
 /****** bookmark.scss ****** */
@@ -915,7 +916,8 @@ body.light { background-color: white; }
 
 /* General Panes */
 .pane { background-color: white; }
-.pane .refreshPane { float: right; padding-top: 0.4em; cursor: pointer; }
+.pane .refreshPane { float: right; padding-top: 0.4em; cursor: pointer; opacity: 0.5; filter: alpha(opacity=50); -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=50)'; -khtml-opacity: 0.5; -moz-opacity: 0.5; }
+.pane .refreshPane:hover { opacity: 1; filter: alpha(opacity=100); -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=100)'; -khtml-opacity: 1; -moz-opacity: 1; }
 
 /* Page Header */
 #pageHeader { font-size: 14px; z-index: 100; }
@@ -927,7 +929,8 @@ body.light { background-color: white; }
 #pageHeader .siteAuth a, #pageHeader .siteNav a { font-weight: bold; text-decoration: none; }
 #pageHeader .siteAuth { text-align: right; border-top: 3px solid #182524; background: #182524 url(themes/connexions/images/ui-bg_gloss-wave_10_172322_500x100.png)/*{bgImgUrlHeader}*/ 50%/*{bgHeaderXPos}*/ 50%/*{bgHeaderYPos}*/ repeat-x/*{bgHeaderRepeat}*/; }
 #pageHeader .siteAuth .siteNotification { position: absolute; top: 0; right: 600px; height: 28px; width: 100%; background-color: white; }
-#pageHeader .siteAuth .siteNotification .message { position: absolute; top: 0.5em; right: 20px; padding: 0.5em; font-size: 0.9em; z-index: 2; text-align: center; }
+#pageHeader .siteAuth .siteNotification .message { position: absolute; top: 0.5em; right: 20px; padding: 0.5em; font-size: 0.9em; text-align: center; z-index: 2; }
+#pageHeader .siteAuth .siteNotification .message a { color: #2786c2; }
 #pageHeader .siteAuth .siteNotification .urCorner { position: absolute; top: 0; right: 0; width: 20px; height: 20px; }
 #pageHeader .siteAuth .siteNotification .urCorner .urCorner-background { position: absolute; top: 0; right: 0; left: auto; width: 20px; height: 20px; background: #182524 url(themes/connexions/images/ui-bg_gloss-wave_10_172322_500x100.png)/*{bgImgUrlHeader}*/ 50%/*{bgHeaderXPos}*/ 50%/*{bgHeaderYPos}*/ repeat-x/*{bgHeaderRepeat}*/; }
 #pageHeader .siteAuth .siteNotification .urCorner .urCorner-rounded { top: 0; right: 0; width: 20px; height: 20px; -moz-border-radius: 0 20px 0 0; -webkit-border-radius: 0 20px 0 0; -ms-border-radius: 0 20px 0 0; -khtml-border-radius: 0 20px 0 0; border-radius: 0 20px 0 0; background-color: white; }
