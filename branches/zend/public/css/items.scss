@@ -10,14 +10,60 @@
 
     color:      $groupHeaderColor;
     left:       -1.5em;
-    padding-top:1.5em;
+    margin-top: 1.5em;
 
     .group {
       // Left portion of group header, shifted left 1.5em
       // (with .groupCorner, provides a solid header the full width)
       position:         relative;
-      background-color: $groupHeaderColorBackground;
-      height:           20px;
+      //background-color: $groupHeaderColorBackground;
+      .groupType {
+        height:         1.1em;
+      }
+      .date {
+        position: relative;
+        .year {
+          position: absolute;
+          left: 1.2em;
+          top: -0.45em;
+          font-size: 3em;
+          font-weight: bold;
+          color: $groupHeaderYearColor;
+          // Raise it above item, which has a top-border
+          z-index: 4;
+          //+rotate(-90deg)
+        }
+        .dateBox {
+          position:     relative;
+          left:         0.1em;
+          font-size:    1em;
+          font-weight:  bold;
+          color:        $controlColor;
+          .month {
+            @include inlineBlock();
+          }
+          .day {
+            @include inlineBlock();
+            padding: 0 0.25em;
+          }
+          .day-of-week {
+            display: block;
+            font-size: 0.8em;
+            font-weight: bold;
+            // Raise it above .status, which MAY have an opaque background
+            z-index: 4;
+          }
+        }
+      }
+      .alpha,.numeric {
+        position:     absolute;
+        left:         0.25em;
+        top:          -0.65em;
+        font-size:    3em;
+        font-weight:  bold;
+        color:        $groupHeaderAlphaColor;
+        z-index:      0;
+      }
     }
     .groupCorner {
       // Right portion of group header, shifted right 1.5em
@@ -25,52 +71,9 @@
       position:         absolute;
       bottom:           0;
       right:            -1.5em;
-      height:           20px;
+      height:           100%;
       width:            1.5em;
-      background-color: $groupHeaderColorBackground;
-    }
-
-    .date {
-      position: relative;
-      .year {
-        position: absolute;
-        left: 1.2em;
-        top: -0.45em;
-        font-size: 3em;
-        font-weight: bold;
-        color: $groupHeaderYearColor;
-        // Raise it above item, which has a top-border
-        z-index: 4;
-        //+rotate(-90deg)
-      }
-      .dateBox {
-        position:     relative;
-        left:         0.1em;
-        font-size:    1em;
-        font-weight:  bold;
-        .month {
-          @include inlineBlock();
-        }
-        .day {
-          @include inlineBlock();
-          padding: 0 0.25em;
-        }
-        .day-of-week {
-          display: block;
-          font-size: 0.8em;
-          font-weight: bold;
-          // Raise it above .status, which MAY have an opaque background
-          z-index: 4;
-        }
-      }
-    }
-    .alpha,.numeric {
-      left: 0.25em;
-      top: -0.45em;
-      font-size: 3em;
-      font-weight: bold;
-      color: $groupHeaderAlphaColor;
-      z-index: 0;
+      //background-color: $groupHeaderColorBackground;
     }
   }
 }

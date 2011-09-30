@@ -55,6 +55,11 @@ body.light {
     float:        right;
     padding-top:  0.4em;
     cursor:       pointer;
+    @include opacity(50);
+
+    &:hover {
+      @include opacity(100);
+    }
   }
 }
 
@@ -120,8 +125,12 @@ body.light {
         right:          20px;
         padding:        0.5em;
         font-size:      0.9em;
-        z-index:        2;
         text-align:     center;
+        z-index:        2;
+
+        a {
+          color:        $navColorSub;
+        }
       }
 
       .urCorner {
