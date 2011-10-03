@@ -599,11 +599,44 @@ class PostController extends Connexions_Controller_Action
         if ($bookmark !== null)
         {
             /*
-            Connexions::log("PostController::indexAction: "
+            Connexions::log("PostController::_doGet: "
                             . "existing bookmark information [ %s ]",
                             Connexions::varExport(
                                             $bookmark->toArray()) );
             // */
+
+            /* If the current viewer does not have modify nor edit
+             * permissions ...
+             */
+            if ( (! $bookmark->allow('modify', $this->_viewer)) &&
+                 (! $bookmark->allow('edit', $this->_viewer)) )
+            {
+                // ... does the viewer have a bookmark to the same url?
+                $id = array('userId'  => $this->_viewer->userId,
+                            'itemId'  => $bookmark->item->itemId);
+
+                /*
+                Connexions::log("PostController::_doGet: "
+                                . "viewer cannot modify nor edit.  "
+                                . "Search for bookmark to item [ %s ] for "
+                                . "user [ %s ]",
+                                $id['itemId'], $id['userId']);
+                // */
+
+                $bookmark2 = $bService->find( $id );
+                if ($bookmark2 !== null)
+                {
+                    // YES -- use this one instead.
+                    $bookmark = $bookmark2;
+
+                    /*
+                    Connexions::log("PostController::_doGet: "
+                                    . "found viewer bookmark [ %s ]",
+                                    Connexions::varExport(
+                                            $bookmark->toArray()) );
+                    // */
+                }
+            }
 
             /* Ensure that the URL of the bookmarked item is included and
              * initialize the mode to indicate the posting of a new bookmark
