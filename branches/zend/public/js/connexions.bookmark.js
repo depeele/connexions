@@ -138,6 +138,7 @@ $.widget("connexions.bookmark", {
         rating:     null,
         isFavorite: null,
         isPrivate:  null,
+        worldModify:null,
 
         tags:       null,
         url:        null,
@@ -215,6 +216,7 @@ $.widget("connexions.bookmark", {
         self.$rating      = self.element.find('.rating .stars .owner');
         self.$favorite    = self.element.find('input[name=isFavorite]');
         self.$private     = self.element.find('input[name=isPrivate]');
+        self.$worldModify = self.element.find('input[name=worldModify]');
 
         self.$dates       = self.element.find('.dates');
         self.$dateTagged  = self.$dates.find('.tagged');
@@ -263,6 +265,17 @@ $.widget("connexions.bookmark", {
             hideLabel:  true
         });
 
+        // Status - World Modifiable
+        self.$worldModify.checkbox({
+            css:        'connexions_sprites',
+            cssOn:      'worldModify_fill',
+            cssOff:     'worldModify_empty',
+            titleOn:    'World Modifiable: click to mark as editable by you',
+            titleOff:   'Editable by you: click to mark as world modifiable',
+            useElTitle: false,
+            hideLabel:  true
+        });
+
         // Rating - average and user
         self.$rating.stars({
             //split:    2
@@ -300,6 +313,8 @@ $.widget("connexions.bookmark", {
 
         // Handle item-edit
         var _edit_click  = function(e) {
+            var mode    = $(this).text().toLowerCase();
+
             if (self.options.enabled === true)
             {
                 // Popup a dialog with a post form for this item.
@@ -310,7 +325,7 @@ $.widget("connexions.bookmark", {
 
                 $.get(formUrl,
                       function(data) {
-                        self._showBookmarkDialog(data, true /*isEdit*/);
+                        self._showBookmarkDialog(data, mode);
                       });
             }
 
@@ -352,7 +367,7 @@ $.widget("connexions.bookmark", {
 
                 $.get(formUrl,
                       function(data) {
-                        self._showBookmarkDialog(data);
+                        self._showBookmarkDialog(data, 'save');
                       });
             }
 
@@ -366,9 +381,10 @@ $.widget("connexions.bookmark", {
          */
 
         /*
-        self.$favorite.bind('click.bookmark', _update_item);
-        self.$private.bind('click.bookmark',  _update_item);
-        self.$rating.bind('click.bookmark',   _update_item);
+        self.$favorite.bind('click.bookmark',     _update_item);
+        self.$private.bind('click.bookmark',      _update_item);
+        self.$worldModify.bind('click.bookmark',  _update_item);
+        self.$rating.bind('click.bookmark',       _update_item);
         */
 
         self.element.bind('change.bookmark',    _update_item);
@@ -526,6 +542,12 @@ $.widget("connexions.bookmark", {
             nonEmpty         = true;
         }
 
+        if (self.$worldModify.checkbox('isChecked') !== opts.worldModify)
+        {
+            params.worldModify = self.$worldModify.checkbox('isChecked');
+            nonEmpty           = true;
+        }
+
         if ( (self.$rating.length > 0) &&
              (self.$rating.stars('value') !== opts.rating) )
         {
@@ -628,7 +650,14 @@ $.widget("connexions.bookmark", {
         if ($desc_sum.length > 0)
         {
             // summarize will perform an $.htmlentities() on the result.
-            $desc_sum.html( '&mdash; '+ $.summarize( data.description ) );
+            if (data.description.length > 0)
+            {
+                $desc_sum.html( '&mdash; '+ $.summarize( data.description ) );
+            }
+            else
+            {
+                $desc_sum.html( '' );
+            }
         }
         if ($desc_full.length > 0)
         {
@@ -653,8 +682,9 @@ $.widget("connexions.bookmark", {
 
         self.$rating.stars('select',data.rating);
 
-        self.$favorite.checkbox((data.isFavorite ? 'check' : 'uncheck') );
-        self.$private.checkbox( (data.isPrivate  ? 'check' : 'uncheck') );
+        self.$favorite.checkbox((data.isFavorite      ? 'check' : 'uncheck') );
+        self.$private.checkbox( (data.isPrivate       ? 'check' : 'uncheck') );
+        self.$worldModify.checkbox( (data.worldModify ? 'check' : 'uncheck') );
         self.$url.attr('href',  data.url);
 
         // Update and localize the dates
@@ -681,12 +711,16 @@ $.widget("connexions.bookmark", {
         self.element.effect('highlight', {}, 2000);
     },
 
-    _showBookmarkDialog: function(html, isEdit)
+    _showBookmarkDialog: function(html, mode)
     {
         var self    = this;
         var opts    = self.options;
-        var title   = (isEdit === true ? 'Edit' : 'Save')
-                    + ' bookmark';
+        var title  = (mode === 'save'
+                        ? 'Save'
+                        : (mode === 'edit'
+                            ? 'Edit'
+                            : 'Modify'))
+                   + ' bookmark';
         var dialog  = '<div>'      // dialog {
                     +  '<div class="ui-validation-form">'  // validation-form {
                     +   '<div class="userInput lastUnit">'
@@ -700,14 +734,18 @@ $.widget("connexions.bookmark", {
                                .appendTo( 'body' );
         var $dialog = $html.first();
 
-        /* Establish an event delegate for the 'isEditChanged' event BEFORE
+        /* Establish an event delegate for the 'modeChanged' event BEFORE
          * evaluating the incoming HTML 
          */
-        $dialog.delegate('form', 'isEditChanged.bookmark', function() {
+        $dialog.delegate('form', 'modeChanged.bookmark', function() {
             // Update the dialog header
-            isEdit = $dialog.find('form:first')
-                            .bookmarkPost('option', 'isEdit');
-            title  = (isEdit === true ? 'Edit YOUR' : 'Save')
+            mode = $dialog.find('form:first')
+                            .bookmarkPost('option', 'mode');
+            title  = (mode === 'save'
+                        ? 'Save'
+                        : (mode === 'edit'
+                            ? 'Edit YOUR'
+                            : 'Modify'))
                    + ' bookmark';
             if ($dialog.data('dialog'))
             {
@@ -717,7 +755,7 @@ $.widget("connexions.bookmark", {
         });
 
         /* Now, include the incoming bookmarkPost HTML -- this MAY cause the
-         * 'isEditChanged' event to be fired if the widget finds that the
+         * 'modeChanged' event to be fired if the widget finds that the
          * URL is already bookmarked by the current user.
          */
         $dialog.find('.userInput').html( html );
@@ -744,7 +782,7 @@ $.widget("connexions.bookmark", {
 
                 // Event bindings that can wait
                 $form.bind('saved.bookmark', function(e, data) {
-                    if (isEdit === true)
+                    if (mode !== 'save')
                     {
                         /* Update the presented bookmark with the newly
                          * saved data.
@@ -798,6 +836,7 @@ $.widget("connexions.bookmark", {
 
         opts.isFavorite  = self.$favorite.checkbox('isChecked');
         opts.isPrivate   = self.$private.checkbox('isChecked');
+        opts.worldModify = self.$worldModify.checkbox('isChecked');
 
         opts.url         = self.$url.attr('href');
     },
@@ -823,6 +862,9 @@ $.widget("connexions.bookmark", {
                                     ? 'check'
                                     : 'uncheck') );
         self.$private.checkbox( (opts.isPrivate
+                                    ? 'check'
+                                    : 'uncheck') );
+        self.$worldModify.checkbox( (opts.worldModify
                                     ? 'check'
                                     : 'uncheck') );
 
@@ -852,6 +894,7 @@ $.widget("connexions.bookmark", {
 
             self.$favorite.checkbox('enable');
             self.$private.checkbox('enable');
+            self.$worldModify.checkbox('enable');
             self.$rating.stars('enable');
 
             self._trigger('enabled', null, true);
@@ -870,6 +913,7 @@ $.widget("connexions.bookmark", {
 
             self.$favorite.checkbox('disable');
             self.$private.checkbox('disable');
+            self.$worldModify.checkbox('disable');
             self.$rating.stars('disable');
 
             self._trigger('disabled', null, true);
@@ -884,6 +928,7 @@ $.widget("connexions.bookmark", {
         // Unbind events
         self.$favorite.unbind('.bookmark');
         self.$private.unbind('.bookmark');
+        self.$worldModify.unbind('.bookmark');
         self.$rating.unbind('.bookmark');
         self.$edit.unbind('.bookmark');
         self.$delete.unbind('.bookmark');
@@ -892,6 +937,7 @@ $.widget("connexions.bookmark", {
         // Remove added elements
         self.$favorite.checkbox('destroy');
         self.$private.checkbox('destroy');
+        self.$worldModify.checkbox('destroy');
         self.$rating.stars('destroy');
     }
 });

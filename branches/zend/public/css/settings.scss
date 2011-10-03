@@ -517,7 +517,7 @@
         width:    $controlBoxWidth;
         height:   100%;
         z-index:  2;
-        .favorite, .private {
+        .favorite, .private, .worldModify {
           @include inlineBlock();
         }
       }

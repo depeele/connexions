@@ -29,6 +29,9 @@ class Model_Filter_Bookmark extends Connexions_Model_Filter
         'isPrivate'     => array(array('boolean',
                                        'type' => 'all'),
                                  'int'),
+        'worldModify'   => array(array('boolean',
+                                       'type' => 'all'),
+                                 'int'),
     );
 
     protected $_validatorRules  = array(
@@ -60,6 +63,12 @@ class Model_Filter_Bookmark extends Connexions_Model_Filter
                                  'allowEmpty'   => true,
         ),
         'isPrivate'     => array('int',
+                                 array('between',
+                                       'min'    => 0,
+                                       'max'    => 1),
+                                 'allowEmpty'   => true,
+        ),
+        'worldModify'   => array('int',
                                  array('between',
                                        'min'    => 0,
                                        'max'    => 1),

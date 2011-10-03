@@ -73,7 +73,12 @@ class PostController extends Connexions_Controller_Action
         $request  =& $this->_request;
         $bookmark =  null;
         $postInfo =  array(
+            /* Allow the bookmark to be identified by url along with the
+             * current user OR via direct id.
+             */
             'url'           => trim($request->getParam('url',         null)),
+            'id'            => trim($request->getParam('id',          null)),
+
             'name'          => trim($request->getParam('name',
                                     //Backward compatability
                                     $request->getParam('title',       null))),
@@ -83,6 +88,7 @@ class PostController extends Connexions_Controller_Action
             'isPrivate'     => $request->getParam('isPrivate',
                                     //Backward compatability
                                     $request->getParam('private',     null)),
+            'worldModify'   => $request->getParam('worldModify',      null),
             'tags'          => trim($request->getParam('tags',        null)),
             'mode'          => $request->getParam('mode',             null),
         );
@@ -96,7 +102,10 @@ class PostController extends Connexions_Controller_Action
         if ($postInfo['isPrivate'] === null)
             unset($postInfo['isPrivate']);
 
-        /*
+        if ($postInfo['worldModify'] === null)
+            unset($postInfo['worldModify']);
+
+        // /*
         Connexions::log("PostController::indexAction: "
                         . "postInfo [ %s ]",
                         Connexions::varExport($postInfo));
@@ -417,11 +426,82 @@ class PostController extends Connexions_Controller_Action
         $bService = $this->service('Bookmark');
         try
         {
-            $postInfo['user']   = $this->_viewer;
-            $postInfo['itemId'] = $postInfo['url'];
-            unset($postInfo['url']);
+            if (! @empty($postInfo['id']))
+            {
+                // Retrieve the specific, targeted bookmark
+                $bookmark = $bService->get($postInfo['id']);
+                if ($bookmark->allow('edit', $this->_viewer))
+                {
+                    /* The current user is permitted full editing of this
+                     * bookmark.  See if the url has been changed.
+                     */
+                    $postInfo['url'] =
+                        (empty($postInfo['url'])
+                            ? $bookmark->item->url
+                            : Connexions::normalizeUrl($postInfo['url']));
+                    if ($bookmark->item->url !== $postInfo['url'])
+                    {
+                        /* The user has changed the URL.  Use the new URL to
+                         * create a new bookmark or update a bookmark owned by
+                         * the current user.
+                         */
+                        unset($postInfo['id']);
+                        $bookmark = null;
+                    }
+                    else
+                    {
+                        // Update this existing bookmark with the incoming data
+                        unset($postInfo['id']);
+                        unset($postInfo['url']);
+                    }
+                }
+                else if ($bookmark->allow('modify', $this->_viewer))
+                {
+                    /* The current user is permitted limited editing of this
+                     * bookmark.  Reduce 'postInfo' to include JUST the
+                     * information this user is permitted to change (i.e. name,
+                     * description, tags).
+                     */
+                    $newInfo = array(
+                        'description' => $postInfo['description'],
+                        'mode'        => $postInfo['mode'],
+                    );
+                    if (! empty($postInfo['name']))
+                    {
+                        $newInfo['name'] = $postInfo['name'];
+                    }
+                    if (! empty($postInfo['tags']))
+                    {
+                        $newInfo['tags'] = $postInfo['tags'];
+                    }
+                    $postInfo = $newInfo;
+                }
+                else
+                {
+                    /* The current user is NOT permitted to modify this
+                     * bookmark.
+                     *
+                     * Let them create their own.
+                     */
+                    $bookmark = null;
+                }
+            }
 
-            $bookmark = $bService->get($postInfo);
+            if ($bookmark === null)
+            {
+                // Get/create a bookmark for the CURRENT user
+                $postInfo['user']   = $this->_viewer;
+                $postInfo['itemId'] = $postInfo['url'];
+                unset($postInfo['url']);
+
+                $bookmark = $bService->get($postInfo);
+            }
+            else
+            {
+                // Update the given bookmark with postInfo data
+                $bookmark->populate( $postInfo );
+            }
+
             if ($bookmark === null)
             {
                 $error = "Cannot create new bookmark (internal error)";
@@ -491,14 +571,31 @@ class PostController extends Connexions_Controller_Action
     protected function _doGet(array &$postInfo)
     {
         if (empty($postInfo['url']))
-            return null;
+        {
+            // See if we have a targeted id
+            if (! empty($postInfo['id']))
+            {
+                // Attempt to locate the bookmark using the targeted id
+                $id = $postInfo['id'];
+            }
+            else
+            {
+                return null;
+            }
+        }
+        else
+        {
+            /* Attempt to locate the bookmark by the current user and provided
+             * url.
+             */
+            $id = array(
+                'user'      => $this->_viewer,
+                'itemId'    => $postInfo['url'],
+            );
+        }
 
         $bService = $this->service('Bookmark');
-        $bookmark = $bService->find( array(
-                                        'user'   => $this->_viewer,
-                                        'itemId' => $postInfo['url'],
-                                     ));
-
+        $bookmark = $bService->find( $id );
         if ($bookmark !== null)
         {
             /*
@@ -508,32 +605,82 @@ class PostController extends Connexions_Controller_Action
                                             $bookmark->toArray()) );
             // */
 
-            /* The user has an existing bookmark.  Fill in any data
-             * that was NOT provided directly.
+            /* Ensure that the URL of the bookmarked item is included and
+             * initialize the mode to indicate the posting of a new bookmark
+             * (null).
              */
-            $postInfo['userId'] = $bookmark->userId;
-            $postInfo['itemId'] = $bookmark->itemId;
+            $postInfo['url']  = $bookmark->item->url;
 
-            if (empty($postInfo['name']))
-                $postInfo['name'] = $bookmark->name;
+            $mode = null;   // By default, cannot modify/edit
 
-            if (empty($postInfo['description']))
-                $postInfo['description'] = $bookmark->description;
-
-            if ($postInfo['rating'] === null)
-                $postInfo['rating'] = $bookmark->rating;
-
-            if ($postInfo['isFavorite'] === null)
-                $postInfo['isFavorite'] = $bookmark->isFavorite;
-
-            if ($postInfo['isPrivate'] === null)
-                $postInfo['isPrivate'] = $bookmark->isPrivate;
-
-            if (empty($postInfo['tags']) && $bookmark->tags)
+            // Least to most privilege -- view, modify, edit
+            if ($bookmark->allow('view', $this->_viewer))
             {
-                $postInfo['tags'] =
-                    preg_replace('/\s*,\s*/', ', ',
-                                 $bookmark->tags->__toString());
+                /* The target bookmark exists and the current user is permitted
+                 * to view it, so fill in any viewable data that was NOT
+                 * provided directly.
+                 */
+                if (empty($postInfo['name']))
+                    $postInfo['name'] = $bookmark->name;
+
+                if (empty($postInfo['description']))
+                    $postInfo['description'] = $bookmark->description;
+
+                if (empty($postInfo['tags']) && $bookmark->tags)
+                {
+                    $postInfo['tags'] =
+                        preg_replace('/\s*,\s*/', ', ',
+                                     $bookmark->tags->__toString());
+                }
+            }
+
+            if ($bookmark->allow('modify', $this->_viewer))
+            {
+                /* The current user is permitted (at least) limited editing of
+                 * this bookmark, so include the userId/itemId of the target
+                 * bookmark and set the mode to 'modify'
+                 */
+                $postInfo['userId'] = $bookmark->userId;
+                $postInfo['itemId'] = $bookmark->itemId;
+
+                $mode = 'modify';
+            }
+
+            if ($bookmark->allow('edit', $this->_viewer))
+            {
+                /* The current user is permitted full editing of this bookmark,
+                 * so fill in any additional data that was NOT provided
+                 * directly and set the mode to 'edit'
+                 */
+                $mode = 'edit';
+
+                /* The current user is the owner of the target bookmark,
+                 */
+                if ($postInfo['rating'] === null)
+                    $postInfo['rating'] = $bookmark->rating;
+
+                if ($postInfo['isFavorite'] === null)
+                    $postInfo['isFavorite'] = $bookmark->isFavorite;
+
+                if ($postInfo['isPrivate'] === null)
+                    $postInfo['isPrivate'] = $bookmark->isPrivate;
+
+                if ($postInfo['worldModify'] === null)
+                    $postInfo['worldModify'] = $bookmark->worldModify;
+            }
+
+            if ($mode === null)
+            {
+                /* The current user does NOT have the option to modify this
+                 * bookmark so do not return it.
+                 */
+                $bookmark = null;
+                $mode     = 'save';
+            }
+
+            if (empty($postInfo['mode']))
+            {
+                $postInfo['mode'] = $mode;
             }
         }
 

@@ -39,6 +39,12 @@
       cursor: pointer;
     }
   }
+  .ui-stars-star-disabled {
+    cursor: default;
+    a {
+      cursor: default;
+    }
+  }
   .ui-stars-star-on {
     a {
       // sprites.sass::.star_1_on

@@ -77,6 +77,7 @@ class Service_Proxy_ApiV1
                                      $rating,
                                      $is_favorite,
                                      $is_private,
+                                     false, // V1 doesn't do worldModify
                                      $tags,
                                      $url);
 
@@ -117,6 +118,7 @@ class Service_Proxy_ApiV1
                                      $rating,
                                      $is_favorite,
                                      $is_private,
+                                     false, // V1 doesn't do worldModify
                                      $tags,
                                      $url);
 

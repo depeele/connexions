@@ -14,7 +14,7 @@ $userRatingWidth: 96px;
   .item-status {
     padding:  0 0.5em 0 0;
 
-    .favorite,.private {
+    .favorite,.private,.worldModify {
       padding-bottom: 0.2em;
       input {
         width: 0;
@@ -32,6 +32,9 @@ $userRatingWidth: 96px;
           float: left;
         }
       }
+    }
+    .ui-state-disabled {
+      visibility: hidden;
     }
   }
   .item-data {

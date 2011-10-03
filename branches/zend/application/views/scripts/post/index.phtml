@@ -13,6 +13,14 @@
 if (! @is_array($this->postInfo))
     $this->postInfo = array();
 
+switch ($this->postInfo['mode'])
+{
+case 'edit':    $verb = 'Update';   $adj = '';      break;
+case 'modify':  $verb = 'Modify';   $adj = '';      break;
+case 'save':
+default:        $verb = 'Post';     $adj = 'new';   break;
+}
+/*
 if (isset($this->postInfo['itemId']) && ($this->postInfo['mode'] !== 'post'))
 {
     $verb = 'Update';
@@ -23,6 +31,7 @@ else
     $verb = 'Post';
     $adj  = 'new';
 }
+// */
 
 $containerId = 'post';
 ?>
@@ -45,23 +54,25 @@ $containerId = 'post';
 </div><!-- ribbon-form } -->
 <script type='text/javascript'>
 /* Include an event delegate to adjust our legend if the bookmarkPost widget
- * changes the 'isEdit' state.
+ * changes the 'mode' state.
  */
 (function($) {
     var $container      = $('#<?= $containerId ?>');
     var formSelector    = '.ui-bookmarkPost';
 
-    //$container.delegate('form', 'isEditChanged', function(e, isEdit) {
-    $container.delegate(formSelector, 'isEditChanged',
-                        function(e, isEdit) {
+    //$container.delegate('form', 'modeChanged', function(e, mode) {
+    $container.delegate(formSelector, 'modeChanged',
+                        function(e, mode) {
         /* Update the title & subtitle of the ribbon-form based upon the new
-         * value of 'isEdit'.
+         * value of 'mode'.
          */
         var title       = 'Post';
         var subTitle    = 'a new bookmark';
-        if (isEdit)
+        if (mode !== 'save')
         {
-            title       = 'Update';
+            title       = (mode === 'edit'
+                            ? 'Edit'
+                            : 'Modify');
             subTitle    = 'a bookmark';
         }
 

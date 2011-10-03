@@ -105,6 +105,7 @@ CREATE TABLE userItem (
   rating        TINYINT(1)  UNSIGNED    NOT NULL DEFAULT 0,
   isFavorite    TINYINT(1)  UNSIGNED    NOT NULL DEFAULT 0,
   isPrivate     TINYINT(1)  UNSIGNED    NOT NULL DEFAULT 0,
+  worldModify   TINYINT(1)  UNSIGNED    NOT NULL DEFAULT 0,
 
   -- Can only have one TIMESTAMP field that uses CURRENT_TIMESTAMP
   taggedOn      TIMESTAMP               NOT NULL DEFAULT '0000-00-00 00:00:00',
@@ -115,6 +116,7 @@ CREATE TABLE userItem (
   KEY       `ui_userId`     (`userId`),
   KEY       `ui_itemId`     (`itemId`),
   KEY       `ui_rating`     (`rating`),
+  KEY       `ui_isFavorite` (`isFavorite`),
   KEY       `ui_isPrivate`  (`isPrivate`),
   KEY       `ui_taggedOn`   (`taggedOn`),
   KEY       `ui_updatedOn`  (`updatedOn`),

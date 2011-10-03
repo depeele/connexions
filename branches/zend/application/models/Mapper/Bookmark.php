@@ -264,6 +264,11 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
             $data['isPrivate']  = (bool)($data['isPrivate']);
         }
 
+        if (isset($data['worldModify']))
+        {
+            $data['worldModify']  = (bool)($data['worldModify']);
+        }
+
         /* Ensure that the 'updatedOn' date is the current date
          * (i.e. the actual update date).
          *

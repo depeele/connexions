@@ -181,6 +181,10 @@ a:visited { color: #005a9c; }
 
 .share_fill { width: 15px; height: 15px; background-position: -15px -59px; }
 
+.worldModify_empty { width: 16px; height: 16px; background-position: -152px -16px; }
+
+.worldModify_fill, .setting-public { width: 16px; height: 16px; background-position: -136px -16px; }
+
 .button_delete_on { width: 16px; height: 16px; background-position: -72px 0; }
 
 .button_delete_off { width: 16px; height: 16px; background-position: -88px 0; }
@@ -252,8 +256,6 @@ a:visited { color: #005a9c; }
 .type-password { width: 16px; height: 16px; background-position: -152px 0; }
 
 .setting-private { width: 16px; height: 16px; background-position: -120px -16px; }
-
-.setting-public { width: 16px; height: 16px; background-position: -136px -16px; }
 
 .setting-restricted { width: 16px; height: 16px; background-position: -120px -32px; }
 
@@ -704,6 +706,8 @@ a:visited { color: #005a9c; }
 .ui-stars-wrapper .ui-stars a { background-image: url("sprites/connexions.gif"); background-attachment: scroll; background-repeat: no-repeat; background-color: transparent; display: block; }
 .ui-stars-wrapper .ui-stars-star { cursor: pointer; }
 .ui-stars-wrapper .ui-stars-star a { cursor: pointer; }
+.ui-stars-wrapper .ui-stars-star-disabled { cursor: default; }
+.ui-stars-wrapper .ui-stars-star-disabled a { cursor: default; }
 .ui-stars-wrapper .ui-stars-cancel { padding: 1px; }
 .ui-stars-wrapper .ui-stars-cancel-disabled a { background-image: none; }
 .ui-stars-wrapper .ui-stars-star-disabled, .ui-stars-wrapper .ui-stars-cancel-disabled { cursor: default; }
@@ -741,10 +745,11 @@ a:visited { color: #005a9c; }
 
 /****** post.sass ****** */
 .ui-bookmarkPost .item-status { padding: 0 0.5em 0 0; }
-.ui-bookmarkPost .item-status .favorite, .ui-bookmarkPost .item-status .private { padding-bottom: 0.2em; }
-.ui-bookmarkPost .item-status .favorite input, .ui-bookmarkPost .item-status .private input { width: 0; height: 0; margin: 0; padding: 0; }
-.ui-bookmarkPost .item-status .favorite .checkbox, .ui-bookmarkPost .item-status .private .checkbox { position: relative; display: inline; cursor: pointer; border: none !important; }
-.ui-bookmarkPost .item-status .favorite .checkbox .ui-stars-wrapper, .ui-bookmarkPost .item-status .private .checkbox .ui-stars-wrapper { float: left; }
+.ui-bookmarkPost .item-status .favorite, .ui-bookmarkPost .item-status .private, .ui-bookmarkPost .item-status .worldModify { padding-bottom: 0.2em; }
+.ui-bookmarkPost .item-status .favorite input, .ui-bookmarkPost .item-status .private input, .ui-bookmarkPost .item-status .worldModify input { width: 0; height: 0; margin: 0; padding: 0; }
+.ui-bookmarkPost .item-status .favorite .checkbox, .ui-bookmarkPost .item-status .private .checkbox, .ui-bookmarkPost .item-status .worldModify .checkbox { position: relative; display: inline; cursor: pointer; border: none !important; }
+.ui-bookmarkPost .item-status .favorite .checkbox .ui-stars-wrapper, .ui-bookmarkPost .item-status .private .checkbox .ui-stars-wrapper, .ui-bookmarkPost .item-status .worldModify .checkbox .ui-stars-wrapper { float: left; }
+.ui-bookmarkPost .item-status .ui-state-disabled { visibility: hidden; }
 .ui-bookmarkPost .item-data input, .ui-bookmarkPost .item-data textarea { width: 100%; }
 .ui-bookmarkPost .item-data .item-name { padding-bottom: 0; margin-right: 106px; }
 .ui-bookmarkPost .item-data .item-url { padding-bottom: 0; margin-left: 1em; }
@@ -797,13 +802,12 @@ a:visited { color: #005a9c; }
 .bookmarks .item:after, .pane .displayStyle fieldset.options .item:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; *display: inline-block; zoom: 1; *display: block; }
 .bookmarks .item .status, .pane .displayStyle fieldset.options .item .status { position: absolute; top: 0; left: 0; width: 20px; height: 100%; z-index: 2; }
 .bookmarks .item .status .checkbox, .pane .displayStyle fieldset.options .item .status .checkbox { border: 0; }
-.bookmarks .item .status .avatar, .bookmarks .item .status .favorite, .bookmarks .item .status .private, .pane .displayStyle fieldset.options .item .status .avatar, .pane .displayStyle fieldset.options .item .status .favorite, .pane .displayStyle fieldset.options .item .status .private { position: absolute; cursor: pointer; }
-.bookmarks .item .status .avatar, .pane .displayStyle fieldset.options .item .status .avatar { top: 4px; left: 1px; }
+.bookmarks .item .status .avatar, .bookmarks .item .status .favorite, .bookmarks .item .status .private, .bookmarks .item .status .worldModify, .pane .displayStyle fieldset.options .item .status .avatar, .pane .displayStyle fieldset.options .item .status .favorite, .pane .displayStyle fieldset.options .item .status .private, .pane .displayStyle fieldset.options .item .status .worldModify { cursor: pointer; padding: 0 1px 2px 1px; width: 16px; min-height: 16px; }
 .bookmarks .item .status .avatar img, .pane .displayStyle fieldset.options .item .status .avatar img { width: 16px; }
-.bookmarks .item .status .favorite, .pane .displayStyle fieldset.options .item .status .favorite { top: 28px; left: 3px; }
 .bookmarks .item .status .favorite .star_empty, .pane .displayStyle fieldset.options .item .status .favorite .star_empty { visibility: hidden; }
-.bookmarks .item .status .private, .pane .displayStyle fieldset.options .item .status .private { top: 48px; left: 3px; }
+.bookmarks .item .status .private, .pane .displayStyle fieldset.options .item .status .private { padding-left: 2px; }
 .bookmarks .item .status .private .lock_empty, .pane .displayStyle fieldset.options .item .status .private .lock_empty { visibility: hidden; }
+.bookmarks .item .status .worldModify .worldModify_empty, .pane .displayStyle fieldset.options .item .status .worldModify .worldModify_empty { visibility: hidden; }
 .bookmarks .item .stats, .pane .displayStyle fieldset.options .item .stats { position: relative; float: right; width: 100px; padding: 0 0 0 4px; text-align: right; z-index: 3; }
 .bookmarks .item .stats:after, .pane .displayStyle fieldset.options .item .stats:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; *display: inline-block; zoom: 1; *display: block; }
 .bookmarks .item .stats a.count, .bookmarks .item .stats div.count, .pane .displayStyle fieldset.options .item .stats a.count, .pane .displayStyle fieldset.options .item .stats div.count { display: block; background-color: #999999; color: white; padding: 0.25em; font-weight: bold; text-align: center; text-decoration: none; }
@@ -844,14 +848,13 @@ a:visited { color: #005a9c; }
 .bookmarks .item:hover .control, .pane .displayStyle fieldset.options .item:hover .control { visibility: visible; }
 .bookmarks .item:hover .status .favorite .star_empty, .pane .displayStyle fieldset.options .item:hover .status .favorite .star_empty { visibility: visible; }
 .bookmarks .item:hover .status .private .lock_empty, .pane .displayStyle fieldset.options .item:hover .status .private .lock_empty { visibility: visible; }
+.bookmarks .item:hover .status .worldModify .worldModify_empty, .pane .displayStyle fieldset.options .item:hover .status .worldModify .worldModify_empty { visibility: visible; }
 .bookmarks .item:hover .stats .rating .owner .ui-stars-star-disabled, .bookmarks .item:hover .stats .rating .owner .ui-stars-cancel, .pane .displayStyle fieldset.options .item:hover .stats .rating .owner .ui-stars-star-disabled, .pane .displayStyle fieldset.options .item:hover .stats .rating .owner .ui-stars-cancel { visibility: visible; }
 .bookmarks .private .status, .pane .displayStyle fieldset.options .private .status { background-color: #fff0f0; border-left: 1px dotted #ff9999; }
 .bookmarks .mine, .pane .displayStyle fieldset.options .mine { min-height: 45px; }
 .bookmarks .mine .status, .pane .displayStyle fieldset.options .mine .status { display: block; min-height: 45px; }
 .bookmarks .minimized .data .itemName, .bookmarks .minimized .data .description, .bookmarks .minimized .data .description .summary, .bookmarks .minimized .data .description .full, .pane .displayStyle fieldset.options .minimized .data .itemName, .pane .displayStyle fieldset.options .minimized .data .description, .pane .displayStyle fieldset.options .minimized .data .description .summary, .pane .displayStyle fieldset.options .minimized .data .description .full { display: inline; margin: 0; }
 .bookmarks .minimized .data .description, .pane .displayStyle fieldset.options .minimized .data .description { padding: 0 0 0 0.5em; }
-.bookmarks .no-avatar .status .favorite, .pane .displayStyle fieldset.options .no-avatar .status .favorite { top: 4px; }
-.bookmarks .no-avatar .status .private, .pane .displayStyle fieldset.options .no-avatar .status .private { top: 24px; }
 .bookmarks .new-item, .pane .displayStyle fieldset.options .new-item { background-color: #f3f3ff; -moz-border-radius: 0 0 0 20px; -webkit-border-radius: 0 0 0 20px; -ms-border-radius: 0 0 0 20px; -khtml-border-radius: 0 0 0 20px; border-radius: 0 0 0 20px; }
 
 /*fieldInfoColor             = !validationInputColor */
