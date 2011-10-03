@@ -714,6 +714,7 @@ class Service_Bookmark extends Service_Base
      *  @param  rating      If >= 0,      the (new) rating;
      *  @param  isFavorite  If non-null,  the (new) favorite value;
      *  @param  isPrivate   If non-null,  the (new) privacy value;
+     *  @param  worldModify If non-null,  the (new) world modify value;
      *  @param  tags        If non-empty, the (new) set of tags;
      *  @param  url         If non-empty, the (new) URL associated with this
      *                      bookmark (MAY create a new Item);
@@ -729,6 +730,7 @@ class Service_Bookmark extends Service_Base
                            $rating          = -1,
                            $isFavorite      = null,
                            $isPrivate       = null,
+                           $worldModify     = null,
                            $tags            = null,
                            $url             = null,
                            $overrides       = false)
@@ -737,13 +739,14 @@ class Service_Bookmark extends Service_Base
         Connexions::log("Service_Bookmark::update() "
                         . "id[ %s ], name[ %s ], description[ %s ], "
                         . "rating[ %s ], isFavorite[ %s ], isPrivate[ %s ], "
-                        . "tags[ %s ], url[ %s ]",
+                        . "worldModify[ %s ], tags[ %s ], url[ %s ]",
                         Connexions::varExport($id),
                         Connexions::varExport($name),
                         Connexions::varExport($description),
                         Connexions::varExport($rating),
                         Connexions::varExport($isFavorite),
                         Connexions::varExport($isPrivate),
+                        Connexions::varExport($worldModify),
                         Connexions::varExport($tags),
                         Connexions::varExport($url));
         // */
@@ -751,27 +754,67 @@ class Service_Bookmark extends Service_Base
         // First, attempt to normalize the incoming bookmark id.
         $id = $this->_mapper->normalizeId($id);
 
-        /* Now, if the bookmark's userId != the current authenticated userId,
-         * FAIL.
-         */
+        // if the 'userId' was NOT supplied, default to the current user.
+        $canEdit = true;
         if (empty($id['userId']))
         {
             $id['userId'] = $this->_curUser()->userId;
         }
+        /* The 'userId' WAS supplies -- if overrides is false and 'userId' is
+         * NOT the current user...
+         */
         else if ( ($overrides === false) &&
                   ($id['userId'] !== $this->_curUser()->userId) )
         {
-            throw new Exception("Cannot update bookmarks of/for others");
+            /* If 'itemId' was also supplied, lookup the target bookmark,
+             * otherwise, we cannot determine whether or not the current user
+             * is permitted to modify the target bookmark.
+             */
+            if (isset($id['itemId']))
+            {
+                $bookmark = $this->get(array('userId' => $id['userId'],
+                                             'itemId' => $id['itemId']));
+
+                // Is the current user allowed AT LEAST 'modify'?
+                if ($bookmark &&
+                    ($bookmark->allow('modify', $this->_curUser())))
+                {
+                    /* This bookmark is modifiable (or editable) by the current
+                     * user.  Since we already have the bookmark, empty 'id'
+                     */
+                    $id = array();
+
+                    $canEdit = $bookmark->allow('edit', $this->_curUser());
+                }
+                else
+                {
+                    /* The current user is NOT allowed to modify this bookmark
+                     * (or there is no matching bookmark).
+                     */
+                    $bookmark = null;
+                }
+
+            }
+
+            if ($bookmark === null)
+            {
+                throw new Exception("Cannot update bookmarks of/for others");
+            }
         }
 
         // Fill in any additional properties that have been provided
         if (! empty($name))         $id['name']         = $name;
-        if (! empty($url))          $id['url']          = $url;
-        if (! empty($description))  $id['description']  = $description;
-        if (  $rating     >=  -1)   $id['rating']       = $rating;
-        if (  $isFavorite !== null) $id['isFavorite']   = $isFavorite;
-        if (  $isPrivate  !== null) $id['isPrivate']    = $isPrivate;
+        if (isset($description))    $id['description']  = $description;
         if (! empty($tags))         $id['tags']         = $tags;
+
+        if ($canEdit)
+        {
+            if (! empty($url))          $id['url']          = $url;
+            if (  $rating     >=  -1)   $id['rating']       = $rating;
+            if (  $isFavorite !== null) $id['isFavorite']   = $isFavorite;
+            if (  $isPrivate  !== null) $id['isPrivate']    = $isPrivate;
+            if (  $worldModify!== null) $id['worldModify']  = $worldModify;
+        }
 
         if (is_array($overrides))
         {
@@ -792,8 +835,17 @@ class Service_Bookmark extends Service_Base
         $action = 'locate/create';
         try
         {
-            // Attempt to retrieve/create a bookmark model instance.
-            $bookmark = $this->get($id);
+            if ($bookmark === null)
+            {
+                // Attempt to retrieve/create a bookmark model instance.
+                $bookmark = $this->get($id);
+            }
+            else
+            {
+                // Update an existing bookmark with data from 'id'
+                $bookmark->populate($id);
+            }
+
             if ($bookmark === null)
             {
                 $error = "Cannot {$action} bookmark [ "

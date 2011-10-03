@@ -4,13 +4,14 @@
  *
  *  This is primarily a class to provide unobtrusive activation of a
  *  pre-renderd bookmark post from
- *      (application/views/scripts/post/index-partial.phtml)
+ *      (application/views/scripts/post/main.phtml)
  *
  *      - conversion of markup for suggestions to ui.tabs instance(s) 
  *        possibly containing connexions.collapsible instance(s);
  *
  *
  *  <form>
+ *   <input name='mode' type='hidden' value='edit' />
  *   <div class='item-status'>
  *    <div class='field favorite'>
  *     <label  for='isFavorite'>Favorite</label>
@@ -19,6 +20,10 @@
  *    <div class='field private'>
  *     <label  for='isPrivate'>Private</label>
  *     <input name='isPrivate' type='checkbox' />
+ *    </div>
+ *    <div class='field worldModify'>
+ *     <label  for='worldModify'>World modifiable</label>
+ *     <input name='worldModify' type='checkbox' />
  *    </div>
  *   </div>
  *   <div class='item-data'>
@@ -109,6 +114,7 @@ $.widget("connexions.bookmarkPost", {
         rating:     null,
         isFavorite: null,
         isPrivate:  null,
+        worldModify:null,
 
         tags:       null,
         url:        null,
@@ -142,14 +148,19 @@ $.widget("connexions.bookmarkPost", {
          */
         apiKey:     null,
 
-        /* Is this an edit of an existing user bookmark (true) or a user saving
-         * the bookmark of another user (false)?
+        /* The posting mode:
+         *      save/null   The user is saving a new bookmark;
+         *      modify      The user is modifying an existing bookmark and
+         *                  is permitted to edit JUST name, description, and
+         *                  tags;
+         *      edit        The user is modifying an existing bookmark and
+         *                  is permitted full editing;
          *
-         * If 'isEdit' is false, changes are NOT required to data fields before
+         * For modes save/post, changes are NOT required to data fields before
          * saving AND ALL fields will be included in the update regardless of
          * whether they've changed.
          */
-        isEdit:     true,
+        mode:       'save',
 
         // Widget state
         enabled:    true
@@ -161,7 +172,7 @@ $.widget("connexions.bookmarkPost", {
      *      'enabled'
      *      'disabled'
      *      'urlChanged'        -- new URL/bookmark data
-     *      'isEditChanged'     -- new URL/bookmark data
+     *      'modeChanged'       -- new URL/bookmark data
      *      'saved'
      *      'canceled'
      *      'complete'
@@ -198,8 +209,18 @@ $.widget("connexions.bookmarkPost", {
         opts.$required    = self.element.find('.required');
 
         // Hidden fields
+        opts.$mode        = self.element.find('input[name=mode]');
         opts.$userId      = self.element.find('input[name=userId]');
         opts.$itemId      = self.element.find('input[name=itemId]');
+
+        if (opts.$mode.length > 0)
+        {
+            opts.mode = opts.$mode.val();
+        }
+        else if (opts.mode === null)
+        {
+            opts.mode = 'save';
+        }
 
         // Text fields
         opts.$name        = self.element.find('input[name=name]');
@@ -210,6 +231,7 @@ $.widget("connexions.bookmarkPost", {
         // Non-text fields
         opts.$favorite    = self.element.find('input[name=isFavorite]');
         opts.$private     = self.element.find('input[name=isPrivate]');
+        opts.$worldModify = self.element.find('input[name=worldModify]');
         opts.$rating      = self.element.find('.userRating .stars-wrapper');
 
         // Buttons
@@ -298,6 +320,17 @@ $.widget("connexions.bookmarkPost", {
             hideLabel:  true
         });
 
+        // Status - World Modifiable
+        opts.$worldModify.checkbox({
+            css:        'connexions_sprites',
+            cssOn:      'worldModify_fill',
+            cssOff:     'worldModify_empty',
+            titleOn:    'World Modifiable: click to mark as editable by you',
+            titleOff:   'Editable by you: click to mark as world modifiable',
+            useElTitle: false,
+            hideLabel:  true
+        });
+
         // Rating - average and user
         opts.$rating.stars({
             //split:    2
@@ -370,6 +403,7 @@ $.widget("connexions.bookmarkPost", {
         // Set the current widget state to the values of it's sub-components
         var self    = this;
         var opts    = self.options;
+        var oldMode = opts.mode;
 
         opts.name        = opts.$name.val();
         opts.description = opts.$description.val();
@@ -377,8 +411,14 @@ $.widget("connexions.bookmarkPost", {
 
         opts.isFavorite  = opts.$favorite.checkbox('isChecked');
         opts.isPrivate   = opts.$private.checkbox('isChecked');
+        opts.worldModify = opts.$worldModify.checkbox('isChecked');
 
         opts.url         = opts.$url.val();
+
+        if (opts.$mode.length > 0)
+        {
+            opts.mode  = opts.$mode.val();
+        }
 
         if (opts.$userId.length > 0)
         {
@@ -400,19 +440,35 @@ $.widget("connexions.bookmarkPost", {
             self._highlightTags();
         }
 
-        /* If the value of 'isEdit' is changing, trigger 'isEditChanged' making
-         * sure this.options.isEdit reflects the new  value BEFORE triggering.
-         */
-        var oldIsEdit   = opts.isEdit;
-        opts.isEdit     = (opts.userId === null ? false : true);
-
-        if (oldIsEdit !== opts.isEdit)
+        if (opts.mode === 'modify')
         {
-            self.element.trigger('isEditChanged', opts.isEdit);
+            // Disable those properties that cannot be changed in 'modify' mode
+            opts.$url.input('disable');
+            opts.$favorite.checkbox('disable');
+            opts.$private.checkbox('disable');
+            opts.$worldModify.checkbox('disable');
+            opts.$rating.stars('disable');
+        }
+        else
+        {
+            // Ensure that everything is enabled
+            opts.$favorite.checkbox('enable');
+            opts.$url.input('enable');
+            opts.$private.checkbox('enable');
+            opts.$worldModify.checkbox('enable');
+            opts.$rating.stars('enable');
+        }
+
+        /* If the value of 'mode' is changing, trigger 'modeChanged' making
+         * sure this.options.mode reflects the new  value BEFORE triggering.
+         */
+        if (oldMode !== opts.mode)
+        {
+            self.element.trigger('modeChanged', opts.mode);
         }
     },
 
-    _setFormFromState: function()
+    _setFormFromState: function(newMode)
     {
         // Set the current widget state to the values of it's sub-components
         var self    = this;
@@ -431,12 +487,18 @@ $.widget("connexions.bookmarkPost", {
 
         opts.$favorite.checkbox( opts.isFavorite ? 'check' : 'uncheck' );
         opts.$private.checkbox(  opts.isPrivate  ? 'check' : 'uncheck' );
+        opts.$worldModify.checkbox(  opts.worldModify  ? 'check' : 'uncheck' );
 
         /* Do NOT use opts.$url.input('val', opts.url) since this will fire a
          * 'change' event, causing _url_changed() to be invoked, resulting in
          * another call to this method, ...
          */
         opts.$url.val( (opts.itemId ? opts.itemId : opts.url) );
+
+        if (opts.$mode.length > 0)
+        {
+            opts.$mode.val(newMode);
+        }
 
         if (opts.$userId.length > 0)
         {
@@ -455,15 +517,30 @@ $.widget("connexions.bookmarkPost", {
                         .stars('select', opts.rating);
         }
 
-        /* If the value of 'isEdit' is changing, trigger 'isEditChanged' making
-         * sure this.options.isEdit reflects the new  value BEFORE triggering.
-         */
-        var oldIsEdit   = opts.isEdit;
-        opts.isEdit     = (opts.userId === null ? false : true);
-
-        if (oldIsEdit !== opts.isEdit)
+        if (newMode === 'modify')
         {
-            self.element.trigger('isEditChanged', opts.isEdit);
+            // Disable those properties that cannot be changed in 'modify' mode
+            opts.$favorite.checkbox('disable');
+            opts.$private.checkbox('disable');
+            opts.$worldModify.checkbox('disable');
+            opts.$rating.stars('disable');
+        }
+        else
+        {
+            // Ensure that everything is enabled
+            opts.$favorite.checkbox('enable');
+            opts.$private.checkbox('enable');
+            opts.$worldModify.checkbox('enable');
+            opts.$rating.stars('enable');
+        }
+
+        /* If the value of 'mode' is changing, trigger 'modeChanged' making
+         * sure this.options.mode reflects the new  value BEFORE triggering.
+         */
+        if (newMode && (newMode !== opts.mode))
+        {
+            opts.mode = newMode;
+            self.element.trigger('modeChanged', opts.mode);
         }
     },
 
@@ -616,6 +693,8 @@ $.widget("connexions.bookmarkPost", {
                                                 _validate_form);
         opts.$private.bind('change.bookmarkPost',
                                                 _validate_form);
+        opts.$worldModify.bind('change.bookmarkPost',
+                                                _validate_form);
         opts.$rating.bind('change.bookmarkPost',
                                                 _validate_form);
 
@@ -668,7 +747,7 @@ $.widget("connexions.bookmarkPost", {
             }
         };
 
-        if (opts.isEdit !== true)
+        if (opts.mode === 'save')
         {
             /* For 'Save', userId MUST be empty/null to notify Service_Bookmark
              * to use the authenticated user's id.
@@ -677,21 +756,21 @@ $.widget("connexions.bookmarkPost", {
         }
 
         // Include all fields that have changed.
-        if ( (opts.isEdit !== true) ||
+        if ( (opts.mode === 'save') ||
              (opts.$name.val() !== opts.name) )
         {
             params.name = opts.$name.val();
             nonEmpty    = true;
         }
 
-        if ( (opts.isEdit !== true) ||
+        if ( (opts.mode === 'save') ||
              (opts.$description.val() !== opts.description) )
         {
             params.description = opts.$description.val();
             nonEmpty           = true;
         }
 
-        if ( (opts.isEdit !== true) ||
+        if ( (opts.mode === 'save') ||
              ((opts.$tags.length > 0) &&
               (opts.$tags.val() !== opts.tags)) )
         {
@@ -699,21 +778,28 @@ $.widget("connexions.bookmarkPost", {
             nonEmpty    = true;
         }
 
-        if ( (opts.isEdit !== true) ||
+        if ( (opts.mode === 'save') ||
              (opts.$favorite.checkbox('isChecked') !== opts.isFavorite) )
         {
             params.isFavorite = opts.$favorite.checkbox('isChecked');
             nonEmpty          = true;
         }
 
-        if ( (opts.isEdit !== true) ||
+        if ( (opts.mode === 'save') ||
              (opts.$private.checkbox('isChecked') !== opts.isPrivate) )
         {
             params.isPrivate = opts.$private.checkbox('isChecked');
             nonEmpty         = true;
         }
 
-        if ( (opts.isEdit !== true) ||
+        if ( (opts.mode === 'save') ||
+             (opts.$worldModify.checkbox('isChecked') !== opts.worldModify) )
+        {
+            params.worldModify = opts.$worldModify.checkbox('isChecked');
+            nonEmpty           = true;
+        }
+
+        if ( (opts.mode === 'save') ||
              ((opts.$rating.length > 0) &&
               (opts.$rating.stars('value') !== opts.rating)) )
         {
@@ -721,7 +807,7 @@ $.widget("connexions.bookmarkPost", {
             nonEmpty      = true;
         }
 
-        if ( (opts.isEdit !== true) ||
+        if ( (opts.mode === 'save') ||
              (opts.$url.val() !== opts.url) )
         {
             // The URL has changed -- pass it in
@@ -743,9 +829,9 @@ $.widget("connexions.bookmarkPost", {
 
         self.element.mask();
 
-        var verb    = (opts.isEdit === true
-                        ? 'update'
-                        : 'save');
+        var verb    = (opts.mode === 'save'
+                        ? 'save'
+                        : 'update');
 
         // Perform a JSON-RPC call to perform the update.
         $.jsonRpc(opts.jsonRpc, 'bookmark.update', params, {
@@ -796,11 +882,11 @@ $.widget("connexions.bookmarkPost", {
 
                 /* Finally, update the form state
                  *
-                 * :XXX: We doe this AFTER triggering 'saved' so any
-                 *       'isEditChanged' event won't confuse anyone listeing to
+                 * :XXX: We do this AFTER triggering 'saved' so any
+                 *       'modeChanged' event won't confuse anyone listeing to
                  *       both 'saved' and 'isEventChanged' events since
                  *       technically, the 'saved' event should reflect the
-                 *       'isEdit' value BEFORE the new form data is applied.
+                 *       'mode' value BEFORE the new form data is applied.
                  */
                 self._setFormFromState();
 
@@ -898,7 +984,7 @@ $.widget("connexions.bookmarkPost", {
                     opts.url = url;
                 }
 
-                self._setFormFromState();
+                self._setFormFromState('edit');
                 self.validate();
 
                 self.element.trigger('urlChanged');
@@ -1268,6 +1354,7 @@ $.widget("connexions.bookmarkPost", {
 
             opts.$favorite.checkbox('enable');
             opts.$private.checkbox('enable');
+            opts.$worldModify.checkbox('enable');
             opts.$rating.stars('enable');
             opts.$inputs.input('enable');
 
@@ -1287,6 +1374,7 @@ $.widget("connexions.bookmarkPost", {
 
             opts.$favorite.checkbox('disable');
             opts.$private.checkbox('disable');
+            opts.$worldModify.checkbox('disable');
             opts.$rating.stars('disable');
             opts.$inputs.input('disable');
 
@@ -1304,6 +1392,7 @@ $.widget("connexions.bookmarkPost", {
 
         opts.$favorite.checkbox('reset');
         opts.$private.checkbox('reset');
+        opts.$worldModify.checkbox('reset');
         opts.$rating.stars('reset');
         opts.$inputs.input('reset');
 
@@ -1340,7 +1429,7 @@ $.widget("connexions.bookmarkPost", {
             }
         }
 
-        if ( isValid && ((opts.isEdit !== true) || hasChanged) )
+        if ( isValid && ((opts.mode === 'save') || hasChanged) )
         {
             opts.$save.button('enable');
         }
@@ -1371,8 +1460,9 @@ $.widget("connexions.bookmarkPost", {
         });
 
         if ((! hasChanged) &&
-            (opts.$favorite.checkbox('hasChanged') ||
-             opts.$private.checkbox('hasChanged')  ||
+            (opts.$favorite.checkbox('hasChanged')      ||
+             opts.$private.checkbox('hasChanged')       ||
+             opts.$worldModify.checkbox('hasChanged')   ||
              opts.$rating.stars('hasChanged')) )
         {
             hasChanged = true;
@@ -1400,6 +1490,7 @@ $.widget("connexions.bookmarkPost", {
         opts.$inputs.unbind('.bookmarkPost');
         opts.$favorite.unbind('.bookmarkPost');
         opts.$private.unbind('.bookmarkPost');
+        opts.$worldModify.unbind('.bookmarkPost');
         opts.$rating.unbind('.bookmarkPost');
         opts.$cte.unbind('.bookmarkPost');
         opts.$save.unbind('.bookmarkPost');
@@ -1416,6 +1507,7 @@ $.widget("connexions.bookmarkPost", {
         // Remove added elements
         opts.$favorite.checkbox('destroy');
         opts.$private.checkbox('destroy');
+        opts.$worldModify.checkbox('destroy');
         opts.$rating.stars('destroy');
         opts.$inputs.input('destroy');
         opts.$save.button('destroy');

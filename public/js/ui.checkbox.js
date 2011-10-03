@@ -2,6 +2,12 @@
  *
  *  Provide a sprite-based checkbox.
  *
+ * Take control of pre-assembled HTML of the form:
+ *  <div>
+ *    <label for='cbId'>Label</label>
+ *    <input name='cbId' type='checkbox' value='true' />
+ *  </div>
+ *
  *  Requires:
  *      ui.core.js
  *      ui.widget.js
@@ -11,7 +17,7 @@
 (function($) {
 
 $.widget("ui.checkbox", {
-    version: "0.1.1",
+    version: "0.1.2",
 
     /* Remove the strange ui.widget._trigger() class name prefix for events.
      *
@@ -218,23 +224,39 @@ $.widget("ui.checkbox", {
 
     enable: function()
     {
-        if (! this.options.enabled)
-        {
-            this.options.enabled = true;
-            this.$el.removeClass('ui-state-disabled');
+        var self    = this;
+        var opts    = self.options;
 
-            this._trigger('enabled');
+        if (! opts.enabled)
+        {
+            opts.enabled = true;
+            self.$el.removeClass('ui-state-disabled');
+            self.$el.parent().removeClass('ui-state-disabled');
+
+            var title   = opts.title
+                        + (opts.checked
+                                ? opts.titleOn
+                                : opts.titleOff);
+            self.img.attr('title', title);
+
+            self._trigger('enabled');
         }
     },
 
     disable: function()
     {
-        if (this.options.enabled)
-        {
-            this.options.enabled = false;
-            this.$el.addClass('ui-state-disabled');
+        var self    = this;
+        var opts    = self.options;
 
-            this._trigger('disabled');
+        if (opts.enabled)
+        {
+            opts.enabled = false;
+            self.$el.addClass('ui-state-disabled');
+            self.$el.parent().addClass('ui-state-disabled');
+
+            self.img.removeAttr('title');
+
+            self._trigger('disabled');
         }
     },
 

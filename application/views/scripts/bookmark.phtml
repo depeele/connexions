@@ -34,18 +34,16 @@ $summaryMax    =  (isset($this->summaryMax) && ($this->summaryMax > 0)
 $highlightTags = ($this->tags && ($this->tags instanceof Model_Set_Tag)
                     ? $this->tags->__toString()
                     : null);
-
-$isOwner    =  ( $viewer &&
-                //($viewer->userId === $bookmark->user->userId)
-                $viewer->isSame($bookmark->user)
-                    ? true
-                    : false );
+$isOwner       = $bookmark->isOwner( $viewer );
+$allowEdit     = $bookmark->allow( 'edit',   $viewer );
+$allowModify   = $bookmark->allow( 'modify', $viewer );
 
 $css = array();
 array_push($css, ($isOwner ? 'mine' : 'other'));
 
 if ($bookmark->isFavorite)    array_push($css, 'favorite');
 if ($bookmark->isPrivate)     array_push($css, 'private');
+if ($bookmark->worldModify)   array_push($css, 'worldModify');
 if ($showParts['minimized'])
 {
     array_push($css, 'minimized');
@@ -89,23 +87,28 @@ if (isset($this->lastVisitFor))
      * Status
      *
      */
-    if ( ($showParts['item:data:avatar'] === true) &&
-         (! empty($bookmark->user->pictureUrl)) )
+    if ($showParts['item:data:avatar'] === true)
     {
         // Avatar
-        $userHref = $this->url(array('action' => $bookmark->user->name));
-
         ?>
-     <div class='avatar'>
+     <div class='avatar'><?php
+
+        if (! empty($bookmark->user->pictureUrl))
+        {
+            $userHref = $this->url(array('action' => $bookmark->user->name));
+
+            ?>
        <a  href='<?= $userHref ?>'
           title='<?= $bookmark->user->fullName ?>'>
          <img src='<?= Connexions::httpUrl($bookmark->user->pictureUrl) ?>' />
-       </a>
+       </a><?php
+        }
+        ?>
      </div><?php
 
     }
 
-    if ($isOwner)
+    if ($bookmark->allow('edit', $viewer))
     {
         ?>
      <div class='favorite'>
@@ -121,7 +124,21 @@ if (isset($this->lastVisitFor))
              value='true'<?= ($bookmark->isPrivate
                                 ? " checked='true'"
                                 : '') ?> />
+     </div>
+     <div class='worldModify'>
+      <input type='checkbox'
+             name='worldModify'
+             value='true'<?= ($bookmark->worldModify
+                                ? " checked='true'"
+                                : '') ?> />
      </div><?php
+    }
+    else if ($bookmark->worldModify)
+    {
+        // Show the world modify status
+        ?>
+     <div class='connexions_sprites worldModify_fill'
+          title='World Modifiable'></div><?php
     }
 
     ?>
@@ -176,7 +193,7 @@ if (isset($this->lastVisitFor))
             }
 
             if (($showParts['item:stats:rating:stars'] === true) &&
-                ( ($bookmark->item->ratingCount > 0) || $isOwner) )
+                ( ($bookmark->item->ratingCount > 0) || $allowEdit) )
             {
                 ?><div class='stars'><?php   // stars {
 
@@ -184,7 +201,7 @@ if (isset($this->lastVisitFor))
                 {
                     // Present the average
                     echo $this->htmlStarRating($ratingAvg,
-                                               ($isOwner
+                                               ($allowEdit
                                                     ? 'average-owner'
                                                     : 'average'),
                                                $ratingTitle,
@@ -192,7 +209,7 @@ if (isset($this->lastVisitFor))
 
                 }
 
-                if ($isOwner)
+                if ($allowEdit)
                 {
                     // Present the owner's rating
                     echo $this->htmlStarRating($bookmark->rating, 'owner');
@@ -235,24 +252,46 @@ if (isset($this->lastVisitFor))
          */
         ?><div class='control'><?
 
-        if ($isOwner)
+        $id  = implode(':', $bookmark->getId());
+        $sep = '';
+        if ($allowEdit)
         {
-            ?><a 
+            ?><?= $sep ?><a 
                 class='item-edit'
                  href='<?= $this->url(array('action' => 'post'))
-                           . '?url='. urlencode($bookmark->item->url) ?>'
-               target='_blank'>EDIT</a> | <a   
+                           . '?id='. $id
+                           . '&mode=edit' ?>' 
+               target='_blank'>EDIT</a><?php
 
+            $sep = ' | ';
+        }
+        else if ($allowModify)
+        {
+            ?><?= $sep ?><a 
+                class='item-edit'
+                 href='<?= $this->url(array('action' => 'post'))
+                           . '?id='. $id
+                           . '&mode=modify' ?>' 
+               target='_blank'>MODIFY</a><?php
+
+            $sep = ' | ';
+        }
+
+        if ($bookmark->allow('delete', $viewer))
+        {
+            ?><?= $sep ?><a 
                 class='item-delete' 
                  href='<?= $this->url(array('action' => 'itemDelete',
-                                            'item'   =>
-                                                  $bookmark->user->userId .'.'
-                                                  . $bookmark->itemId)) ?>'
+                                            'item'   => $id)) ?>'
                target='_blank'>DELETE</a><?php
+
+            $sep = ' | ';
         }
-        else
+
+        if (! $isOwner)
         {
-            ?><a
+            /*
+            ?><?= $sep ?><a 
                 class='item-save' 
                  href='<?= $this->url(array('action' => 'post'))
                            . '?name='.       urlencode($bookmark->name)
@@ -260,6 +299,13 @@ if (isset($this->lastVisitFor))
                            . '&description='.urlencode($bookmark->description)
                            . '&tags='.       urlencode($bookmark->tags)
                            . '&mode=post' ?>' 
+               target='_blank'>SAVE</a><?php
+            // */
+            ?><?= $sep ?><a 
+                class='item-save' 
+                 href='<?= $this->url(array('action' => 'post'))
+                           . '?id='. $id
+                           . '&mode=save' ?>' 
                target='_blank'>SAVE</a><?php
         }
 

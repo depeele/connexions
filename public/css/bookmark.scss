@@ -40,28 +40,30 @@
       .checkbox {
         border: 0;
       }
-      .avatar,.favorite,.private {
-        position: absolute;
-        cursor: pointer;
+      .avatar,.favorite,.private,.worldModify {
+        cursor:     pointer;
+        padding:    0 1px 2px 1px;
+        width:      16px;
+        min-height: 16px;
       }
       .avatar {
-        top:  4px;
-        left: 1px;
         img {
           width:  16px;
         }
       }
       .favorite {
-        top:  28px;
-        left: 3px;
         .star_empty {
           visibility: hidden;
         }
       }
       .private {
-        top: 48px;
-        left: 3px;
+        padding-left: 2px;
         .lock_empty {
+          visibility: hidden;
+        }
+      }
+      .worldModify {
+        .worldModify_empty {
           visibility: hidden;
         }
       }
@@ -279,6 +281,11 @@
           visibility: visible;
         }
       }
+      .worldModify {
+        .worldModify_empty {
+          visibility: visible;
+        }
+      }
     }
     .stats {
       .rating {
@@ -326,10 +333,10 @@
   .no-avatar {
     .status {
       .favorite {
-        top:  4px;
       }
       .private {
-        top:  24px;
+      }
+      .worldModify {
       }
     }
   }

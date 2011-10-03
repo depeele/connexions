@@ -13,8 +13,9 @@
  *                          rating
  *                          isFavorite
  *                          isPrivate
+ *                          worldModify
  *                          tags
- *                          mode        'post' | null ('edit')
+ *                          mode        'post' | 'modify' | 'edit'/null
  *
  *      tabs            An array of avaialble tabs and configuration of the
  *                      form:
@@ -43,9 +44,18 @@ Connexions::log("views/scripts/post/main.phtml: tabs[ %s ]",
                 Connexions::varExport($this->tabs));
 // */
 
-$bookmarkPostId = 'bookmarkPost';
+// /*
+Connexions::log("views/scripts/post/main.phtml: postInfo[ %s ]",
+                Connexions::varExport($this->postInfo));
+// */
+
+$bookmarkPostId = 'bookmarkPost'. time();
 ?>
    <form id='<?= $bookmarkPostId ?>' method='post' class='line'><!-- { -->
+    <?php if (isset($this->postInfo['mode'])): ?>
+    <input name='mode' type='hidden'
+          value='<?= $this->postInfo['mode'] ?>' />
+    <?php endif ?>
     <?php if (isset($this->postInfo['userId'])): ?>
     <input name='userId' type='hidden'
           value='<?= $this->postInfo['userId'] ?>' />
@@ -67,6 +77,13 @@ $bookmarkPostId = 'bookmarkPost';
       <input name='isPrivate'
             type='checkbox' value='true'
             <?= ($this->postInfo['isPrivate'] ? ' checked' : '') ?> />
+     </div>
+
+     <div class='field worldModify'>
+      <label for='worldModify'>World Modifiable</label>
+      <input name='worldModify'
+            type='checkbox' value='true'
+            <?= ($this->postInfo['worldModify'] ? ' checked' : '') ?> />
      </div>
     </div><!-- item-status } -->
 
@@ -227,18 +244,18 @@ $bookmarkPostId = 'bookmarkPost';
 /* Establish configuration for and schedule instantiation of a new
  * Javascript connexions.bookmarkPost() instance targeting the form rendered
  * just above.
- */
 $postConfig = array(
-    'isEdit'        => ($this->postInfo['mode'] === 'post'
-                            ? false
-                            : true),
+    'mode'  => $this->postInfo['mode']
 );
-$postConfig = array_merge($postConfig, $this->postInfo);
+//$postConfig = array_merge($postConfig, $this->postInfo);
 
 $postConfig = Zend_Json::encode($postConfig);
 
 $jsWait = false;
 $jsLoad = "$('#{$bookmarkPostId}').bookmarkPost({$postConfig});";
+ */
+$jsWait = false;
+$jsLoad = "$('#{$bookmarkPostId}').bookmarkPost();";
 if ($jsWait === false)
 {
     // Instantiate the Javascript widget immediately

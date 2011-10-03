@@ -281,6 +281,7 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
      *  @param  rating      If non-null,  the (new) rating;
      *  @param  isFavorite  If non-null,  the (new) favorite value;
      *  @param  isPrivate   If non-null,  the (new) privacy value;
+     *  @param  worldModify If non-null,  the (new) world modify value;
      *  @param  tags        If non-empty, the (new) set of tags;
      *  @param  url         If non-empty, the (new) URL associated with this
      *                      bookmark (MAY create a new Item);
@@ -295,6 +296,7 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
                            $rating          = 0,
                            $isFavorite      = false,
                            $isPrivate       = false,
+                           $worldModify     = false,
                            $tags            = null,
                            $url             = null,
                            $apiKey          = null)
@@ -302,7 +304,8 @@ class Service_Proxy_Bookmark extends Connexions_Service_Proxy
         $user = $this->_authenticate($apiKey);
 
         return $this->_service->update($id, $name, $description,
-                                       $rating, $isFavorite, $isPrivate,
+                                       $rating,
+                                       $isFavorite, $isPrivate, $worldModify,
                                        $tags, $url);
     }
 

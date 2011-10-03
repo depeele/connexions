@@ -134,6 +134,18 @@
   background-position: -15px -59px;
 }
 
+// World Modify / NOT
+.worldModify_empty {
+  width:  16px;
+  height: 16px;
+  background-position: -152px -16px;
+}
+.worldModify_fill {
+  width:  16px;
+  height: 16px;
+  background-position: -136px -16px;
+}
+
 // Delete (x)
 .button_delete_on {
   width: 16px;
@@ -348,9 +360,7 @@
   background-position: -120px -16px;
 }
 .setting-public {
-  width:  16px;
-  height: 16px;
-  background-position: -136px -16px;
+  @extend .worldModify_fill;
 }
 
 .setting-restricted {

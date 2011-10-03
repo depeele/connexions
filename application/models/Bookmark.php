@@ -20,6 +20,7 @@ class Model_Bookmark extends Model_Base
             'rating'        => null,
             'isFavorite'    => null,
             'isPrivate'     => null,
+            'worldModify'   => null,
             'taggedOn'      => null,
             'updatedOn'     => null,
     );
@@ -405,6 +406,73 @@ class Model_Bookmark extends Model_Base
         }
 
         return $str;
+    }
+
+    /**********************************************
+     * Access controls
+     *
+     */
+
+    /** @brief  Is the given Model_User the owner of this bookmark?
+     *  @param  user                    The target user;
+     *  @param  requireAuthenticated    Require that 'user' is authenticated?
+     *                                  [ true ];
+     *
+     *  @return true | false
+     */
+    public function isOwner($user, $requireAuthenticated = true)
+    {
+        return ($user                                                       &&
+                ($user instanceof Model_User)                               &&
+                $user->isSame( $this->user )                                &&
+                ( (! $requireAuthenticated) || $user->isAuthenticated() ) );
+    }
+
+    /** @brief  Can the identified user perform the specified action on this
+     *          bookmark?
+     *  @param  action      The desired action (e.g. view, edit, modify);
+     *  @param  user        The target user;
+     *
+     *  @return true | false
+     */
+    public function allow($action, Model_User $user)
+    {
+        $isOwner   = $this->isOwner( $user );
+        $permitted = $isOwner;
+
+        // The owner can do anything.  All others need further examination
+        if ($isOwner === false)
+        {
+            switch ($action)
+            {
+            case 'view':
+                // Viewable iff 'public'
+                if (! $this->isPrivate)
+                {
+                    $permitted = true;
+                }
+                break;
+
+            case 'modify':
+                /* Modify is the ability to change 'name', 'description',
+                 * and/or 'tags' but NOTHING ELSE.
+                 *
+                 * Modifiable iff 'worldModify'
+                 */
+                if ($this->worldModify)
+                {
+                    $permitted = true;
+                }
+                break;
+
+            case 'edit':
+            case 'delete':
+                // Any other action is only permitted only for the owner
+                break;
+            }
+        }
+
+        return $permitted;
     }
 
     /**********************************************

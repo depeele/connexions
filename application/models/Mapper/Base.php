@@ -254,7 +254,10 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
                                                 ."THEN 1 ELSE 0 END)",
             'publics'   => "SUM(CASE WHEN {$as}.isPrivate > 0 "
                                                 ."THEN 0 ELSE 1 END)",
-            'favorites' => "SUM( {$as}.isFavorite )",
+            'favorites' => "SUM(CASE WHEN {$as}.isFavorite > 0 "
+                                                ."THEN 0 ELSE 1 END)",
+            'shared'    => "SUM(CASE WHEN {$as}.worldModify > 0 "
+                                                ."THEN 1 ELSE 0 END)",
             'rated'     => "SUM(CASE WHEN {$as}.rating > 0 "
                                                 ."THEN 1 ELSE 0 END)",
         );

@@ -29,7 +29,7 @@
 (function($) {
 
 $.widget("ui.stars", {
-  version: "2.1.1b",
+  version: "2.1.1c",
 
   /* Remove the strange ui.widget._trigger() class name prefix for events.
    *
@@ -278,10 +278,29 @@ $.widget("ui.stars", {
   enable: function() {
     this.options.disabled = false;
     this._disableAll();
+    this.element.removeClass('ui-state-disabled');
+
+    // (Re)add the 'title' to all star controls
+    this.$stars.each(function() {
+        var $a      = $(this).find('a');
+        var title   = $a.data('star-title');
+        if (title)
+        {
+            $a.attr('title', title);
+        }
+    });
   },
   disable: function() {
     this.options.disabled = true;
     this._disableAll();
+    this.element.addClass('ui-state-disabled');
+
+    // Remove the 'title' from all star controls
+    this.$stars.each(function() {
+        var $a      = $(this).find('a');
+        $a.data('star-title', $a.attr('title'));
+        $a.removeAttr('title');
+    });
   },
   hasChanged: function() {
     return (this.options.value !== this.options.defaultValue);
