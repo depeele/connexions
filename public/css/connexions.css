@@ -931,7 +931,7 @@ body.light { background-color: white; }
 #pageHeader .tabs_outer_curve { position: absolute; right: 598px; }
 #pageHeader .siteAuth a, #pageHeader .siteNav a { font-weight: bold; text-decoration: none; }
 #pageHeader .siteAuth { text-align: right; border-top: 3px solid #182524; background: #182524 url(themes/connexions/images/ui-bg_gloss-wave_10_172322_500x100.png)/*{bgImgUrlHeader}*/ 50%/*{bgHeaderXPos}*/ 50%/*{bgHeaderYPos}*/ repeat-x/*{bgHeaderRepeat}*/; }
-#pageHeader .siteAuth .siteNotification { position: absolute; top: 0; right: 600px; height: 28px; width: 100%; background-color: white; }
+#pageHeader .siteAuth .siteNotification { position: absolute; top: 0; right: 600px; height: 28px; width: 100%; background-color: white; text-align: center; }
 #pageHeader .siteAuth .siteNotification .message { position: absolute; top: 0.5em; right: 20px; padding: 0.5em; font-size: 0.9em; text-align: center; z-index: 2; }
 #pageHeader .siteAuth .siteNotification .message a { color: #2786c2; }
 #pageHeader .siteAuth .siteNotification .urCorner { position: absolute; top: 0; right: 0; width: 20px; height: 20px; }
