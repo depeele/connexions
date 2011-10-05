@@ -106,13 +106,13 @@ Connexions::log('views/scripts/help/main-faq.phtml: '
 
     <li class='collapsable'><!-- question-answer { -->
      <h3 id='basics_whats_new_with_version_2'
-         class='toggle faq-question<?= Connexions_Help::rest_collapsed($this, 'basics_whats_new_with_version_2', true) ?>'
+         class='toggle faq-question<?= Connexions_Help::rest_collapsed($this, 'whats_new_with_version_2', true) ?>'
          ><a href='<?= $url ?>/basics/whats_new_with_version_2'
              data-cache.collapsable='whats_new_with_version_2_content'>What's new with version 2?</a></h3>
      <div id='whats_new_with_version_2_content'
           class='help-content faq-answer'>
       <p>Connexions has been completely re-designed making use of modern
-      web designe and user interface advances.  Hopefully,  you will find the
+      web design and user interface advances.  Hopefully,  you will find the
       new layout more usable as well as more aesthetically pleasing.<?php
         if ($contact->services && $contact->services->support)
         {
@@ -606,7 +606,7 @@ Connexions::log('views/scripts/help/main-faq.phtml: '
 
        <div class='warning'>
         <p><span class='title'>note:</span>
-        Your browser will likely block the inital install attempt,<br />
+        Your browser will likely block the initial install attempt,<br />
         popping up a block notification at the top of the window.<br />
         If this occurs, you will need to click "allow" to complete<br />
         the installation.</p>

@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS user;
 CREATE TABLE user (
   userId        INT(10)     UNSIGNED    NOT NULL AUTO_INCREMENT,
   name          VARCHAR(30)             NOT NULL UNIQUE DEFAULT '',
@@ -23,6 +24,7 @@ CREATE TABLE user (
   PRIMARY KEY       (`userId`)
 ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+DROP TABLE IF EXISTS item;
 CREATE TABLE item (
   itemId        INT(10)     UNSIGNED    NOT NULL AUTO_INCREMENT,
   url           TEXT                    NOT NULL DEFAULT '',
@@ -42,6 +44,7 @@ CREATE TABLE item (
   KEY `i_urlHash`   (`urlHash`)
 ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+DROP TABLE IF EXISTS tag;
 CREATE TABLE tag (
   tagId         INT(10)     UNSIGNED    NOT NULL AUTO_INCREMENT,
   tag           VARCHAR(30)             NOT NULL UNIQUE DEFAULT '',
@@ -69,6 +72,7 @@ CREATE TABLE tag (
 --
 --     canTransfer    - is the owner allowed to transfer ownership?
 --      
+DROP TABLE IF EXISTS memberGroup;
 CREATE TABLE memberGroup (
   groupId           INT(10)     UNSIGNED            NOT NULL AUTO_INCREMENT,
   name              VARCHAR(128)                    NOT NULL DEFAULT '',
@@ -95,6 +99,7 @@ CREATE TABLE memberGroup (
 --
 
 -- UserItem is a User's Bookmark
+DROP TABLE IF EXISTS userItem;
 CREATE TABLE userItem (
   userId        INT(10)     UNSIGNED    NOT NULL DEFAULT 0,
   itemId        INT(10)     UNSIGNED    NOT NULL DEFAULT 0,
@@ -124,6 +129,7 @@ CREATE TABLE userItem (
 ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- Members of a memberGroup
+DROP TABLE IF EXISTS groupMember;
 CREATE TABLE groupMember (
   groupId       INT(10)     UNSIGNED    NOT NULL DEFAULT 0,
   userId        INT(10)     UNSIGNED    NOT NULL DEFAULT 0,
@@ -136,6 +142,7 @@ CREATE TABLE groupMember (
 -- Items within a memberGroup
 --      The table targetd by 'itemId' depends upon the 'groupType' of the
 --      memberGroup (user, item, or tag).
+DROP TABLE IF EXISTS groupItem;
 CREATE TABLE groupItem (
   groupId       INT(10)     UNSIGNED    NOT NULL DEFAULT 0,
   itemId        INT(10)     UNSIGNED    NOT NULL DEFAULT 0,
@@ -146,6 +153,7 @@ CREATE TABLE groupItem (
 ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- User Authentication methods
+DROP TABLE IF EXISTS userAuth;
 CREATE TABLE userAuth (
   userAuthId    INT(10)     UNSIGNED    NOT NULL AUTO_INCREMENT,
   userId        INT(10)     UNSIGNED    NOT NULL DEFAULT 0,
@@ -166,6 +174,7 @@ CREATE TABLE userAuth (
 -- fact table
 --
 
+DROP TABLE IF EXISTS userTagItem;
 CREATE TABLE userTagItem (
   userId        INT(10)     UNSIGNED    NOT NULL DEFAULT 0,
   tagId         INT(10)     UNSIGNED    NOT NULL DEFAULT 0,
@@ -183,6 +192,7 @@ CREATE TABLE userTagItem (
 --
 -- activity table (for activity streams)
 --
+DROP TABLE IF EXISTS activity;
 CREATE TABLE activity (
   activityId    INT(10)     UNSIGNED    NOT NULL AUTO_INCREMENT,
 

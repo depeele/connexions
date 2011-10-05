@@ -132,7 +132,7 @@ class Connexions_Model_Set_Adapter_ItemList extends Zend_Tag_ItemList
                     /* Moving to the next bucket.
                      *
                      * Adjust our 'perBucket' setting based upon how many items
-                     * were place in this bucket and how many are left.
+                     * were placed in this bucket and how many are left.
                      */
                     $remaining -= $inBucket;
                     $perBucket  = ($remaining / ($nBuckets - $bucketIdex));
