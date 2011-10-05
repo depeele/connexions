@@ -1,7 +1,8 @@
 #!/bin/sh
   DB='connexions'
+USER='connexions'
 DATE=`date +%Y.%m.%d`
-FILE="${DATE}-${DB}.sql"
+FILE="backups/${DATE}-${DB}.sql"
 
 
 if [ ! -z "$1" ]; then
@@ -9,4 +10,4 @@ if [ ! -z "$1" ]; then
 fi
 
 echo "Backing up '${DB}' to '${FILE}':"
-mysqldump --user=connexions ${PASS} --add-drop-table --extended-insert ${DB} > "${FILE}"
+mysqldump --user=${USER} ${PASS} --add-drop-table --extended-insert ${DB} > "${FILE}"

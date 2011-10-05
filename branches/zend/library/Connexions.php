@@ -528,7 +528,7 @@ class Connexions
      *          ensure that it is a full site URL with any 'base' prefix.
      *  @param  url     The URL string.
      *
-     *  @return The absolue HTTP URL OR full site URL.
+     *  @return The absolute HTTP URL OR full site URL.
      */
     public static function httpUrl($url)
     {
@@ -765,6 +765,10 @@ class Connexions
                     break;
                 case 'html':
                     $replacement = '<'. $selector .'/>';
+                    break;
+
+                case 'url':
+                    $replacement = self::url($selector);
                     break;
 
                 default:
