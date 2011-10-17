@@ -319,4 +319,65 @@ class Model_Mapper_Item extends Model_Mapper_Base
 
         return $this->fetch( $select, $order, $count, $offset );
     }
+
+    /** @brief  Given (the beginning of) a URL, fetch all items with a matching
+     *          URL.
+     *  @param  url         The (beginning of the) URL to match;
+     *  @param  order       Optional ORDER clause (string, array)
+     *  @param  count       Optional LIMIT count
+     *  @param  offset      Optional LIMIT offset
+     *
+     *  @return A Model_Item_Set.
+     */
+    public function fetchByUrl($url,
+                               $order     = null,
+                               $count     = null,
+                               $offset    = null)
+    {
+        /*
+        Connexions::log("Model_Mapper_Item::fetchByUrl(): "
+                        .   "url[ %s ]",
+                        Connexions::varExport($url));
+        // */
+
+        // Normalize the URL pattern
+        $url = Connexions::normalizeUrl( $url );
+
+        /* Convert the model class name to an abbreviation composed of all
+         * upper-case characters following the first '_', then converted to
+         * lower-case (e.g. Model_UserAuth == 'ua').
+         */
+        $modelName = $this->getModelName();
+        $as        = strtolower(preg_replace('/^[^_]+_([A-Z])[a-z]+'
+                                             . '(?:([A-Z])[a-z]+)?'
+                                             . '(?:([A-Z])[a-z]+)?$/',
+                                             '$1$2$3', $modelName));
+        $accessor  = $this->getAccessor();
+        $db        = $accessor->getAdapter();
+
+        /********************************************************************
+         * Generate the primary select.
+         *
+         */
+        $select   = $db->select();
+        $select->from( array( $as =>
+                                $accessor->info(Zend_Db_Table_Abstract::NAME)),
+                       array("{$as}.*"));
+
+        $this->_addWhere($select,
+                         $this->_where(array('url=^' => $url)) );
+        
+        // Include the secondary select along with statistics gathering.
+        $this->_includeSecondarySelect($select, $as,
+                                       array('order'  => $order,
+                                             'count'  => $count,
+                                             'offset' => $offset));
+
+        /*
+        Connexions::log("Model_Mapper_Item::fetchByUrl: sql[ %s ]",
+                        $select->assemble());
+        // */
+
+        return $this->fetch( $select, $order, $count, $offset );
+    }
 }
