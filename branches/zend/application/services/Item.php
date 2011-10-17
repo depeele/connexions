@@ -193,4 +193,29 @@ class Service_Item extends Service_Base
                                             $offset,
                                             $inclusive);
     }
+
+    /** @brief  Given (the beginning of) a URL, fetch all items with a matching
+     *          URL.
+     *  @param  url         The (beginning of the) URL to match;
+     *  @param  order       Optional ORDER clause (string, array)
+     *  @param  count       Optional LIMIT count
+     *  @param  offset      Optional LIMIT offset
+     *
+     *  @return A Model_Item_Set.
+     */
+    public function fetchByUrl($url,
+                               $order     = null,
+                               $count     = null,
+                               $offset    = null)
+    {
+        if ($order !== null)
+        {
+            $order = $this->_csOrder2array($order);
+        }
+
+        return $this->_mapper->fetchByUrl($url,
+                                          $order,
+                                          $count,
+                                          $offset);
+    }
 }
