@@ -509,9 +509,9 @@ class Model_Mapper_User extends Model_Mapper_Base
         $params['where'] = $where;
 
         // Fill in additional fields we don't want to allow over-ridden.
-        if ( (! isset($params['users'])) &&
-             (! isset($params['items'])) &&
-             (! isset($params['tags'])) )
+        if ( ((! isset($params['users'])) || (count($params['users']) < 1)) &&
+             ((! isset($params['items'])) || (count($params['items']) < 1)) &&
+             ((! isset($params['tags']))  || (count($params['tags'])  < 1)) )
         {
             // Exclude stats if we don't need them
             $params['excludeStats'] = true;
@@ -521,9 +521,9 @@ class Model_Mapper_User extends Model_Mapper_Base
             $params['excludeSec']   = false;
             $params['excludeStats'] = false;
 
-            if ( ! empty($params['users'])) $params['exactUsers'] = true;
-            if ( ! empty($params['items'])) $params['exactItems'] = true;
-            if ( ! empty($params['tags']))  $params['exactTags']  = true;
+            if ( count($params['users']) > 0) $params['exactUsers'] = true;
+            if ( count($params['items']) > 0) $params['exactItems'] = true;
+            if ( count($params['tags'])  > 0) $params['exactTags']  = true;
         }
 
         $users = $this->fetchRelated( $params );
@@ -554,9 +554,9 @@ class Model_Mapper_User extends Model_Mapper_Base
         unset($params['threshold']);
 
         // Fill in additional parameters we don't want to allow over-ridden.
-        if ( (! isset($params['users'])) &&
-             (! isset($params['items'])) &&
-             (! isset($params['tags'])) )
+        if ( ((! isset($params['users'])) || (count($params['users']) < 1)) &&
+             ((! isset($params['items'])) || (count($params['items']) < 1)) &&
+             ((! isset($params['tags']))  || (count($params['tags'])  < 1)) )
         {
             // Exclude the full secondary selector if we don't need it
             $params['excludeSec'] = true;
@@ -568,9 +568,9 @@ class Model_Mapper_User extends Model_Mapper_Base
             $params['excludeStats'] = false;
             $thresholdField         = 'uti.userItemCount';
 
-            if ( ! empty($params['users'])) $params['exactUsers'] = true;
-            if ( ! empty($params['items'])) $params['exactItems'] = true;
-            if ( ! empty($params['tags']))  $params['exactTags']  = true;
+            if ( count($params['users']) > 0) $params['exactUsers'] = true;
+            if ( count($params['items']) > 0) $params['exactItems'] = true;
+            if ( count($params['tags'])  > 0) $params['exactTags']  = true;
         }
 
         $where = ($threshold >= 0

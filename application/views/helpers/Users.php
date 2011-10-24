@@ -121,35 +121,25 @@ class View_Helper_Users extends View_Helper_List
 
             $count      = $perPage;
             $offset     = ($page - 1) * $perPage;
+            $service    = Connexions_Service::factory('Model_User');
 
-            $to = array();
-            if ( $this->where !== null )
+            if ( ($this->where !== null) ||
+                 (($this->tags !== null) && (count($this->tags) > 0)) )
             {
-                $to['where'] = $this->where;
-            }
-
-            if ( ($tags = $this->tags) !== null)
-            {
-                $to['tags']      =& $tags;
-                $to['exactTags'] =  true;
-            }
-
-            /*
-            Connexions::log("View_Helper_Users::getUsers(): "
-                            . "Retrieve users: "
-                            . "listname[ %s ], "
-                            . "to[ %s ], "
-                            . "order[ %s ], count[ %d ], offset[ %d ]",
-                            $key,
-                            Connexions::varExport($to),
-                            $fetchOrder, $count, $offset);
-            // */
-
-            $users = Connexions_Service::factory('Model_User')
-                                ->fetchRelated($to,
+                $users = $service->fetchByTags($this->tags,
+                                               true,    // exact
                                                $fetchOrder,
                                                $count,
-                                               $offset);
+                                               $offset,
+                                               $this->where);
+            }
+            else
+            {
+                $users = $service->fetch(null,  // all
+                                         $fetchOrder,
+                                         $count,
+                                         $offset);
+            }
 
             $this->_params[$key] = $users;
         }

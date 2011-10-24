@@ -1095,17 +1095,31 @@ class Service_User extends Service_Base
 
             $stats = $this->getStatistics( $statParams );
 
-            /* Use the halfway point between the average and minimum number of
-             * bookmarks
-             */
-            $threshold = floor( ($stats['bookmarks_min'] +
-                                 $stats['bookmarks_avg']) / 2.0 );
+            if ($stats['bookmarks_sd'] >= $stats['bookmarks_avg'])
+            {
+                // HUGE variance.  Use bookmarks_min as the threshold
+                $threshold = $stats['bookmarks_min'];
+            }
+            else
+            {
+                /* Use a threshold of MAX - (SD * 2.575829).
+                 *
+                 * Assuming a normal distribution (not likely), this would
+                 * return roughly 99% of all users.
+                 */
+                $threshold = ceil($stats['bookmarks_max'] -
+                                  ($stats['bookmarks_sd'] * 2.575829));
+            }
 
             /*
             Connexions::log("Service_User::getContributors(): "
-                            . "min[ %s ], avg[ %s ], threshold[ %s ]",
+                            . "min[ %s ], avg[ %s ] %s sd[ %s ], "
+                            . "threshold[ %s ]",
                             Connexions::varExport($stats['bookmarks_min']),
                             Connexions::varExport($stats['bookmarks_avg']),
+                            ($stats['bookmarks_avg'] > $stats['bookmarks_sd']
+                                ? '>' : '<'),
+                            Connexions::varExport($stats['bookmarks_sd']),
                             Connexions::varExport($threshold));
             // */
 
@@ -1156,19 +1170,30 @@ class Service_User extends Service_Base
 
             $stats = $this->getStatistics( $statParams );
 
-            /* Use the halfway point between the average and minimum number of
-             * bookmarks
-             */
-            $threshold = floor( ($stats['bookmarks_min'] +
-                                 $stats['bookmarks_avg']) / 2.0 );
+            if ($stats['bookmarks_sd'] >= $stats['bookmarks_avg'])
+            {
+                // HUGE variance.  Use bookmarks_min as the threshold
+                $threshold = $stats['bookmarks_min'];
+            }
+            else
+            {
+                /* Use a threshold of MAX - (SD * 2.575829).
+                 *
+                 * Assuming a normal distribution (not likely), this would
+                 * return roughly 99% of all users.
+                 */
+                $threshold = ceil($stats['bookmarks_max'] -
+                                  ($stats['bookmarks_sd'] * 2.575829));
+            }
 
             /*
             Connexions::log("Service_User::getContributorCount(): "
-                            . "min[ %s ], avg[ %s ], max[ %s ], "
-                            . "sd[ %s ] == threshold[ %s ]",
+                            . "min[ %s ], avg[ %s ] %s sd[ %s ], "
+                            . "threshold[ %s ]",
                             Connexions::varExport($stats['bookmarks_min']),
                             Connexions::varExport($stats['bookmarks_avg']),
-                            Connexions::varExport($stats['bookmarks_max']),
+                            ($stats['bookmarks_avg'] > $stats['bookmarks_sd']
+                                ? '>' : '<'),
                             Connexions::varExport($stats['bookmarks_sd']),
                             Connexions::varExport($threshold));
             // */
