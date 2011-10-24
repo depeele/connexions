@@ -105,11 +105,11 @@ abstract class Service_Base extends Connexions_Service
 
         // Check for additional restrictions that might require privacy
         if ( ($privacy !== true) &&
-             ( (isset($config['users']) && (! empty($config['users']))) ||
-               (isset($config['items']) && (! empty($config['items']))) ||
-               (isset($config['tags'])  && (! empty($config['tags'])))  ||
-               (isset($config['from'])  && (! empty($config['from'])))  ||
-               (isset($config['until']) && (! empty($config['until']))) ||
+             ( (isset($config['users']) && (count($config['users']) > 0)) ||
+               (isset($config['items']) && (count($config['items']) > 0)) ||
+               (isset($config['tags'])  && (count($config['tags'])  > 0)) ||
+               (isset($config['from'])  && (! empty($config['from'])))    ||
+               (isset($config['until']) && (! empty($config['until'])))   ||
                (isset($config['count']) && (! empty($config['count']))) ) )
         {
             $privacy         = true;

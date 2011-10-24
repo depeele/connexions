@@ -255,7 +255,7 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
             'publics'   => "SUM(CASE WHEN {$as}.isPrivate > 0 "
                                                 ."THEN 0 ELSE 1 END)",
             'favorites' => "SUM(CASE WHEN {$as}.isFavorite > 0 "
-                                                ."THEN 0 ELSE 1 END)",
+                                                ."THEN 1 ELSE 0 END)",
             'shared'    => "SUM(CASE WHEN {$as}.worldModify > 0 "
                                                 ."THEN 1 ELSE 0 END)",
             'rated'     => "SUM(CASE WHEN {$as}.rating > 0 "
@@ -431,6 +431,16 @@ abstract class Model_Mapper_Base extends Connexions_Model_Mapper_DbTable
         if ($aggregate)
         {
             $stats = $stats[0];
+
+            // Convert all values to numeric types (integer or double)
+            foreach ($stats as $key => &$val)
+            {
+                if (is_int($val) || is_double($val))    { continue; }
+
+                $val = ( strpos($val, '.') !== false
+                            ? (double)$val
+                            : (int)$val );
+            }
         }
 
         /*
