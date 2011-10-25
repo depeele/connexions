@@ -17,34 +17,55 @@ class Service_Activity extends Service_Base
     );
 
     /** @brief  Retrieve a set of Domain Model instances.
-     *  @param  id      Identification value(s), null to retrieve all.
-     *                  MAY be an associative array that specifically
-     *                  identifies attribute/value(s) pairs.
-     *  @param  order   An array of name/direction pairs representing the
-     *                  desired sorting order.  The 'name's MUST be valid for
-     *                  the target Domain Model and the directions a
-     *                  Connexions_Service::SORT_DIR_* constant.  If an order
-     *                  is omitted, Connexions_Service::SORT_DIR_ASC will be
-     *                  used [ $this->_defaultOrdering ];
-     *  @param  count   The maximum number of items from the full set of
-     *                  matching items that should be returned
-     *                  [ null == all ];
-     *  @param  offset  The starting offset in the full set of matching items
-     *                  [ null == 0 ].
-     *  @param  since   Limit the results to activities that occurred after
-     *                  this date/time [ null == no time limits ];
+     *  @param  id          Identification value(s), null to retrieve all.  MAY
+     *                      be an associative array that specifically
+     *                      identifies attribute/value(s) pairs
+     *                      [ null == all ];
+     *  @param  objectType  An array or comma-separated string of the object(s)
+     *                      of interest (user, item, tag, bookmark)
+     *                      [ null == all ];
+     *  @param  operation   An array or comma-separated string of the
+     *                      operations(s) of interest (save, update, delete)
+     *                      [ null == all ];
+     *  @param  order       An array of name/direction pairs representing the
+     *                      desired sorting order.  The 'name's MUST be valid
+     *                      for the target Domain Model and the directions a
+     *                      Connexions_Service::SORT_DIR_* constant.  If an
+     *                      order is omitted, Connexions_Service::SORT_DIR_ASC
+     *                      will be used [ $this->_defaultOrdering ];
+     *  @param  count       The maximum number of items from the full set of
+     *                      matching items that should be returned
+     *                      [ null == all ];
+     *  @param  offset      The starting offset in the full set of matching
+     *                      items [ null == 0 ].
+     *  @param  since       Limit the results to activities that occurred after
+     *                      this date/time [ null == no time limits ];
      *
      *  @return A new Connexions_Model_Set.
      */
-    public function fetch($id       = null,
-                          $order    = null,
-                          $count    = null,
-                          $offset   = null,
-                          $since    = null)
+    public function fetch($id           = null,
+                          $objectType   = null,
+                          $operation    = null,
+                          $order        = null,
+                          $count        = null,
+                          $offset       = null,
+                          $since        = null)
     {
         $ids     = $this->_csList2array($id);
         $normIds = $this->_mapper->normalizeIds($ids);
         $order   = $this->_csOrder2array($order);
+
+        if (! empty($objectType))
+        {
+            $normIds = $this->_includeValues($normIds, 'objectType',
+                                             $objectType);
+        }
+
+        if (! empty($operation))
+        {
+            $normIds = $this->_includeValues($normIds, 'operation',
+                                             $operation);
+        }
 
         if ($since !== null)
         {
@@ -68,8 +89,8 @@ class Service_Activity extends Service_Base
     }
 
     /** @brief  Retrieve a set of activities related to a set of Users.
-     *  @param  users       A Model_Set_User instance, array, or
-     *                      comma-separated string of users to match.
+     *  @param  users       A Model_Set_User instance, array, comma-separated
+     *                      string of users to match or null for all users.
      *  @param  objectType  An array or comma-separated string of the object(s)
      *                      of interest (user, item, tag, bookmark)
      *                      [ null == all ];
@@ -94,7 +115,9 @@ class Service_Activity extends Service_Base
                                  $since         = null)
     {
         $users   = $this->factory('Service_User')->csList2set($users);
-        $normIds = array('userId' => $users->getIds());
+        $normIds = (count($users) > 0
+                        ? array('userId' => $users->getIds())
+                        : array());
         $order   = $this->_csOrder2array($order);
 
         if (! empty($objectType))
