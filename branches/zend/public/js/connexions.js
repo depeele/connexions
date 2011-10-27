@@ -713,6 +713,11 @@
             date = new Date();
         }
 
+        if (date.getTime() <= 0)
+        {
+            return 'never';
+        }
+
         var dateStr = '';
         if (timeOnly !== true)
         {
@@ -763,13 +768,15 @@
         // Ensure 'str' is a string
         str = ''+str;
 
-        var parts       = str.split(' ');
-        var dateParts   = parts[0].split('-');
-        var timeParts   = parts[1].split(':');
-        var date        = new Date();
+        var parts       = str.split(' '),
+            dateParts   = parts[0].split('-'),
+            timeParts   = parts[1].split(':'),
+            date        = new Date();
+        dateParts[1] = parseInt(dateParts[1], 10);
+        if (dateParts[1] > 0)   { dateParts[1] -= 1; }
 
         date.setUTCFullYear(dateParts[0] );
-        date.setUTCMonth(   parseInt(dateParts[1], 10) - 1 );
+        date.setUTCMonth(   dateParts[1] );
         date.setUTCDate(    dateParts[2] );
         date.setUTCHours(   timeParts[0] );
         date.setUTCMinutes( timeParts[1] );
