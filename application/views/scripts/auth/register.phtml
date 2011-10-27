@@ -7,8 +7,10 @@ $jQuery->addStylesheet($this->baseUrl('css/auth.min.css'));
 $fullName = $this->fullName;
 $email    = $this->email;
 
-Connexions::log("register.phtml: includePki[ %s ], autoSignin[ %s ]",
+Connexions::log("register.phtml: includePki[ %s ], includePassword[ %s ], "
+                . "autoSignin[ %s ]",
                 Connexions::varExport($this->includePki),
+                Connexions::varExport($this->includePassword),
                 Connexions::varExport($this->autoSignin));
 
 $pki = $this->connection['pki'];
@@ -18,7 +20,7 @@ if (empty($this->user)      &&
    ($pki['verified'] === true))
 {
     $needUserName = true;
-    if (preg_match('/emailAddress=([^\/]+)/i',
+    if (preg_match('/email(?:Address)=([^\/]+)/i',
                    $pki['subject'], $match))
     {
         Connexions::log("register.phtml: subject[ %s ], email match[ %s ]",
@@ -89,33 +91,8 @@ if (empty($this->user)      &&
      <div class='ui-field-status'></div>
     </div>
    </div>
-   <?php
-   if (($pki !== null) && ($pki['verified'] === true))
-   {
-       ?>
-   <fieldset class='userpassword'>
-    <legend>Password</legend>
-        <?php
-   }
-    ?>
-    <div class='field'>
-     <label for='password'>Password</label>
-     <input type='password' class='text required' autocomplete='off'
-           name='password'  value='<?= $this->pass ?>'
-                         tabindex='2' />
-     <div class='ui-field-info'>
-      <div class='ui-field-status'></div>
-     </div>
-    </div>
-    <div class='field'>
-     <label for='password2'>Re-type Password for verfication</label>
-     <input type='password' class='text required' autocomplete='off'
-            name='password2'
-                         tabindex='3' />
-     <div class='ui-field-info'>
-      <div class='ui-field-status'></div>
-     </div>
-    </div>
+   <fieldset class='credentials'>
+    <legend>Credentials</legend>
    <?php
    if (($pki !== null) && ($pki['verified'] === true))
    {
@@ -123,35 +100,81 @@ if (empty($this->user)      &&
         * credential.
         */
        ?>
-   </fieldset>
-   <fieldset class='pki'>
-    <legend>PKI
-     <input id='includePki'
-            type='checkbox'
-            name='includePki'
-            value='true'<?= ($this->includePki
+    <div class='note'>
+     Select the credentials you would like to use &mdash; PKI, Password, or
+     both.
+    </div>
+    <fieldset class='pki'>
+     <legend>
+      <input id='includePki'
+             type='checkbox'
+             name='includePki'
+             value='true'<?= ($this->includePki
+                                  ? " checked='true'"
+                                  : '') ?> />
+      PKI
+     </legend>
+     <span class='dn'
+      ><span class='ui-icon'
+       ><span class='connexions_sprites type-certificate'></span></span>
+       <?= $pki['subject'] ?></span>
+     <div class='field options'>
+      <label for='autoSignin'>Automatic sign-in via PKI?</label>
+      <input id='autoSignin'
+             type='checkbox'
+             name='autoSignin'
+            value='pki'<?= ( preg_match('/(\s*,\s*)?pki(\s*,\s*)?/',
+                                        $this->autoSignin)
                                  ? " checked='true'"
                                  : '') ?> />
-    </legend>
-    <span class='dn'
-     ><span class='ui-icon'
-      ><span class='connexions_sprites type-certificate'></span></span>
-      <?= $pki['subject'] ?></span>
-    <div class='field options'>
-     <label for='autoSignin'>Automatic sign-in via PKI?</label>
-     <input id='autoSignin'
-            type='checkbox'
-            name='autoSignin'
-           value='pki'<?= ( preg_match('/(\s*,\s*)?pki(\s*,\s*)?/',
-                                       $this->autoSignin)
-                                ? " checked='true'"
-                                : '') ?> />
-    </div>
-   </fieldset>
+     </div>
+    </fieldset>
        <?php
    }
-   ?>
 
+   if (($pki !== null) && ($pki['verified'] === true))
+   {
+       ?>
+    <fieldset class='userpassword'>
+     <legend>
+      <input id='includePassword'
+             type='checkbox'
+             name='includePassword'
+             value='true'<?= ($this->includePassword
+                                  ? " checked='true'"
+                                  : '') ?> />
+      Password
+     </legend>
+        <?php
+   }
+    ?>
+     <div class='field'>
+      <label for='password'>Password</label>
+      <input type='password' class='text required' autocomplete='off'
+            name='password'  value='<?= $this->pass ?>'
+                          tabindex='2' />
+      <div class='ui-field-info'>
+       <div class='ui-field-status'></div>
+      </div>
+     </div>
+     <div class='field'>
+      <label for='password2'>Re-type Password for verfication</label>
+      <input type='password' class='text required' autocomplete='off'
+             name='password2'
+                          tabindex='3' />
+      <div class='ui-field-info'>
+       <div class='ui-field-status'></div>
+      </div>
+     </div>
+    <?php
+    if (($pki !== null) && ($pki['verified'] === true))
+    {
+        ?>
+    </fieldset>
+        <?php
+    }
+    ?>
+   </fieldset>
    <div class='field buttons'>
     <button name='cancel' tabindex='4'>Cancel</button>
     <button name='submit' tabindex='5'>Join Connexions</button>
@@ -172,15 +195,17 @@ if (empty($this->user)      &&
      * bind BEFORE instantiating the validationForm so we can syncrhonously
      * perform validation as needed.
      */
-    var pass1Name   = 'password';
-    var pass2Name   = 'password2';
-    var $user       = $form.find('input[name=user]');
-    var $pass       = $form.find('input[type=password]');
-    var $pass1      = $form.find('input[name='+ pass1Name +']');
-    var $pass2      = $form.find('input[name='+ pass2Name +']');
-    var $pki        = $form.find('fieldset.pki');
-    var $includePki = $form.find('input[name=includePki]');
-    var $status     = $container.find('.status');
+    var pass1Name        = 'password';
+    var pass2Name        = 'password2';
+    var $user            = $form.find('input[name=user]');
+    var $passArea        = $form.find('fieldset.userpassword');
+    var $pass            = $form.find('input[type=password]');
+    var $pass1           = $form.find('input[name='+ pass1Name +']');
+    var $pass2           = $form.find('input[name='+ pass2Name +']');
+    var $pki             = $form.find('fieldset.pki');
+    var $includePassword = $form.find('input[name=includePassword]');
+    var $includePki      = $form.find('input[name=includePki]');
+    var $status          = $container.find('.status');
 
     function validate_user($user, name)
     {
@@ -258,7 +283,8 @@ if (empty($this->user)      &&
             var included    = $includePki.is(':checked');
             $form.validationForm('option',
                                  'disableSubmitOnUnchanged',
-                                 (included ? false : true));
+                                 (included || $includePassword.is(':checked')
+                                    ? false : true));
 
             $form.validationForm('validate');
 
@@ -277,6 +303,34 @@ if (empty($this->user)      &&
             }
         });
 
+        $includePassword.bind('change', function() {
+            var included    = $includePassword.is(':checked');
+            $form.validationForm('option',
+                                 'disableSubmitOnUnchanged',
+                                 (included || $includePki.is(':checked')
+                                    ? false : true));
+
+            // Handle (en/dis)abling the pki area
+            var $fields = $passArea.find('> .field');
+            var $inputs = $fields.find('input');
+            if (included)
+            {
+                $fields.removeClass('ui-state-disabled');
+                $inputs.removeAttr('disabled');
+            }
+            else
+            {
+                $fields.addClass('ui-state-disabled');
+                $inputs.attr('disabled', true);
+
+                // Clear out any existing password values.
+                $pass1.val('');
+                $pass2.val('');
+            }
+
+            $form.validationForm('validate');
+        });
+
         var firstValidation = true;
         $form.validationForm({
             //$validation:              $status,
@@ -286,15 +340,23 @@ if (empty($this->user)      &&
                 var res = $user.input('isValid');
                 if (res === true)
                 {
-                    if ($includePki.is(':checked'))
+                    var includePki      = $includePki.is(':checked'),
+                        includePassword = $includePassword.is(':checked');
+
+                    if (includePki)
                     {
                         // We simply need two matching (even if empty) passwords
                         res = ($pass1.val() == $pass2.val());
                     }
-                    else
+                    else if (includePassword)
                     {
                         // We need two matching, non-empty passwords
                         res = $.validatePasswords($pass1, $pass1, $pass2);
+                    }
+                    else
+                    {
+                        // We need at least one of Pki/Password
+                        res = false;
                     }
                 }
 

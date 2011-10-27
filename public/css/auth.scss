@@ -15,15 +15,14 @@
       }
     }
 
-    input.button {
-      background-color: #59a5d1;
-      border-color: #408bb6;
-      color: white;
-      cursor: pointer;
-    }
-
     .buttons {
       padding:  0 0 1em 0;
+    }
+
+    .note {
+      color:      $controlColor;
+      font-size:  0.85em;
+      padding:    0 0 1em 7em;
     }
 
     .options {
@@ -40,7 +39,7 @@
       }
     }
 
-    .userpassword, .pki {
+    .credentials, .userpassword, .pki {
       padding:        0.5em 0.5em 0;
       margin-bottom:  1em;
       border:         unquote("1px solid") $borderColor;
@@ -67,12 +66,14 @@
         text-align:       left;
         font-size:        0.8em;
         margin-bottom:    0.2em;
+        padding-left:     25px;
 
         .ui-icon {
           display:          block;
+          position:         absolute;
+          left:             1px;
+
           background-image: none;
-          margin:           1px 1em 0 2px;
-          float:            left;
 
           .connexions_sprites {
             display:        block;

@@ -176,13 +176,15 @@ class AuthController extends Connexions_Controller_Action
         // action body
         $request = $this->getRequest();
 
-        $user       = $request->getParam('user',      '');
-        $fullName   = $request->getParam('fullName', '');
-        $email      = $request->getParam('email',    '');
-        $pass       = $request->getParam('password',  '');
-        $pass2      = $request->getParam('password2', '');
-        $includePki = Connexions::to_bool($request->getParam('includePki',
-                                                             true));
+        $user            = $request->getParam('user',      '');
+        $fullName        = $request->getParam('fullName', '');
+        $email           = $request->getParam('email',    '');
+        $pass            = $request->getParam('password',  '');
+        $pass2           = $request->getParam('password2', '');
+        $includePassword = Connexions::to_bool(
+                                $request->getParam('includePassword', true));
+        $includePki      = Connexions::to_bool(
+                                $request->getParam('includePki', true));
 
         // Parameter name from application/views/scripts/auth/register.phtml
         $autoSignin = $request->getParam('autoSignin', null);
@@ -215,7 +217,7 @@ class AuthController extends Connexions_Controller_Action
                 ));
             }
 
-            if (! empty($pass))
+            if ($includePassword && (! empty($pass)) )
             {
                 if ($pass != $pass2)
                 {
@@ -256,12 +258,13 @@ class AuthController extends Connexions_Controller_Action
         }
 
         // Include form variables we can re-use
-        $this->view->user       = $user;
-        $this->view->fullName   = $fullName;
-        $this->view->email      = $email;
-        $this->view->pass       = $pass;
-        $this->view->includePki = $includePki;
-        $this->view->autoSignin = $autoSignin;
+        $this->view->user            = $user;
+        $this->view->fullName        = $fullName;
+        $this->view->email           = $email;
+        $this->view->pass            = $pass;
+        $this->view->includePki      = $includePki;
+        $this->view->includePassword = $includePassword;
+        $this->view->autoSignin      = $autoSignin;
 
         return $this->_showAuthenticationForm();
     }
