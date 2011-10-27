@@ -163,6 +163,9 @@ $.widget("connexions.user", {
         self.$fullName    = self.element.find('.fullName');
         self.$email       = self.element.find('.email a');
 
+        self.$dates       = self.element.find('.dates');
+        self.$lastVisit   = self.$dates.find('.lastVisit');
+
         self.$relation    = self.element.find('.relation');
         self.$add         = self.element.find('.control > .item-add');
         self.$remove      = self.element.find('.control > .item-delete');
@@ -171,6 +174,12 @@ $.widget("connexions.user", {
          * Instantiate our sub-widgets
          *
          */
+
+        /********************************
+         * Localize dates
+         *
+         */
+        self._localizeDates();
 
         /********************************
          * Initialize our state and bind
@@ -461,6 +470,10 @@ $.widget("connexions.user", {
                 self.$email.text(           data.result.email);
                 self.$email.attr('href',    'mailto:'+ data.result.email);
 
+                // Update and localize the dates
+                self.$lastVisit.data('utcdate', data.result.lastVisit);
+                self._localizeDates();
+
                 self._squelch = false;
 
                 // set state
@@ -606,6 +619,32 @@ $.widget("connexions.user", {
         self.$email.attr('href', 'mailto:'+ opts.email);
 
         self._squelch = false;
+    },
+
+    /** @brief  Given a date/time string, localize it to the client-side
+     *          timezone.
+     *  @param  utcStr      The date/time string in UTC and in the form:
+     *                          YYYY-MM-DD HH:mm:ss
+     *
+     *  @return The localized time string.
+     */
+    _localizeDate: function(utcStr)
+    {
+        return $.date2str( $.str2date( utcStr ) );
+    },
+
+    /** @brief  Update presented dates to the client-side timezone.
+     */
+    _localizeDates: function()
+    {
+        var self    = this,
+            newStr;
+
+        if (self.$lastVisit.length > 0)
+        {
+            newStr = self._localizeDate(self.$lastVisit.data('utcdate'));
+            self.$lastVisit.html( newStr );
+        }
     },
 
     /************************

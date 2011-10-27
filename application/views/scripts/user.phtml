@@ -315,9 +315,9 @@ if ($showParts['minimized'])    array_push($css, 'minimized');
 
         if ($showParts['user:data:dates:lastVisit'] === true)
         {
-            echo "<div class='lastVisit' title='Last visited'>",
-                  $user->lastVisit,
-                 "</div>";
+            ?><div class='lastVisit'
+                   data-utcdate='<?= $user->lastVisit ?>'
+                   title='Last visited'><?= $user->lastVisit ?></div><?php
         }
 
         echo "</div>";
