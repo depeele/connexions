@@ -272,6 +272,7 @@ $.widget("connexions.pane", {
         else
         {
             // Perform a full, synchronous reload...
+            $.spinner();
             window.location.assign(url);
         }
     },

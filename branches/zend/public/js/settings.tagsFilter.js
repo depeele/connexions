@@ -23,7 +23,7 @@
  *  Requires:
  *      ui.core.js
  *      ui.widget.js
- *      ui.input.js  OR ui.autocomplete.js
+ *      ui.input.js, ui.autocomplete.js, or ui.tagInput.js
  */
 /*jslint nomen:false, laxbreak:true, white:false, onevar:false */
 /*global jQuery:false, setTimeout:false, clearTimeout:false, document:false */
@@ -107,13 +107,38 @@ $.widget("settings.tagsFilter", {
         if (opts.jsonRpc !== null)
         {
             // Setup autocompletion via Json-RPC
-            self.$input.autocomplete({
-                separator:  ',',
-                source:     function(request, response) {
-                    return self._autocomplete(request,response);
-                },
-                minLength:  opts.minLength
-            });
+            /*
+            if (self.$input.tagInput)
+            {
+                self.$input.tagInput({
+                    autocomplete:   {
+                        source:     function(request, response) {
+                            return self._autocomplete(request,response);
+                        },
+                        minLength:  opts.minLength,
+                        position:   {
+                            offset: '0 5'
+                        }
+                    }
+                });
+
+                // Make it easier for _autocomplete() and destroy()
+                self.autocompleteWidget = self.$input.data('tagInput');
+            }
+            else if (self.$input.autocomplete)
+            // */
+            {
+                self.$input.autocomplete({
+                    separator:  ',',
+                    source:     function(request, response) {
+                        return self._autocomplete(request,response);
+                    },
+                    minLength:  opts.minLength
+                });
+
+                // Make it easier for _autocomplete() and destroy()
+                self.autocompleteWidget = self.$input.data('autocomplete');
+            }
         }
         self.$submit.button({disabled:true});
         self.$reset.button()
@@ -143,7 +168,7 @@ $.widget("settings.tagsFilter", {
                 self.$submit.button('disable');
             }
         });
-        self.$input.bind('keydown.tagsFilter', function(e) {
+        self.$input.bind('keypress.tagsFilter', function(e) {
             if (e.keyCode === 13)   // return
             {
                 self.$input.blur();
@@ -153,7 +178,22 @@ $.widget("settings.tagsFilter", {
 
         self.$submit.bind('click.tagsFilter', function(e) {
             // Notify the pane of the new filter, and request a 'reload'
-            self.$pane.tagsManagePane('filter', self.$input.val());
+            var rawFilters  = self.$input.val().split(/\s*,\s*/),
+                filters     = [];
+
+            // Remove any empty value from filters
+            $.each(rawFilters, function() {
+                var filter  = this.replace(/^\s+/, '')
+                                  .replace(/\s+$/, '');
+
+                if (filter.length < 1)  { return; }
+
+                filters.push(filter);
+            });
+            
+            if (filters.length < 1) { return; }
+
+            self.$pane.tagsManagePane('filter', filters.join(','));
             self.$pane.tagsManagePane('reload', function() {
                 self.$pane = self.element.siblings('.pane');
             });
@@ -177,7 +217,7 @@ $.widget("settings.tagsFilter", {
                       // { term: %str%, limit: %num%, apiKey: %str% }
         var params  = opts.jsonRpc.params;
         
-        params.term  = self.$input.autocomplete('option', 'term');
+        params.term = self.autocompleteWidget.option('term');
 
         // Perform a JSON-RPC call to perform the update.
         $.jsonRpc(opts.jsonRpc, 'user.autocompleteMyTags', params, {

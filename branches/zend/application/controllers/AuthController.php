@@ -183,6 +183,8 @@ class AuthController extends Connexions_Controller_Action
         $pass2      = $request->getParam('password2', '');
         $includePki = Connexions::to_bool($request->getParam('includePki',
                                                              true));
+
+        // Parameter name from application/views/scripts/auth/register.phtml
         $autoSignin = $request->getParam('autoSignin', null);
 
         /* To create a new user we need:
@@ -342,6 +344,9 @@ class AuthController extends Connexions_Controller_Action
         $this->_noNav            =
             Connexions::to_bool($request->getParam('noNav', false));
         $this->view->excludeNav  = $this->_noNav;
+
+        // Parameter name from application/views/scripts/auth/sign-in.phtml
+        //                  or application/views/scripts/auth/register.phtml
         $this->view->autoSignin  = $request->getParam('autoSignin', null);
 
         /*
@@ -361,6 +366,31 @@ class AuthController extends Connexions_Controller_Action
     {
         $authCookie = $this->_api->authCookie;
 
+        if ($user === null)
+        {
+            // Remove any auto signin cookie
+            $autoSigninCookie = $this->_api->autoSigninCookie;
+
+            /*
+            Connexions::log("AuthController::_userAuthCookie(): "
+                            .   "Remove autoSignin cookie[ %s ]: "
+                            .   "path[ %s ], domain[ %s ], %sssl",
+                            $autoSigninCookie,
+                            $this->_rootUrl,
+                            $this->_connection['domain'],
+                            ($this->_connection['https'],
+                                ? ''
+                                : '!'));
+            // */
+
+            setcookie( $autoSigninCookie,
+                       null,
+                       time() - 3600,
+                       $this->_rootUrl,
+                       $this->_connection['domain'],
+                       $this->_connection['https']);
+        }
+
         $expires = time() + (60 * 60 * 24 * 365);
         if ($user && $user->isAuthenticated())
         {
@@ -373,7 +403,7 @@ class AuthController extends Connexions_Controller_Action
             $cookieVal = null;
         }
 
-        // /*
+        /*
         Connexions::log("AuthController::_userAuthCookie(): "
                         .   "authCookie[ %s ], value[ %s ]",
                         Connexions::varExport($authCookie),
