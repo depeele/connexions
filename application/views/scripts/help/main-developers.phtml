@@ -11,6 +11,8 @@ $idDescriptions = array(
     'bookmark'  => '',
     'date/time' => '<tt>YYYY-MM-DD hh:mm:ss</tt>',
     'activity'  => '<b>activityId</b>',
+    'objectType'=> '<b>objectType</b> (<tt>user</tt>, <tt>item</tt>, <tt>tag</tt>, <tt>bookmark</tt>)',
+    'operation' => '<b>operation</b> (<tt>save</tt>, <tt>update</tt>, <tt>delete</tt>)',
 );
 $idDescriptions['bookmark'] =
         "<tt>%user%:%item%</tt> where <tt>%user%</tt> is the "
@@ -986,7 +988,9 @@ Connexions::log('views/scripts/help/main-developers.phtml: '
             <p>Retrieve all activity records matching the provided identifiers.</p>
             <table class='parameters'>
              <tr><th>Parameters</th><th>Description</th></tr>
-             <tr><th>ids</th><td>A comma-separated list of activities by <?= $idDescriptions['activity'] ?>;</td></tr>
+             <tr><th>ids</th><td>A comma-separated list of activities by <?= $idDescriptions['activity'] ?> [ empty indicates all activities ];</td></tr>
+             <tr><th>objectType</th><td>A comma-separated list of desired object types by <?= $idDescriptions['objectType'] ?> [ empty indicates all object types ];</td></tr>
+             <tr><th>operation</th><td>A comma-separated list of desired operations by <?= $idDescriptions['operation'] ?> [ empty indicates any operation ];</td></tr>
              <tr><th>order</th><td>The sort order to apply to the returned activities [ time DESC ];</td></tr>
              <tr><th>count</th><td>The maximum number of activities to return [ 50 ];</td></tr>
              <tr><th>offset</th><td>The offset within the list of all matching activities to begin including activities to return [ 0 ];</td></tr>
@@ -1003,7 +1007,9 @@ Connexions::log('views/scripts/help/main-developers.phtml: '
             <p>Retrieve all activity records for the given user(s).</p>
             <table class='parameters'>
              <tr><th>Parameters</th><th>Description</th></tr>
-             <tr><th>users</th><td>A comma-separated list of users by <?= $idDescriptions['user'] ?>;</td></tr>
+             <tr><th>users</th><td>A comma-separated list of users by <?= $idDescriptions['user'] ?> [ empty indicates all users ];</td></tr>
+             <tr><th>objectType</th><td>A comma-separated list of desired object types by <?= $idDescriptions['objectType'] ?> [ empty indicates all object types ];</td></tr>
+             <tr><th>operation</th><td>A comma-separated list of desired operations by <?= $idDescriptions['operation'] ?> [ empty indicates any operation ];</td></tr>
              <tr><th>order</th><td>The sort order to apply to the returned activities [ time DESC ];</td></tr>
              <tr><th>count</th><td>The maximum number of activities to return [ 50 ];</td></tr>
              <tr><th>offset</th><td>The offset within the list of all matching activities to begin including activities to return [ 0 ];</td></tr>

@@ -583,9 +583,10 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
      */
     protected function _autoSignin()
     {
-        $autoSignin = (isset($_COOKIE['autoSignin'])
-                        ? $_COOKIE['autoSignin']
-                        : false);
+        $autoSigninCookie = Connexions::getConfig()->api->autoSigninCookie;
+        $autoSignin       = (isset($_COOKIE[$autoSigninCookie])
+                                 ? $_COOKIE[$autoSigninCookie]
+                                 : false);
 
         /*
         Connexions::log("Bootstrap::_autoSignin(): autoSignin value[ %s ]",

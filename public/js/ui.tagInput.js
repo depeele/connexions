@@ -344,7 +344,11 @@ $.widget("ui.tagInput", $.ui.input, {
                  (key                      === opts.separator) ||
                  (opts.addOnEnter && (key  === keyCode.ENTER)) )
             {
-                self.addTag();
+                if ( (! self.addTag()) && (key === keyCode.ENTER))
+                {
+                    // Trigger 'ENTER' on the original element
+                    self.element.trigger(e);
+                }
                 e.preventDefault();
                 return false;
             }
@@ -556,7 +560,7 @@ $.widget("ui.tagInput", $.ui.input, {
     /** @brief  Add the given tag to the list.
      *  @param  val     The tag to add.
      *
-     *  @return this for a fluent interface
+     *  @return tru/false indicating whether a tag was added.
      */
     addTag: function(val) {
         var self    = this;
@@ -589,7 +593,7 @@ $.widget("ui.tagInput", $.ui.input, {
             self._updateTags();
         }
 
-        return this;
+        return ($tag ? true : false);
     },
 
     /** @brief  Delete the given tag from the list.

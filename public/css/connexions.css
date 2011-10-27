@@ -781,12 +781,12 @@ a:visited { color: #005a9c; }
 
 /*fieldInfoColor             = !validationInputColor */
 /****** users.scss ****** */
-.items .groupHeader { position: relative; color: #999999; left: -1.5em; margin-top: 1.5em; }
+.items .groupHeader { position: relative; color: #999999; left: -1.6em; margin-top: 2em; }
 .items .groupHeader .group { position: relative; }
 .items .groupHeader .group .groupType { height: 1.1em; }
 .items .groupHeader .group .date { position: relative; }
-.items .groupHeader .group .date .year { position: absolute; left: 1.2em; top: -0.45em; font-size: 3em; font-weight: bold; color: #dce3fb; z-index: 4; }
-.items .groupHeader .group .date .dateBox { position: relative; left: 0.1em; font-size: 1em; font-weight: bold; color: #999999; }
+.items .groupHeader .group .date .year { position: absolute; left: 1.2em; top: -0.6em; font-size: 3em; font-weight: bold; color: #dce3fb; z-index: 4; }
+.items .groupHeader .group .date .dateBox { font-size: 1em; font-weight: bold; color: #999999; }
 .items .groupHeader .group .date .dateBox .month { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; }
 .items .groupHeader .group .date .dateBox .day { display: -moz-inline-stack; display: inline-block; zoom: 1; *display: inline; padding: 0 0.25em; }
 .items .groupHeader .group .date .dateBox .day-of-week { display: block; font-size: 0.8em; font-weight: bold; z-index: 4; }

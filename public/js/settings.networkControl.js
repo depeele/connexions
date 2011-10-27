@@ -161,7 +161,7 @@ $.widget("settings.networkControl", {
                 self.$submit.button('disable');
             }
         });
-        self.$input.bind('keydown.networkControl', function(e) {
+        self.$input.bind('keypress.networkControl', function(e) {
             if (e.keyCode === 13)   // return
             {
                 self.$input.blur();
@@ -320,6 +320,8 @@ $.widget("settings.networkControl", {
                                     +' added',
                         text:  successes.join(', ')
                     });
+
+                    self.$input.val('');
 
                     // Ask the pane to reload to present the new users
                     self.reload();

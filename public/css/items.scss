@@ -9,8 +9,8 @@
     position:         relative;
 
     color:      $groupHeaderColor;
-    left:       -1.5em;
-    margin-top: 1.5em;
+    left:       -1.6em;
+    margin-top: 2em;
 
     .group {
       // Left portion of group header, shifted left 1.5em
@@ -25,7 +25,7 @@
         .year {
           position: absolute;
           left: 1.2em;
-          top: -0.45em;
+          top: -0.6em;
           font-size: 3em;
           font-weight: bold;
           color: $groupHeaderYearColor;
@@ -34,8 +34,6 @@
           //+rotate(-90deg)
         }
         .dateBox {
-          position:     relative;
-          left:         0.1em;
           font-size:    1em;
           font-weight:  bold;
           color:        $controlColor;

@@ -83,12 +83,19 @@ $.widget("connexions.itemScope", {
          */
         jsonRpc:            null,
 
+        refocusCookie:      'itemScope-refocus',    /* The name of the cookie
+                                                     * indicating the need to
+                                                     * refocus on the input
+                                                     * area upon
+                                                     * initialization.
+                                                     */
+
         separator:          ',',    // The term separator
         minLength:          2       // Minimum term length
     },
     _create: function(){
-        var self    = this;
-        var opts    = self.options;
+        var self    = this,
+            opts    = self.options;
 
         /********************************
          * Initialize jsonRpc
@@ -153,6 +160,22 @@ $.widget("connexions.itemScope", {
         }
 
         self._bindEvents();
+
+        // See if we should refocus on our input area upon initialization
+        var cookieOpts  = {},
+            cookiePath  = $.registry('cookiePath');
+        if (cookiePath)
+        {
+            cookieOpts.path = cookiePath;
+        }
+
+        if ($.cookie(opts.refocusCookie))
+        {
+            // Delete the cookie
+            $.cookie(opts.refocusCookie, null, cookieOpts);
+
+            self.$input.focus();
+        }
     },
 
     _autocomplete: function(request, response) {
@@ -248,7 +271,10 @@ $.widget("connexions.itemScope", {
                            .addClass('ui-icon-close')
                            .removeClass('ui-icon-circle-close');
                 })
-                .trigger('mouseleave');
+                .trigger('mouseleave')
+                .bind('click.itemScope', function(e) {
+                    $.spinner();
+                });
 
         // Attach a click handler to the submit button
         self.$submit
@@ -288,9 +314,31 @@ $.widget("connexions.itemScope", {
                     url += scope;
 
                     // Simply change the browsers URL
+                    $.spinner();
                     window.location.assign(url);
 
                     // Allow form submission to continue
+                });
+
+        /* Attach a 'keypress' handler to the itemScope input item.  On ENTER,
+         * trigger 'submit' on the form item.
+         */
+        self.$input
+                .bind('keypress.itemScope', function(e) {
+                    if (e.keyCode === $.ui.keyCode.ENTER)
+                    {
+                        // Set the itemScope-refocus cookie
+                        var cookieOpts  = {},
+                            cookiePath  = $.registry('cookiePath');
+                        if (cookiePath)
+                        {
+                            cookieOpts.path = cookiePath;
+                        }
+
+                        $.cookie(opts.refocusCookie, true, cookieOpts);
+                                
+                        self.element.submit();
+                    }
                 });
     },
 
@@ -312,6 +360,7 @@ $.widget("connexions.itemScope", {
         // Unbind events
         self.element.find('.deletable a.delete').unbind('.itemScope');
         self.$submit.unbind('.itemScope');
+        self.$input.unbind('.itemScope');
         self.element.unbind('.itemScope');
     }
 });

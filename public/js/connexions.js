@@ -779,6 +779,35 @@
     };
 
     /*************************************************************************
+     * Document-level progress/activity spinner
+     *
+     */
+    $.spinner = function(state) {
+        var $spin       = $('#pageHeader h1 a img');
+
+        if ($spin.length > 0)
+        {
+            var url = $spin.attr('src');
+            if (state === false)
+            {
+                // Turn the spinner off
+                if (url.indexOf('-spinner.gif') > 0)
+                {
+                    $spin.attr('src', url.replace('-spinner.gif', '.gif') );
+                }
+            }
+            else
+            {
+                // Turn the spinner on
+                if (url.indexOf('-spinner.gif') < 0)
+                {
+                    $spin.attr('src', url.replace('.gif', '-spinner.gif') );
+                }
+            }
+        }
+    };
+
+    /*************************************************************************
      * z-index
      *
      */
@@ -845,43 +874,17 @@
 
     $.fn.mask = function() {
         return this.each(function() {
-            var $spin       = $('#pageHeader h1 a img');
-
             $(this).overlay();
 
-            if ($spin.length > 0)
-            {
-                var url = $spin.attr('src');
-                if (url.indexOf('-spinner.gif') < 0)
-                {
-                    $spin.attr('src', url.replace('.gif', '-spinner.gif') );
-                }
-            }
-
-            /*
-            if ($.fn.bgiframe)
-            {
-                var $overlay    = $(this).data('connexions-overlay');
-                $overlay.bgiframe();
-            }
-            // */
+            $.spinner();
         });
     };
 
     $.fn.unmask = function() {
         return this.each(function() {
-            var $spin       = $('#pageHeader h1 a img');
-
             $(this).unoverlay();
 
-            if ($spin.length > 0)
-            {
-                var url = $spin.attr('src');
-                if (url.indexOf('-spinner.gif') > 0)
-                {
-                    $spin.attr('src', url.replace('-spinner.gif', '.gif') );
-                }
-            }
+            $.spinner(false);
         });
     };
 
@@ -1018,4 +1021,10 @@
         $.cookie('autoSignin', newVal, cookieOpts);
     };
 
+    // Start the spinner immediately as well as anytime the window is unloaded
+    $.spinner();
+
+    $(window).unload(function() {
+        $.spinner();
+    });
  }(jQuery));

@@ -304,12 +304,14 @@ Connexions::log('views/scripts/help/main-faq.phtml: '
             title='Hovering over a bookmark' />
        <div class='caption'><b>Figure 2</b>: Hovering over a bookmark</div>
       </div>
-      <p>You can make a few immediate changes to the "favorite" or "privacy"
-      status using the star
+      <p>You can make a few immediate changes to the "favorite", "privacy", or
+      "world modifiable" status using the star
       (<span class='icon'><span class='connexions_sprites
-       star_empty'>&nbsp;</span></span>) and lock
+       star_empty'>&nbsp;</span></span>), lock
       (<span class='icon'><span class='connexions_sprites
-       lock_empty'>&nbsp;</span></span>)
+       lock_empty'>&nbsp;</span></span>), and world/circle
+      (<span class='icon'><span class='connexions_sprites
+       worldModify_empty'>&nbsp;</span></span>)
       icons on the left.  In addition, you can immediately change the current
       "rating" using the stars (<span class='icon'>
    <span class='ui-stars-wrapper'>
@@ -411,6 +413,12 @@ Connexions::log('views/scripts/help/main-faq.phtml: '
       <a href='<?= $url
       ?>/can_i_create_a_group_of_people_who_often_bookmark_things_im_interested_in'>create
       a group of people who often bookmark things of interest</a>.</p>
+
+      <p>Finally, as new feature in version 2.0 of Connexions, any public
+      bookmark may also be marked "world modifiable".  This means that any
+      authenticated user will be permitted to modify the name, description, and
+      tags of a bookmark (but not favorite, private, worldModify, rating, nor
+      url).</p>
      </div>
     </li><!-- question-answer } -->
    
@@ -462,6 +470,27 @@ Connexions::log('views/scripts/help/main-faq.phtml: '
       and view all public bookmarks of users in that group by visiting your <a
       href='<?= $this->baseUrl('network/'. $this->viewer) ?>'>"Network"
       page</a>.</p>
+     </div>
+    </li><!-- question-answer } -->
+
+    <li class='collapsable'><!-- question-answer { -->
+     <h3 id='network_and_sharing_what_is_a_world_modifiable_bookmark'
+         class='toggle faq-question<?= Connexions_Help::rest_collapsed($this, 'what_is_a_world_modifiable_bookmark', true) ?>'
+         ><a href='<?= $url ?>/network_and_sharing/what_is_a_world_modifiable_bookmark'
+             data-cache.collapsable='what_is_a_world_modifiable_bookmark_content'>What is a world modifiable bookmark?</a></h3>
+     <div id='what_is_a_world_modifiable_bookmark_content' class='help-content faq-answer'>
+      <p>Any public bookmark may be marked by its owner as "world modifiable".
+      This means that any authenticated user will be permitted to modify the
+      name, description, and tags of a bookmark (but not favorite, private,
+      worldModify, rating, nor url).</p>
+
+      <p>World Modifiable bookmarks will have a world
+      (<span class='icon'><span class='connexions_sprites
+       worldModify_fill'>&nbsp;</span></span>) icon in their status area</p>
+
+      <p>Added in version 2.0 of Connexions, this feature allows an ad hoc
+      group of users to collaborate on a set of bookmarks, curating the
+      descriptions and tags to accomplish simple work flows.</p>
      </div>
     </li><!-- question-answer } -->
 
