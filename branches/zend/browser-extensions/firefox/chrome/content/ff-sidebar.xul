@@ -20,7 +20,7 @@
   </tooltip>
 
   <!-- Sidebar Bookmarks Context menu { -->
-  <popup id='sidebar-bookmarks-contextMenu'>
+  <menupopup id='sidebar-bookmarks-contextMenu'>
     <menuitem
         label="&connexions.sidebar.context.open.label;"
         accesskey="&connexions.sidebar.context.open.accesskey;"
@@ -48,7 +48,7 @@
         accesskey="&connexions.sidebar.context.delete.accesskey;"
         authenticated="true"
         oncommand="cSidebar.delete(event, document.popupNode);"/>
-  </popup>
+  </menupopup>
   <!-- Sidebar Bookmarks Context menu } -->
 
   <!-- Sidebar Bookmark Property Panel { -->
