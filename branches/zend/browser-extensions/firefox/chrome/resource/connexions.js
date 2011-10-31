@@ -1608,6 +1608,12 @@ Connexions.prototype = {
 
         // Handle 'onprogress' to report progress
         xhr.onprogress = function(event) {
+            if (event.target && (event.position === undefined))
+            {
+                // Treat this as a success.
+                return xhr.onsuccess(event);
+            }
+
             // event.position, event.totalSize,
             // event.target (XMLHttpRequest)
             var params  = {
@@ -1946,7 +1952,8 @@ Connexions.prototype = {
 
         // Establish syncStatus.progress
         self.state.syncStatus.progress = {
-            total:      sync.deletions.length + sync.updates.length,
+            total:      (sync.deletions ? sync.deletions.length : 0) +
+                        (sync.updates   ? sync.updates.length   : 0),
             current:    0,
             added:      0,
             updated:    0,
@@ -1958,38 +1965,44 @@ Connexions.prototype = {
         self.signal('connexions.syncProgress', self.state.syncStatus);
 
         // First, deletions
-        for each (var bookmark in sync.deletions)
+        if (sync.deletions)
         {
-            if (self.state.sync !== true)
+            for each (var bookmark in sync.deletions)
             {
-                // CANCEL the sync
-                break;
-            }
+                if (self.state.sync !== true)
+                {
+                    // CANCEL the sync
+                    break;
+                }
 
-            self.deleteBookmark(bookmark.itemId);
+                self.deleteBookmark(bookmark.itemId);
 
-            // Process any pending events to keep the UI responsive
-            while (thread.hasPendingEvents())
-            {
-                thread.processNextEvent(true);
+                // Process any pending events to keep the UI responsive
+                while (thread.hasPendingEvents())
+                {
+                    thread.processNextEvent(true);
+                }
             }
         }
 
         // Second, updates
-        for each (var bookmark in sync.updates)
+        if (sync.updates)
         {
-            if (self.state.sync !== true)
+            for each (var bookmark in sync.updates)
             {
-                // CANCEL the sync
-                break;
-            }
+                if (self.state.sync !== true)
+                {
+                    // CANCEL the sync
+                    break;
+                }
 
-            self.addBookmark( bookmark );
+                self.addBookmark( bookmark );
 
-            // Process any pending events to keep the UI responsive
-            while (thread.hasPendingEvents())
-            {
-                thread.processNextEvent(true);
+                // Process any pending events to keep the UI responsive
+                while (thread.hasPendingEvents())
+                {
+                    thread.processNextEvent(true);
+                }
             }
         }
 
@@ -2165,7 +2178,7 @@ Connexions.prototype = {
                 else
                 {
                     // SUCCESS -- Add all new bookmarks.
-                    if (self.state.syncStatus === true)
+                    if (self.state.syncStatus === null)
                     {
                         self.state.syncStatus = {};
                     }
@@ -2178,7 +2191,7 @@ Connexions.prototype = {
                             +   'RPC error: [ %s ]',
                             textStatus);
 
-                if (self.state.syncStatus === true)
+                if (self.state.syncStatus === null)
                 {
                     self.state.syncStatus = {};
                 }
