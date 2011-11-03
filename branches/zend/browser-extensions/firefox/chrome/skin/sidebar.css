@@ -85,7 +85,7 @@
   background-attachment:  scroll;
   background-repeat:      no-repeat;
   background-color:       transparent;
-  background-position:    0 -48px;
+  background-position:    0 -80px;
 }
 #connexions-sidebar .bookmarks .favorite {
   background-position:  0 0;
@@ -95,6 +95,12 @@
 }
 #connexions-sidebar .bookmarks .favorite-private {
   background-position:  0 -32px;
+}
+#connexions-sidebar .bookmarks .worldModify {
+  background-position:  0 -48px;
+}
+#connexions-sidebar .bookmarks .favorite-worldModify {
+  background-position:  0 -64px;
 }
 
 #connexions-sidebar .tags {

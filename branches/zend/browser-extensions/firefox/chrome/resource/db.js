@@ -35,6 +35,7 @@ Connexions_Db.prototype = {
                    +"rating UNSIGNED NOT NULL DEFAULT 0,"
                    +"isFavorite BOOL NOT NULL DEFAULT 0,"
                    +"isPrivate BOOL NOT NULL DEFAULT 0,"
+                   +"worldModify BOOL NOT NULL DEFAULT 0,"
                    +"taggedOn DATETIME NOT NULL DEFAULT 0,"
                    +"updatedOn DATETIME NOT NULL DEFAULT 0,"
                    +"visitedOn DATETIME NOT NULL DEFAULT 0,"
@@ -287,7 +288,7 @@ Connexions_Db.prototype = {
     /** @brief  Insert a new bookmark
      *  @param  bookmark    The bookmark object:
      *                          url, urlHash, name, description,
-     *                          rating, isFavorite, isPrivate, tags
+     *                          rating, isFavorite, isPrivate, worldModify, tags
      *
      *  @return The id of the new bookmark
      */
@@ -298,21 +299,23 @@ Connexions_Db.prototype = {
         var stmt    = self.dbStatements[ fname ];
         if (stmt === undefined)
         {
-            /*  1   url
-             *  2   urlHash
-             *  3   name
-             *  4   description
-             *  5   rating
-             *  6   isFavorite
-             *  7   isPrivate
-             *  8   taggedOn
-             *  9   updatedOn
-             *  10  visitedOn
-             *  11  visitCount
-             *  12  shortcut
+            /*  1 / 0  url
+             *  2 / 1  urlHash
+             *  3 / 2  name
+             *  4 / 3  description
+             *  5 / 4  rating
+             *  6 / 5  isFavorite
+             *  7 / 6  isPrivate
+             *  8 / 7  worldModify
+             *  9 / 8  taggedOn
+             *  10/ 9  updatedOn
+             *  11/10  visitedOn
+             *  12/11  visitCount
+             *  13/12  shortcut
              */
             var sql = 'INSERT INTO bookmarks VALUES(?1, ?2, ?3, ?4, ?5, ?6, '
-                    +                              '?7, ?8, ?9, ?10, ?11, ?12)';
+                    +                              '?7, ?8, ?9, '
+                    +                              '?10, ?11, ?12, ?13)';
             stmt = self.dbConnection.createStatement(sql);
             self.dbStatements[ fname ] = stmt;
         }
@@ -334,15 +337,17 @@ Connexions_Db.prototype = {
                                               ? 1 : 0));
             stmt.bindInt32Parameter(6, (bookmark.isPrivate
                                               ? 1 : 0));
-            stmt.bindInt64Parameter(7, (bookmark.taggedOn
+            stmt.bindInt32Parameter(7, (bookmark.worldModify
+                                              ? 1 : 0));
+            stmt.bindInt64Parameter(8, (bookmark.taggedOn
                                               ? bookmark.taggedOn : now));
-            stmt.bindInt64Parameter(8, (bookmark.updatedOn
+            stmt.bindInt64Parameter(9, (bookmark.updatedOn
                                               ? bookmark.updatedOn : now));
-            stmt.bindInt64Parameter(9, (bookmark.visitedOn
+            stmt.bindInt64Parameter(10,(bookmark.visitedOn
                                               ? bookmark.visitedOn : 0));
-            stmt.bindInt32Parameter(10, (bookmark.visitCount
+            stmt.bindInt32Parameter(11, (bookmark.visitCount
                                               ? bookmark.visitedCount : 0));
-            stmt.bindUTF8StringParameter(11, (bookmark.shortcut
+            stmt.bindUTF8StringParameter(12, (bookmark.shortcut
                                               ? bookmark.shortcut : ''));
 
             stmt.execute();
@@ -483,7 +488,7 @@ Connexions_Db.prototype = {
     /** @brief  Update a bookmark.
      *  @param  bookmark    The bookmark object:
      *                          id, url, urlHash, name, description,
-     *                          rating, isFavorite, isPrivate, tags
+     *                          rating, isFavorite, isPrivate, worldModify, tags
      *
      *  @return true | false
      */
@@ -497,10 +502,11 @@ Connexions_Db.prototype = {
             var sql = 'UPDATE bookmarks SET url=?1, urlHash=?2, '
                     +                      'name=?3, description=?4, '
                     +                      'rating=?5, isFavorite=?6, '
-                    +                      'isPrivate=?7, taggedOn=?8, '
-                    +                      'updatedOn=?9, visitedOn=?10, '
-                    +                      'visitCount=?11, shortcut=?12 '
-                    +     'WHERE rowid=?13';
+                    +                      'isPrivate=?7, worldModify=?8, '
+                    +                      'taggedOn=?9, updatedOn=?10, '
+                    +                      'visitedOn=?11, '
+                    +                      'visitCount=?12, shortcut=?13 '
+                    +     'WHERE rowid=?14';
             stmt = self.dbConnection.createStatement(sql);
             self.dbStatements[ fname ] = stmt;
         }
@@ -522,18 +528,20 @@ Connexions_Db.prototype = {
                                               ? 1 : 0));
             stmt.bindInt32Parameter(6, (bookmark.isPrivate
                                               ? 1 : 0));
-            stmt.bindInt64Parameter(7, (bookmark.taggedOn
+            stmt.bindInt32Parameter(7, (bookmark.worldModify
+                                              ? 1 : 0));
+            stmt.bindInt64Parameter(8, (bookmark.taggedOn
                                               ? bookmark.taggedOn : now));
-            stmt.bindInt64Parameter(8, (bookmark.updatedOn
+            stmt.bindInt64Parameter(9, (bookmark.updatedOn
                                               ? bookmark.updatedOn : now));
-            stmt.bindInt64Parameter(9, (bookmark.visitedOn
+            stmt.bindInt64Parameter(10,(bookmark.visitedOn
                                               ? bookmark.visitedOn : 0));
-            stmt.bindInt32Parameter(10, (bookmark.visitCount
+            stmt.bindInt32Parameter(11, (bookmark.visitCount
                                               ? bookmark.visitedCount : 0));
-            stmt.bindUTF8StringParameter(11, (bookmark.shortcut
+            stmt.bindUTF8StringParameter(12, (bookmark.shortcut
                                               ? bookmark.shortcut : ''));
 
-            stmt.bindInt64Parameter(12, bookmark.id);
+            stmt.bindInt64Parameter(13, bookmark.id);
 
             stmt.execute();
 
@@ -605,7 +613,8 @@ Connexions_Db.prototype = {
      *  @param  sortOrder   The desired sort order:
      *                          A valid field:
      *                              url, urlHash, name, description, rating,
-     *                              isFavorite, isPrivate, taggedOn, updatedOn,
+     *                              isFavorite, isPrivate, worldModify,
+     *                              taggedOn, updatedOn,
      *                              visitedOn, visitCount, shortcut
      *                          A sort order:
      *                              ASC, DESC
@@ -654,7 +663,8 @@ Connexions_Db.prototype = {
      *  @param  sortOrder   The desired sort order:
      *                          A valid field:
      *                              url, urlHash, name, description, rating,
-     *                              isFavorite, isPrivate, taggedOn, updatedOn,
+     *                              isFavorite, isPrivate, worldModify,
+     *                              taggedOn, updatedOn,
      *                              visitedOn, visitCount, shortcut
      *                          A sort order:
      *                              ASC, DESC
@@ -720,7 +730,8 @@ Connexions_Db.prototype = {
      *  @param  sortOrder   The desired sort order:
      *                          A valid field:
      *                              url, urlHash, name, description, rating,
-     *                              isFavorite, isPrivate, taggedOn, updatedOn,
+     *                              isFavorite, isPrivate, worldModify,
+     *                              taggedOn, updatedOn,
      *                              visitedOn, visitCount, shortcut
      *                          A sort order:
      *                              ASC, DESC
@@ -1101,7 +1112,8 @@ Connexions_Db.prototype = {
      *  @param  sortOrder   The desired sort order:
      *                          A valid field:
      *                              url, urlHash, name, description, rating,
-     *                              isFavorite, isPrivate, taggedOn, updatedOn,
+     *                              isFavorite, isPrivate, worldModify,
+     *                              taggedOn, updatedOn,
      *                              visitedOn, visitCount, shortcut
      *                          A sort order:
      *                              ASC, DESC
@@ -1161,7 +1173,8 @@ Connexions_Db.prototype = {
      *  @param  sortOrder   The desired sort order:
      *                          A valid field:
      *                              url, urlHash, name, description, rating,
-     *                              isFavorite, isPrivate, taggedOn, updatedOn,
+     *                              isFavorite, isPrivate, worldModify,
+     *                              taggedOn, updatedOn,
      *                              visitedOn, visitCount, shortcut
      *                          A sort order:
      *                              ASC, DESC
@@ -1461,7 +1474,8 @@ Connexions_Db.prototype = {
      *  @param  sortOrder   The desired sort order:
      *                          A valid field:
      *                              url, urlHash, name, description, rating,
-     *                              isFavorite, isPrivate, taggedOn, updatedOn,
+     *                              isFavorite, isPrivate, worldModify,
+     *                              taggedOn, updatedOn,
      *                              visitedOn, visitCount, shortcut
      *                          A sort order:
      *                              ASC, DESC
@@ -1484,6 +1498,7 @@ Connexions_Db.prototype = {
         case 'rating':
         case 'isFavorite':
         case 'isPrivate':
+        case 'worldModify':
         case 'taggedOn':
         case 'updatedOn':
         case 'vistedOn':
@@ -1697,15 +1712,17 @@ Connexions_Db.prototype = {
             obj.rating      = stmt.getInt32(5);
             obj.isFavorite  = stmt.getInt32(6);
             obj.isPrivate   = stmt.getInt32(7);
-            obj.taggedOn    = stmt.getInt64(8);
-            obj.updatedOn   = stmt.getInt64(9);
-            obj.visitedOn   = stmt.getInt64(10);
-            obj.visitCount  = stmt.getInt32(11);
-            obj.shortcut    = stmt.getUTF8String(12);
+            obj.worldModify = stmt.getInt32(8);
+            obj.taggedOn    = stmt.getInt64(9);
+            obj.updatedOn   = stmt.getInt64(10);
+            obj.visitedOn   = stmt.getInt64(11);
+            obj.visitCount  = stmt.getInt32(12);
+            obj.shortcut    = stmt.getUTF8String(13);
 
             // Ensure that boolean flags have boolean values
-            obj.isFavorite = (obj.isFavorite ? true : false); 
-            obj.isPrivate  = (obj.isPrivate  ? true : false); 
+            obj.isFavorite  = (obj.isFavorite  ? true : false); 
+            obj.isPrivate   = (obj.isPrivate   ? true : false); 
+            obj.worldModify = (obj.worldModify ? true : false); 
 
         } catch (e) {
             cDebug.log("Connexions_Db::_bookmarkFromRow(): ERROR [ %s ]", e);
@@ -1781,6 +1798,7 @@ Connexions_Db.prototype = {
                  (bm1.rating      === bm2.rating)      &&
                  (bm1.isFavorite  === bm2.isFavorite)  &&
                  (bm1.isPrivate   === bm2.isPrivate)   &&
+                 (bm1.worldModify === bm2.worldModify) &&
                  (bm1.taggedOn    === bm2.taggedOn)    &&
                  (bm1.updatedOn   === bm2.updatedOn)   &&
                  ((bm1.visitedOn  === undefined) ||

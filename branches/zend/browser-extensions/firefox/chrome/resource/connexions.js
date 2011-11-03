@@ -1829,6 +1829,7 @@ Connexions.prototype = {
      *      rating:         integer,
      *      isFavorite:     integer,
      *      isPrivate:      integer,
+     *      worldModify:    integer,
      *      taggedOn:       string: 'YYYY-MM-DD hh:mm:ss',
      *      updatedOn:      string: 'YYYY-MM-DD hh:mm:ss',
      *      ratingAvg:      number,
@@ -1842,6 +1843,7 @@ Connexions.prototype = {
      *      rating:         integer,
      *      isFavorite:     boolean,
      *      isPrivate:      boolean,
+     *      worldModify:    boolean,
      *      taggedOn:       integer: (UNIX Date/Time),
      *      updatedOn:      integer: (UNIX Date/Time),
      *      tags:           [ tag strings ],
@@ -1861,6 +1863,7 @@ Connexions.prototype = {
             rating:         bookmark.rating,
             isFavorite:     self.normalizeBool(bookmark.isFavorite),
             isPrivate:      self.normalizeBool(bookmark.isPrivate),
+            worldModify:    self.normalizeBool(bookmark.worldModify),
             taggedOn:       self.normalizeDate(bookmark.taggedOn),
             updatedOn:      self.normalizeDate(bookmark.updatedOn),
             tags:           bookmark.tags
