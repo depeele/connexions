@@ -838,6 +838,7 @@ CSidebar.prototype = {
             var propName    = [];
             if (bookmark.isFavorite)    { propName.push('favorite'); }
             if (bookmark.isPrivate)     { propName.push('private');  }
+            if (bookmark.worldModify)   { propName.push('worldModify');  }
             propCss.push( propName.join('-') );
 
             //propIcon.setAttribute("label", 'Hey there!!!');
@@ -868,13 +869,15 @@ CSidebar.prototype = {
             /*
             cDebug.log('cSidebar::_renderBookmarks(): bookmark %s '
                         +   '{url[ %s ], urlHash[ %s ], name[ %s ], '
-                        +   ' isFavorite[ %s ], isPrivate[ %s ]}',
+                        +   ' isFavorite[ %s ], isPrivate[ %s ], '
+                        +   'worldModify[ %s ]}',
                         idex,
                         bookmark.url,
                         bookmark.urlHash,
                         bookmark.name,
                         bookmark.isFavorite,
-                        bookmark.isPrivate);
+                        bookmark.isPrivate,
+                        bookmark.worldModify);
             // */
         }
 

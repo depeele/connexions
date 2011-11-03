@@ -86,6 +86,10 @@
         <label class='label' value='&bookmark.label.isPrivate;' />
         <label id='bookmark-isPrivate' flex='1'/>
       </hbox>
+      <hbox class='property'>
+        <label class='label' value='&bookmark.label.worldModify;' />
+        <label id='bookmark-worldModify' flex='1'/>
+      </hbox>
       <hbox class='property odd'>
         <label class='label' value='&bookmark.label.taggedOn;' />
         <label id='bookmark-taggedOn' flex='1'/>

@@ -91,6 +91,7 @@
 <!ENTITY bookmark.label.rating      "Rating">
 <!ENTITY bookmark.label.isFavorite  "Favorite">
 <!ENTITY bookmark.label.isPrivate   "Private">
+<!ENTITY bookmark.label.worldModify "World Modify">
 
 <!ENTITY bookmark.label.taggedOn    "Tagged">
 <!ENTITY bookmark.label.updatedOn   "Updated">

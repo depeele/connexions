@@ -28,6 +28,7 @@ CBookmark.prototype = {
         rating:         null,
         isFavorite:     null,
         isPrivate:      null,
+        worldModify:    null,
 
         taggedOn:       null,
         updatedOn:      null,
@@ -75,6 +76,7 @@ CBookmark.prototype = {
                 {
                 case 'isFavorite':
                 case 'isPrivate':
+                case 'worldModify':
                     val = (val ? 'true' : 'false');
                     break;
 
