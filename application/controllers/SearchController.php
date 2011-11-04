@@ -58,6 +58,67 @@ class SearchController extends Connexions_Controller_Action
      *
      */
 
+    /** @brief  Prepare for rendering the main view, regardless of format.
+     *
+     *  This will collect the variables needed to render the main view, placing
+     *  them in $view->main as a configuration array.
+     */
+    protected function _prepare_main()
+    {
+        /*
+        Connexions::log("SearchController::_prepare_main(): _partials[ %s ], "
+                        .   "original _namespace[ %s ]",
+                        Connexions::varExport($this->_partials),
+                        Connexions::varExport($this->_namespace));
+        // */
+
+        $namespace = $origNs = $this->_namespace;
+        $nPartials = count($this->_partials);
+        if ($nPartials > 1)
+        {
+            /* Use the last portion of the partial to determine the current
+             * namespace.
+             */
+            $namespace = $this->_partials[ $nPartials - 1 ];
+        }
+
+        /*
+        Connexions::log("SearchController::_prepare_main(): "
+                        .   "final _namespace[ %s ]",
+                        Connexions::varExport($namespace));
+        // */
+
+        if ($namespace !== $origNs)
+        {
+            /* The namespace has changed.  Retrieve namespace-based versions of
+             * referer, context, and terms
+             */
+            $this->_namespace =  $namespace;
+            $request          =& $this->_request;
+
+            $this->_referer   =
+                (empty($this->_referer)
+                    ? $request->getParam(  "{$namespace}Referer", null)
+                    : $this->_referer);
+            $this->_context   = 
+                (empty($this->_context)
+                    ? strtolower(
+                        $request->getParam("{$namespace}Context", null))
+                    : $this->_context);
+            $this->_terms     =
+                (empty($this->_terms)
+                    ? $request->getParam(  "{$namespace}Terms",   null)
+                    : $this->_terms);
+
+            // Update the view variables
+            $this->view->referer = $this->_referer;
+            $this->view->context = $this->_context;
+            $this->view->terms   = $this->_terms;
+        }
+
+        return parent::_prepare_main();
+    }
+
     /** @brief  Prepare and render a partial view.
      *
      *  Override Connexions_Controller_Action in order to adjust the rendering
@@ -71,6 +132,11 @@ class SearchController extends Connexions_Controller_Action
      */
     protected function _renderPartial()
     {
+        if ($this->_preparePartial() === false)
+        {
+            return;
+        }
+
         // /*
         Connexions::log("SearchController::_renderPartial: "
                         . "referer[ %s ], context[ %s ], terms[ %s ]",
@@ -171,13 +237,9 @@ class SearchController extends Connexions_Controller_Action
             if ( ($partial === null) || ($partial === 'main-tags') )
             {
                 /*****************************************
-                 * Use _prepare_main to retrieve display
-                 * parameters for the 'tags' section
-                 * and retrieve the tags.
+                 * Prepare the tag results.
                  *
                  */
-                $this->_namespace = 'tags';
-                $this->_prepare_main();
                 $tags = $this->view->main;
                 $tags['namespace']   = $this->_namespace;   //'tags';
                 $tags['panePartial'] = 'main-tags';
@@ -216,13 +278,9 @@ class SearchController extends Connexions_Controller_Action
             if ( ($partial === null) || ($partial === 'main-people') )
             {
                 /*****************************************
-                 * Use _prepare_main to retrieve display
-                 * parameters for the 'people' section
-                 * and retrieve the people.
+                 * Prepare the people results.
                  *
                  */
-                $this->_namespace = 'people';
-                $this->_prepare_main();
                 $people = $this->view->main;
                 $people['namespace']   = $this->_namespace; //'people';
                 $people['panePartial'] = 'main-people';
@@ -245,13 +303,9 @@ class SearchController extends Connexions_Controller_Action
             if ( ($partial === null) || ($partial === 'main-items') )
             {
                 /*****************************************
-                 * Use _prepare_main to retrieve display
-                 * parameters for the 'items' section
-                 * and retrieve the items.
+                 * Prepare the item results.
                  *
                  */
-                $this->_namespace = 'items';
-                $this->_prepare_main();
                 $items = $this->view->main;
                 $items['namespace']   = $this->_namespace;  //'items';
                 $items['panePartial'] = 'main-items';
@@ -568,13 +622,9 @@ class SearchController extends Connexions_Controller_Action
         // */
 
         /*****************************************
-         * Use _prepare_main to retrieve display
-         * parameters for the 'bookmarks' section
-         * and retrieve the bookmarks.
+         * Prepare the bookmark results.
          *
          */
-        $this->_namespace = 'bookmarks';
-        $this->_prepare_main();
         $bookmarks = $this->view->main;
         $bookmarks['namespace']   = 'bookmarks';
         $bookmarks['panePartial'] = 'main-bookmarks';
