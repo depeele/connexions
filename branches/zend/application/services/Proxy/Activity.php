@@ -8,7 +8,8 @@ class Service_Proxy_Activity extends Connexions_Service_Proxy
     /** @brief  Retrieve a set of Domain Model instances.
      *  @param  id          Identification value(s), null to retrieve all.  MAY
      *                      be an associative array that specifically
-     *                      identifies attribute/value(s) pairs.
+     *                      identifies attribute/value(s) pairs
+     *                      [ null == all ];
      *  @param  objectType  An array or comma-separated string of the object(s)
      *                      of interest (user, item, tag, bookmark)
      *                      [ null == all ];
@@ -49,8 +50,8 @@ class Service_Proxy_Activity extends Connexions_Service_Proxy
     }
 
     /** @brief  Retrieve a set of activities related to a set of Users.
-     *  @param  users       A Model_Set_User instance, array, or
-     *                      comma-separated string of users to match.
+     *  @param  users       A Model_Set_User instance, array, comma-separated
+     *                      string of users to match or null for all users.
      *  @param  objectType  An array or  comma-separated string of the
      *                      object(s) of interest (user, item, tag, bookmark)
      *                      [ null == all ];
