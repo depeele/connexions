@@ -54,10 +54,10 @@ if (isset($config['counts']))
     ?>
   <table class='overview'>
    <tbody>
-    <tr><th>Total users</th><td><?= $config['counts']['total'] ?></td></tr>
+    <tr><th>Total users</th><td><?= number_format($config['counts']['total']) ?></td></tr>
     <tr><th><div class='threshold'><?= $config['counts']['threshold'] ?>
                 or more bookmarks</div></th>
-        <td><?= $config['counts']['contributors'] ?></td></tr>
+        <td><?= number_format($config['counts']['contributors']) ?></td></tr>
    </tbody>
   </table>
     <?php
