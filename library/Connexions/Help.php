@@ -54,7 +54,7 @@ class Connexions_Help
         $ret = ' collapsed';
         if ($view->rest !== null)
         {
-            $path   = split('/', $val);
+            $path   = explode('/', $val);
             $nParts = count($path);
             if (count($view->rest) >= $nParts)
             {
