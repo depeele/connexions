@@ -1,6 +1,5 @@
 <?php
 $config  = Zend_Registry::get('config');
-$baseUrl = $this->baseUrl('/'); //Connexions::url('/');
 
 // Force latest IE rendering engine (even in intranet) & Chrome Frame
 //$this->headMeta()->appendHttpEquiv('X-UA-Compatible', 'IE=edge,chrome=1');
@@ -16,17 +15,19 @@ $jQuery = $this->jQuery();
 
 $links  = $this->headLink();
 
-$links->prependStylesheet($baseUrl .'css/connexions.min.css')
-      ->prependStylesheet($baseUrl .'css/themes/connexions/jquery-ui.min.css')
-      ->appendStylesheet($baseUrl .'css/ie.min.css',  'screen,projection',
+$links->prependStylesheet($this->baseUrl('css/connexions.min.css'))
+      ->prependStylesheet($this->baseUrl('css/themes/connexions/jquery-ui.min.css'))
+      ->appendStylesheet($this->baseUrl('css/ie.min.css'),
+                         'screen,projection',
                          'lt IE 8')
-      ->appendStylesheet($baseUrl .'css/ie8.min.css', 'screen,projection',
+      ->appendStylesheet($this->baseUrl('css/ie8.min.css'),
+                         'screen,projection',
                          'IE 8')
       ->headLink(array('rel'  => 'apple-touch-icon',
-                       'href' => $baseUrl .'/images/apple-touch-icon.png'),
+                       'href' => $this->baseUrl('images/apple-touch-icon.png')),
                        'PREPEND')
       ->headLink(array('rel'  => 'shortcut icon',
-                       'href' => $baseUrl .'/images/favicon.png'),
+                       'href' => $this->baseUrl('images/favicon.png')),
                        'PREPEND');
 
 if (is_array($this->contexts))
@@ -105,8 +106,8 @@ if ( @isset($config->cdn) && $config->cdn->use )
 else
 {
     // Use our local jQuery / jQuery.ui
-    $jQuery->setLocalPath($baseUrl   .'js/jquery.min.js')
-           ->setUiLocalPath($baseUrl .'js/jquery-ui.js');
+    $jQuery->setLocalPath($this->baseUrl(  'js/jquery.min.js'))
+           ->setUiLocalPath($this->baseUrl('js/jquery-ui.js'));
 }
 
 $jQuery->setVersion('1.5.2')
@@ -148,9 +149,9 @@ $jQuery->clearJavascript()
     }
 
     // Immediately Preload images that we use everywhere.
-    preloadImages('<?= $baseUrl ?>images/logo.gif',
-                  '<?= $baseUrl ?>images/logo-spinner.gif',
-                  '<?= $baseUrl ?>css/sprites/connexions.gif');
+    preloadImages('<?= $this->baseUrl('images/logo.gif') ?>',
+                  '<?= $this->baseUrl('images/logo-spinner.gif') ?>',
+                  '<?= $this->baseUrl('css/sprites/connexions.gif') ?>';
  }(jQuery));
   <?php
 $jQuery->javascriptCaptureEnd();
