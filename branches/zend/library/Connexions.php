@@ -490,6 +490,11 @@ class Connexions
 
                     $url = $baseUrl . $url;
                 }
+
+                /* Make sure we don't end up with something like '//' in this
+                 * site-local URL (occurs when our base url is simply '/').
+                 */
+                $url = preg_replace('#/+#', '/', $url);
             }
 
         }
