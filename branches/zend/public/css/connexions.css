@@ -947,7 +947,7 @@ body.light { background-color: white; }
 #pageContent .success { color: #667e32; }
 
 /* Notifications */
-#notifications { display: block; position: absolute; top: 2.5em; right: 0.25em; z-index: 99999; }
+#notifications { display: block; position: fixed; top: 2.5em; right: 0.25em; z-index: 99999; }
 
 /* Page Footer */
 #pageFooter { clear: both; margin: 4em 0 0; background-color: #182524; z-index: 1; height: 200px; }
