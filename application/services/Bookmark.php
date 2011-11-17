@@ -775,6 +775,15 @@ class Service_Bookmark extends Service_Base
                 $bookmark = $this->get(array('userId' => $id['userId'],
                                              'itemId' => $id['itemId']));
 
+                /*
+                Connexions::log("Service_Bookmark::update(): "
+                                . "curUser(%s), "
+                                . "bookmark(%s:%s): [ %s ]",
+                                $this->_curUser(),
+                                $id['userId'], $id['itemId'],
+                                Connexions::varExport($bookmark));
+                // */
+
                 // Is the current user allowed AT LEAST 'modify'?
                 if ($bookmark &&
                     ($bookmark->allow('modify', $this->_curUser())))
@@ -805,7 +814,11 @@ class Service_Bookmark extends Service_Base
         // Fill in any additional properties that have been provided
         if (! empty($name))         $id['name']         = $name;
         if (isset($description))    $id['description']  = $description;
-        if (! empty($tags))         $id['tags']         = $tags;
+        if (! empty($tags))
+        {
+            // Extract any specified tags, creating any that aren't found...
+            $id['tags'] = $this->_prepareTags(array('tags' => $tags), true);
+        }
 
         if ($canEdit)
         {
@@ -827,8 +840,9 @@ class Service_Bookmark extends Service_Base
 
         /*
         Connexions::log("Service_Bookmark::update(): "
-                        . "adjusted id[ %s ]",
-                        Connexions::varExport($id));
+                        . "adjusted id[ %s ], bookmark[ %s ]",
+                        Connexions::varExport($id),
+                        Connexions::varExport($bookmark));
         // */
 
         $error  = null;
@@ -838,11 +852,13 @@ class Service_Bookmark extends Service_Base
             if ($bookmark === null)
             {
                 // Attempt to retrieve/create a bookmark model instance.
+                $action   = 'create';
                 $bookmark = $this->get($id);
             }
             else
             {
                 // Update an existing bookmark with data from 'id'
+                $action   = 'update';
                 $bookmark->populate($id);
             }
 
