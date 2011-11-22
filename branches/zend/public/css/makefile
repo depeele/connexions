@@ -9,6 +9,7 @@ all: connexions.min.css post.min.css api.min.css auth.min.css 	\
 	url-choose.min.css search.min.css settings.min.css 	\
 	help.min.css						\
 	ie.min.css ie8.min.css 					\
+	print.min.css 						\
 	themes/connexions/jquery-ui.min.css
 
 #all: connexions.css bookmarks.css users.css urlItems.css inbox.css	\
@@ -74,12 +75,15 @@ ie8.css:	ie8.scss sizes.scss ie-corner.scss ie-jquery-ui.scss
 
 ie-corner.css:	ie-corner.scss urls.scss
 
+print.css:	print.scss colors.scss
+
 #----------------------------------------------------------------------------
 clean:
 	rm -f connexions*.css post*.css api*.css auth*.css	\
 	      url-choose*.css search*.css settings*.css 	\
 	      help*.css 					\
 	      ie*.css 						\
+	      print*.css 					\
 	      themes/connexions/jquery-ui.min.css
 
 %.css : %.scss
