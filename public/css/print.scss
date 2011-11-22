@@ -1,0 +1,165 @@
+@import "colors";
+
+@page {
+  size:   8.5in 11in;
+  margin: 0.5in 1in 0.75in;
+
+  @top-left {
+    content:  string(page-title);
+  }
+  @top-right {
+    content:  env(date-time);
+  }
+
+  @bottom-left {
+    content:  env(url);
+  }
+  @bottom-right {
+    content:  counter(page) ' of ' counter(pages);
+  }
+}
+
+/* General overrides */
+body {
+  background: $pageColorBackground;
+}
+
+title {
+  string-set: page-title content();
+}
+
+a {
+  text-decoration:  none;
+}
+
+/* Hide extraneous, top-level elements */
+#pageFooter,
+#notifications,
+.template {
+  display:  none;
+}
+
+/* Layout overrides */
+#pageHeader {
+  font-size:  1em;
+
+  /* Hide extraneous, header-level elements */
+  .siteNotification,
+  .menu-arrow,
+  .siteNav {
+    display:  none;
+  }
+
+  .siteAuth {
+    background: none;
+
+    .authInfo {
+      width:    3in;
+
+      /* Hide extraneous, site-auth elements */
+      .inbox-indicator {
+        display:  none;
+      }
+
+      .authMenu {
+        border:         none;
+        padding-right:  1em;
+      }
+      .userName {
+        color:  $themeText;
+
+        &:before {
+          font-size:      0.7em;
+          padding-right:  1em;
+          color:          $controlColor;
+          vertical-align: middle;
+          content:        "Authenticated as ";
+        }
+      }
+    }
+  }
+}
+
+#pageContent {
+  padding-right:  1em;
+
+  /* Hide extraneous, content-level elements */
+  .rightCol {
+    display:  none;
+  }
+
+  .main {
+    padding-top:    1em;
+
+    /* Hide extraneous elements */
+    .columnHeader,
+    .itemScope .scopeEntry {
+      display:  none;
+    }
+  }
+}
+
+/* General Panes */
+.pane {
+  /* Hide extraneous, pane-level elements */
+  .displayOptions,
+  .refreshPane {
+    display:  none;
+  }
+
+  /* General item lists */
+  .items {
+    margin-left:  2em;
+  }
+
+  /* Bookmark list */
+  .bookmarks {
+    .item {
+      page-break-inside:  avoid;
+      orphans:            4;
+
+      .data {
+        // Item Name / title
+        .itemName {
+          a {
+            display:          block;
+
+            &:after {
+              font-size:    0.7em;
+              display:      block;
+              padding-left: 1em;
+              content:      " [" attr(href) "] ";
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /* User list */
+  .users {
+    .person {
+      page-break-inside:  avoid;
+      orphans:            4;
+    }
+  }
+
+  /* Tag cloud */
+  .cloud {
+    /* Hide extraneous elements */
+    .highlights {
+      display:  none;
+    }
+  
+    .Item_Cloud, .Item_List {
+      padding-left:   1em;
+      padding-right:  1em;
+
+      .cloudItem,li {
+        .control {
+          display:  none;
+        }
+      }
+    }
+  }
+}

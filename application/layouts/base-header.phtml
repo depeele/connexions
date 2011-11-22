@@ -15,14 +15,18 @@ $jQuery = $this->jQuery();
 
 $links  = $this->headLink();
 
-$links->prependStylesheet($this->baseUrl('css/connexions.min.css'))
-      ->prependStylesheet($this->baseUrl('css/themes/connexions/jquery-ui.min.css'))
+$links->prependStylesheet($this->baseUrl('css/connexions.min.css'),
+                         'screen,projection,print')
+      ->prependStylesheet($this->baseUrl('css/themes/connexions/jquery-ui.min.css'),
+                         'screen,projection,print')
       ->appendStylesheet($this->baseUrl('css/ie.min.css'),
-                         'screen,projection',
+                         'screen,projection,print',
                          'lt IE 8')
       ->appendStylesheet($this->baseUrl('css/ie8.min.css'),
-                         'screen,projection',
+                         'screen,projection,print',
                          'IE 8')
+      ->appendStylesheet($this->baseUrl('css/print.css'),
+                         'print')
       ->headLink(array('rel'  => 'apple-touch-icon',
                        'href' => $this->baseUrl('images/apple-touch-icon.png')),
                        'PREPEND')
