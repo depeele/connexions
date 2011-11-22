@@ -183,7 +183,7 @@ class Service_Activity extends Service_Base
      *
      *  @return The (possibly) modified 'id'.
      */
-    protected function _includeSince(array $id, $since)
+    protected function _includeSince($id, $since)
     {
         $orig = $since;
         if (is_int($since) || is_numeric($since))
