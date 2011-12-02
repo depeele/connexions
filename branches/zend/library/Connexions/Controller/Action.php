@@ -86,10 +86,6 @@ class Connexions_Controller_Action extends Zend_Controller_Action
         {
             $this->_baseUrl =  $this->_rootUrl;
         }
-        if ($this->_cookiePath === null)
-        {
-            $this->_cookiePath = $this->_baseUrl;
-        }
 
         $this->_url         =  $this->_baseUrl
                             .  $this->_request->getPathInfo();
@@ -958,7 +954,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                      *
                      */
                     'viewer'        => &$this->_viewer,
-                    'cookiePath'    => $this->_rootUrl,
+                    'cookiePath'    => $this->_cookiePath,  //$this->_rootUrl,
                     'namespace'     => 'sbTags',
                     'title'         => 'Tags',
                     'weightName'    => 'userItemCount',
@@ -983,7 +979,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                      *
                      */
                     'viewer'        => &$this->_viewer,
-                    'cookiePath'    => $this->_rootUrl,
+                    'cookiePath'    => $this->_cookiePath,  //$this->_rootUrl,
                     'namespace'     => 'sbPeople',
                     'title'         => 'People',
                     'weightName'    => 'userItemCount',
@@ -1007,7 +1003,7 @@ class Connexions_Controller_Action extends Zend_Controller_Action
                      *
                      */
                     'viewer'        => &$this->_viewer,
-                    'cookiePath'    => $this->_rootUrl,
+                    'cookiePath'    => $this->_cookiePath,  //$this->_rootUrl,
                     'namespace'     => 'sbItems',
                     'title'         => 'Items',
                     'weightName'    => 'userCount',

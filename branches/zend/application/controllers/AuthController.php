@@ -27,6 +27,12 @@ class AuthController extends Connexions_Controller_Action
         $this->_api =& $config->api;
 
         parent::init();
+
+        // Auth cookies should be applied at the highest level
+        $this->_cookiePath      = (empty($this->_baseUrl)
+                                    ? '/'
+                                    : $this->_baseUrl);
+        $this->view->cookiePath = $this->_cookiePath;
     }
 
     public function signinAction()
@@ -379,9 +385,9 @@ class AuthController extends Connexions_Controller_Action
                             .   "Remove autoSignin cookie[ %s ]: "
                             .   "path[ %s ], domain[ %s ], %sssl",
                             $autoSigninCookie,
-                            $this->_rootUrl,
+                            $this->_cookiePath,
                             $this->_connection['domain'],
-                            ($this->_connection['https'],
+                            ($this->_connection['https']
                                 ? ''
                                 : '!'));
             // */
@@ -389,8 +395,8 @@ class AuthController extends Connexions_Controller_Action
             setcookie( $autoSigninCookie,
                        null,
                        time() - 3600,
-                       $this->_rootUrl,
-                       $this->_connection['domain'],
+                       $this->_cookiePath,
+                       '',  //$this->_connection['domain'],
                        $this->_connection['https']);
         }
 
@@ -408,16 +414,22 @@ class AuthController extends Connexions_Controller_Action
 
         /*
         Connexions::log("AuthController::_userAuthCookie(): "
-                        .   "authCookie[ %s ], value[ %s ]",
+                        .   "Set authCookie[ %s ], value[ %s ]: "
+                        .   "path[ %s ], domain[ %s ], %sssl",
+                        $authCookie,
                         Connexions::varExport($authCookie),
-                        Connexions::varExport($cookieVal));
+                        $this->_cookiePath,
+                        $this->_connection['domain'],
+                        ($this->_connection['https']
+                            ? ''
+                            : '!'));
 
         // */
 
         setcookie( $authCookie,
                    $cookieVal,
                    $expires,
-                   $this->_rootUrl .'/',
+                   $this->_cookiePath,
                    '',  //$this->_connection['domain'],
                    $this->_connection['https']);
     }

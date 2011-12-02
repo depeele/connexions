@@ -89,10 +89,11 @@ $jQuery->addStylesheet($this->baseUrl('css/auth.min.css'));
  * changes the 'isEdit' state.
  */
 (function($) {
-    var $container  = $('#auth');
-    var $form       = $container.find('form');
-    var $status     = $container.find('.status');
-    var api         = $.registry('api');
+    var $container  = $('#auth'),
+        $form       = $container.find('form'),
+        $status     = $container.find('.status'),
+        api         = $.registry('api'),
+        urls        = $.registry('urls');
 
     function updateAuthCookie(user)
     {
@@ -100,7 +101,7 @@ $jQuery->addStylesheet($this->baseUrl('css/auth.min.css'));
         var cookieVal   = '';
         var cookieOpts  = {
             expires:    365,    // days
-            path:       '<?= $this->baseUrl('') ?>'
+            path:       (urls ? urls.base : '<?= $this->baseUrl('') ?>')
         };
         if (user.isAuthenticated)
         {
