@@ -79,7 +79,7 @@ jQuery.cookie = function(name, value, options) {
             options.path = window.location.pathname;
         }
 
-        if (options.path)
+        if (options.path && (options.path.length > 1))
         {
             // Strip any trailing '/'
             options.path = options.path.replace(/\/+$/, '');

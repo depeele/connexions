@@ -1002,13 +1002,14 @@
      *            include 'base' as the site's baseUrl.
      */
     $.changeAutoSignin = function($el) {
-        var targetVal   = $el.val();
-        var curVal      = $.cookie('autoSignin');
-        var cookieOpts  = {
-            'expires':  365,    // days
-            'path':     $.registry('urls').base
-        };
-        var newVal      = (curVal ? curVal : '');
+        var cookieName  = $.registry('api').autoSigninCookie,
+            targetVal   = $el.val(),
+            curVal      = $.cookie( cookieName ),
+            cookieOpts  = {
+                'expires':  365,    // days
+                'path':     $.registry('urls').base
+            },
+            newVal      = (curVal ? curVal : '');
 
         if ($el.is(':checked'))
         {
@@ -1025,7 +1026,7 @@
 
         if (newVal.length < 1)  newVal = null;
 
-        $.cookie('autoSignin', newVal, cookieOpts);
+        $.cookie(cookieName, newVal, cookieOpts);
     };
 
     // Start the spinner immediately as well as anytime the window is unloaded

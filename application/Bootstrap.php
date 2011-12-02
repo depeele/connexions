@@ -34,8 +34,19 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $this->_commonTimezone()
              ->_commonSession()
              ->_commonAutoload()
-             ->_commonLogging()
-             ->_commonPaths()
+             ->_commonLogging();
+
+        /*
+        Connexions::log("Bootstrap::_initCommon: "
+                        .   "session save path[ %s ], "
+                        .   "session id[ %s ], "
+                        .   "options[ %s ]",
+                        session_save_path(),
+                        Zend_Session::getId(),
+                        Connexions::varExport(Zend_Session::getOptions()));
+        // */
+
+        $this->_commonPaths()
              ->_commonDb()
              ->_commonConnection()
              ->_commonAuth();
@@ -238,7 +249,17 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
     /** @brief  Initialize the PHP session. */
     protected function _commonSession()
     {
-        Zend_Session::start();
+        $options    = array(
+            /* If the current connection is secure (https), REQUIRE a secure
+             * connection before we provide the session cookie.
+             */
+            'cookie_secure' => (isset($_SERVER['HTTPS']) &&
+                                ($_SERVER['HTTPS'] === 'on')
+                                    ? true
+                                    : ''),
+        );
+
+        Zend_Session::start($options);
 
         return $this;
     }
@@ -589,7 +610,9 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
                                  : false);
 
         /*
-        Connexions::log("Bootstrap::_autoSignin(): autoSignin value[ %s ]",
+        Connexions::log("Bootstrap::_autoSignin(): autoSignin cookie: "
+                        . "name[ %s ], value[ %s ]",
+                        $autoSigninCookie,
                         Connexions::varExport($autoSignin));
         // */
 
