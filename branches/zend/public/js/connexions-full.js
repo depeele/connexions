@@ -8501,6 +8501,7 @@ $.widget("connexions.itemList", {
         namespace:      '',
         objClass:       null,
         dimOpacity:     0.5,
+        dimSpeed:       100,
 
         // Should item 'deleted' events be ignored?
         ignoreDeleted:  false
@@ -8542,15 +8543,8 @@ $.widget("connexions.itemList", {
             self.$items[opts.objClass]();
         }
 
-        self.$headers
-                .fadeTo(100, opts.dimOpacity)
-                .hover( function() {    // in
-                            self.$headers.fadeTo(100, 1.0);
-                        },
-                        function() {    // out
-                            self.$headers.fadeTo(100, opts.dimOpacity);
-                        }
-                );
+        // Initially dim all headers
+        self.$headers.fadeTo(1, opts.dimOpacity);
 
         self._bindEvents();
     },
@@ -8561,8 +8555,9 @@ $.widget("connexions.itemList", {
      */
     _bindEvents: function()
     {
-        var self    = this;
-        var opts    = self.options;
+        var self            = this,
+            opts            = self.options,
+            $groupHeaders   = self.element.find('.groupHeader');
 
         if (opts.ignoreDeleted !== true)
         {
@@ -8578,6 +8573,69 @@ $.widget("connexions.itemList", {
             });
             // */
         }
+
+        /** @brief  Handle a mouseenter/mouseleave event to highlight the
+         *          appropriate group header.
+         *  @param  e   The triggering event.
+         */
+        var groupHover = function(e) {
+            /*
+            console.log('groupHover:'+ e.type +': '+ e.target.nodeName);
+            // */
+
+            if (self.hoverTimer)    { clearTimeout(self.hoverTimer); }
+            if (e.type === 'mouseleave')
+            {
+                /* mouseleave:
+                 *  Wait a short bit and, if 'mouseenter' isn't triggered dim
+                 *  all headers.
+                 */
+                self.hoverTimer = setTimeout(function() {
+                    /*
+                    console.log('groupHover:mouseleave: dim all headers');
+                    // */
+
+                    self.hoverTimer = null;
+                    self.$headers.stop().fadeTo(opts.dimSpeed, opts.dimOpacity);
+                }, 100);
+
+                return;
+            }
+
+            /* mouseenter:
+             *  Find the last group header that is ABOVE the current mouse
+             *  position.
+             */
+            var $group
+            $groupHeaders.each(function() {
+                var offset  = $(this).offset();
+
+                if (e.pageY >= offset.top)
+                {
+                    $group = $(this).find('.groupType');
+                }
+            });
+            if (! $group)   { $group = self.$headers.first(); }
+
+            /*
+            console.log('groupHover:mouseenter: highlight gruop #'+
+                        $group.index());
+            // */
+            
+            // Dim all headers except the target, which will be highlighted
+            var $toDim  = self.$headers.not($group);
+
+            $toDim.stop().fadeTo(opts.dimSpeed, opts.dimOpacity);
+            $group.stop().fadeTo(opts.dimSpeed, 1.0);
+        };
+
+        // Handle mouseenter/mouseleave triggered on the top-level element.
+        self.element.bind('mouseenter.itemList mouseleave.itemList',
+                                                            groupHover);
+
+        // And delegate mouseenter for children elements.
+        self.element.delegate('li,.groupHeader', 'mouseenter.itemList',
+                                                            groupHover);
     },
 
     _itemDeleted: function($item)
@@ -8629,9 +8687,10 @@ $.widget("connexions.itemList", {
         var self    = this;
         var opts    = self.options;
 
-        // Unbind events
-        self.$headers.unbind('hover');
-        self.element.undelegate('li > form', '.itemList');
+        // Unbind/delegate events
+        self.element.unbind('.itemList');
+        self.element.undelegate('li > form',       '.itemList');
+        self.element.undelegate('li,.groupHeader', '.itemList');
 
         // Remove added elements
         if (self.$items.length > 0)
