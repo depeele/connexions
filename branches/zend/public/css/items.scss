@@ -37,6 +37,7 @@
           font-size:    1em;
           font-weight:  bold;
           color:        $controlColor;
+          width:        5em;
           .month {
             @include inlineBlock();
           }
