@@ -92,7 +92,7 @@ if ( $scope && (count($scope) > 0) )
 
     // Remove the current source component
     //$reqUrl = str_replace('/'. $src, '', $reqUrl);
-    $reqUrl = preg_replace('#/'. $src .'([^/]*)$#', '$1', $reqUrl);
+    $reqUrl = preg_replace('#/'. preg_quote($src) .'([^/]*)$#', '$1', $reqUrl);
 
     //Connexions::log("views/script/itemScope.phtml: 3- reqUrl[ %s ]", $reqUrl);
 
