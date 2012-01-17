@@ -1,8 +1,9 @@
 <?php
 /** @file
  *
- *  Replacement for Zend_Json_Server_Response_Http that:
- *      - allows a JSONP callback to be set;
+ *  Extend Zend_Json_Server_Response_Http to:
+ *      - allow a JSONP callback to be set;
+ *
  *      - in toJson(), if a callback is set, include that callback in the JSON
  *        encoded response;
  *
