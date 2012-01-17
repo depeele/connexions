@@ -3,6 +3,7 @@
  *
  *  Replacement for Zend_Json_Server_Request_Http that:
  *      - records the request method and URI;
+ *
  *      - allows a JSON-encoded string to be passed in a GET request as the
  *        Query, e.g.:
  *          http://localhost/api/v2/json-rpc?{"version":2,"method": ...}
@@ -13,6 +14,7 @@
  *        return the API when requested:
  *          http://localhost/api/v2/json-rpc?getApi=1
  *
+ *      - allows a JSONP callback to be specified in the request parameters;
  */
 class Connexions_Json_Server_Request_Http extends Zend_Json_Server_Request
 {
@@ -24,6 +26,7 @@ class Connexions_Json_Server_Request_Http extends Zend_Json_Server_Request
      * Zend_Controller_Request_Http
      *
      */
+    protected   $_callback      = null;
     protected   $_requestUri    = null;
     protected   $_rawBody       = null;
     protected   $_rawJson       = null;
@@ -481,6 +484,57 @@ class Connexions_Json_Server_Request_Http extends Zend_Json_Server_Request
         if (!empty($this->_rawJson))
         {
             $this->loadJson($this->_rawJson);
+        }
+
+        return $this;
+    }
+
+    /** @brief  Set a JSONP callback.
+     *  @param  callback    The callback string;
+     *
+     *  @return Zend_Json_Server_Request
+     */
+    public function setCallback($callback)
+    {
+        $this->_callback = $callback;
+
+        return $this;
+    }
+
+    /** @brief  Retrieve the JSONP callback.
+     *
+     *  @return The JSONP callback (null if none).
+     */
+    public function getCallback()
+    {
+        return $this->_callback;
+    }
+
+    /** @brief  Add a parameter to the request
+     *  @param  mixed $value
+     *  @param  string $key
+     *
+     *  @return Zend_Json_Server_Request
+     */
+    public function addParam($value, $key = null)
+    {
+        if (($key === null) || !is_string($key))
+        {
+            $index = count($this->_params);
+            $this->_params[$index] = $value;
+        }
+        else
+        {
+            // Check for a JSONP callback parameter
+            switch (strtolower($key))
+            {
+            case 'jsonp':
+            case 'callback':
+                $this->setCallback($value);
+                break;
+            }
+
+            $this->_params[$key] = $value;
         }
 
         return $this;
