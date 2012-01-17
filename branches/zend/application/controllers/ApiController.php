@@ -36,9 +36,7 @@ class ApiController extends Connexions_Controller_Action
     public function v1Action()
     {
         $request = $this->_request;
-
-        $request = $this->_request;
-        $server  = new Zend_Json_Server();
+        $server  = new Connexions_Json_Server();
         $server->setTarget(Connexions::url('/api/'))
                ->setClass('Service_Proxy_ApiV1');
         $this->_server = $server;
@@ -54,7 +52,7 @@ class ApiController extends Connexions_Controller_Action
             return $this->_sendServiceDescription();
         }
 
-        $jsonReq = null;
+        $jsonReq = $server->getRequest();
         $jsonRsp = null;
         $jsonRpc = $request->getParam('jsonRpc');
         $action  = $request->getParam('action', null);
@@ -69,7 +67,6 @@ class ApiController extends Connexions_Controller_Action
                         Connexions::varExport($request->getParams()));
         // */
 
-        $jsonReq = new Connexions_Json_Server_Request_Http();
         $json    = $jsonReq->getRawJson();
         if (! empty($jsonRpc))
         {
@@ -83,7 +80,7 @@ class ApiController extends Connexions_Controller_Action
                 $err = new Zend_Json_Server_Error(
                                 "Invalid JSON: {$e->getMessage()}",
                                 Zend_Json_Server_Error::ERROR_PARSE);
-                $jsonRsp = new Zend_Json_Server_Response();
+                $jsonRsp = $server->getResponse();
                 $jsonRsp->setError( $err );
             }
         }
@@ -130,7 +127,6 @@ class ApiController extends Connexions_Controller_Action
 
             $this->_request = $jsonReq;
             Connexions::setRequest($jsonReq);
-            $server->setRequest($jsonReq);
 
             $this->_disableRendering();
             return $server->handle();
@@ -153,7 +149,7 @@ class ApiController extends Connexions_Controller_Action
     public function v2Action()
     {
         $request = $this->_request;
-        $server  = new Zend_Json_Server();
+        $server  = new Connexions_Json_Server();
         $server->setTarget(Connexions::url('/api/v2/json-rpc'))
                ->setClass('Service_Proxy_User',     'user')
                ->setClass('Service_Proxy_Item',     'item')
@@ -178,7 +174,7 @@ class ApiController extends Connexions_Controller_Action
              * This will also handle and invalid JsonRpc request, even if it is
              * mal-formed JSON.
              */
-            $request = new Connexions_Json_Server_Request_Http();
+            $request = $server->getRequest();
 
             /*
             Connexions::log("ApiController::v2(): "
@@ -189,7 +185,6 @@ class ApiController extends Connexions_Controller_Action
 
             $this->_request = $request;
             Connexions::setRequest($request);
-            $server->setRequest($request);
 
             $this->_disableRendering();
             return $server->handle();
