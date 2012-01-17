@@ -145,6 +145,42 @@ Connexions::log('views/scripts/help/main-developers.phtml: '
     }
 }
     </pre>
+    <br />
+    <p class='continued'>If <?= Connexions::wikipedia_a('JSONP') ?> is required for your call, you may specify a callback by including a parameter named "callback" or "jsonp" either at the top level:</p>
+    <pre>
+{
+    "version":  "2.0",
+    "method":   "%the desired API method%",
+    "id":       %An id that you may use to match results if needed%,
+    "callback": "callback_function_name",
+    "params":   {
+        %key%:  %value%,
+        ...
+    }
+}
+    </pre>
+    <p class='continued'><i>or</i> within the method parameters:</p>
+    <pre>
+{
+    "version":  "2.0",
+    "method":   "%the desired API method%",
+    "id":       %An id that you may use to match results if needed%,
+    "params":   {
+        "callback": "callback_function_name",
+        %key%:      %value%,
+        ...
+    }
+}
+    </pre>
+    <p class='continued'>In either case, the resulting JSON, whether success or error, will be wrapped in a call to the specified callback:</p>
+    <pre>
+callback_function_name({
+    "version":  "2.0",
+    "id":       %The id that you provided in the call%,
+    ...
+})
+    </pre>
+
     <p>Within this API, there are interfaces that require authentication and
     those that do not.  The only authentication currently supported is the
     normal, cookie-identified, session-based authentication provided by the
