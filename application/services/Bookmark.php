@@ -760,7 +760,7 @@ class Service_Bookmark extends Service_Base
         {
             $id['userId'] = $this->_curUser()->userId;
         }
-        /* The 'userId' WAS supplies -- if overrides is false and 'userId' is
+        /* The 'userId' WAS supplied -- if overrides is false and 'userId' is
          * NOT the current user...
          */
         else if ( ($overrides === false) &&
@@ -823,7 +823,7 @@ class Service_Bookmark extends Service_Base
         if ($canEdit)
         {
             if (! empty($url))          $id['url']          = $url;
-            if (  $rating     >=  -1)   $id['rating']       = $rating;
+            if (  $rating     >=  0)    $id['rating']       = $rating;
             if (  $isFavorite !== null) $id['isFavorite']   = $isFavorite;
             if (  $isPrivate  !== null) $id['isPrivate']    = $isPrivate;
             if (  $worldModify!== null) $id['worldModify']  = $worldModify;
@@ -944,10 +944,13 @@ class Service_Bookmark extends Service_Base
      *                              - 'urlHash'     as a  string url-hash;
      *                              - 'itemUrl'     as a  string url;
      *                              - 'url'         as a  string url;
+     *  @param  overrides   Should we allow updates to bookmarks NOT owned by
+     *                      the currently authenticated user? [ false ];
+     *                      This is primarily for maintenance utilities.
      *
      *  @return void
      */
-    public function delete($id)
+    public function delete($id, $overrides = false)
     {
         /*
         Connexions::log("Service_Bookmark::delete(): id[ %s ]",
@@ -967,7 +970,11 @@ class Service_Bookmark extends Service_Base
         {
             $id['userId'] = $this->_curUser()->userId;
         }
-        else if ($id['userId'] !== $this->_curUser()->userId)
+        /* The 'userId' WAS supplied -- if overrides is false and 'userId' is
+         * NOT the current user...
+         */
+        else if ( ($overrides === false) &&
+                  ($id['userId'] !== $this->_curUser()->userId) )
         {
             throw new Exception("Cannot delete bookmarks of/for others");
         }
