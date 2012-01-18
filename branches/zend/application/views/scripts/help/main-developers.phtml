@@ -181,6 +181,79 @@ callback_function_name({
 })
     </pre>
 
+    <p class='continued'>For developers that would like to use the JSON-RPC
+    interface using jQuery, here is a simple jQuery extension that should make
+    it a simple matter:</p>
+    <pre class='javascript'>
+<span style='color:#6c6;'>(</span><span style='color:#036;font-weight:bold;'>function</span><span style='color:#6c6;'>(</span>$<span style='color:#6c6;'>)</span> <span style='color:#6c6;'>{</span>
+    <span style='color:#090;font-style:italic;'>/** @brief  Perform a JSON-RPC call.
+     *  @param  method      The desired RPC method );
+     *  @param  params      An object containing the RPC parameters;
+     *  @param  options     $.ajax-compatible options object;
+     *
+     *  Example Usage:
+     *      $.jsonRpc{
+     *          success: {
+     *              // Do something with the JSON-RPC return object 'data'
+     *          },
+     *          error:   {
+     *              // Present an error message
+     *          }
+     *      );
+     */</span>
+    $.<span style='color:#060;'>jsonRpc</span> = <span style='color:#036;font-weight:bold;'>function</span><span style='color:#6c6;'>(</span>method, params, options<span style='color:#6c6;'>)</span> <span style='color:#6c6;'>{</span>
+        <span style='color:#036;font-weight:bold;'>var</span> rpc = <span style='color:#6c6;'>{</span>
+            version:    $.<span style='color:#060;'>jsonRpc</span>.<span style='color:#060;'>settings</span>.<span style='color:#060;'>version</span>,
+            id:         $.<span style='color:#060;'>jsonRpc</span>.<span style='color:#060;'>settings</span>.<span style='color:#060;'>id</span>++,
+            method:     method,
+            params:     params
+        <span style='color:#6c6;'>}</span>;
+        
+        options = $.<span style='color:#060;'>extend</span><span style='color:#6c6;'>(</span><span style='color:#6c6;'>{</span><span style='color:#6c6;'>}</span>, $.<span style='color:#060;'>jsonRpc</span>.<span style='color:#060;'>settings</span>.<span style='color:#060;'>options</span>, options || <span style='color:#6c6;'>{</span><span style='color:#6c6;'>}</span><span style='color:#6c6;'>)</span>;
+        <span style='color:#036;font-weight:bold;'>if</span> <span style='color:#6c6;'>(</span>options.<span style='color:#060;'>dataType </span>=== <span style='color:#36c;'>'jsonp'</span><span style='color:#6c6;'>)</span>
+        <span style='color:#6c6;'>{</span>
+            <span style='color:#090;font-style:italic;'>/* Adjustments for JSONP
+             *  - do NOT add a cache-buster value to the URL
+             *    (the random callback should be sufficient);
+             *  - do NOT add a callback to the URL
+             *    (it is instead placed within the RPC);
+             *  - use $.ajaxSettings.jsonpCallback() to generate a random name
+             *    for the JSONP callback function.
+             */</span>
+            options.<span style='color:#060;'>cache         </span>= <span style='color:#036;font-weight:bold;'>true</span>;
+            options.<span style='color:#060;'>jsonp         </span>= <span style='color:#036;font-weight:bold;'>false</span>;
+            options.<span style='color:#060;'>jsonpCallback </span>= $.<span style='color:#060;'>ajaxSettings</span>.<span style='color:#060;'>jsonpCallback</span><span style='color:#6c6;'>(</span><span style='color:#6c6;'>)</span>;
+            rpc.<span style='color:#060;'>callback          </span>= options.<span style='color:#060;'>jsonpCallback</span>;
+        <span style='color:#6c6;'>}</span>
+
+        options.<span style='color:#060;'>data </span>= JSON.<span style='color:#060;'>stringify</span><span style='color:#6c6;'>(</span>rpc<span style='color:#6c6;'>)</span>;
+        $.<span style='color:#060;'>ajax</span><span style='color:#6c6;'>(</span>options<span style='color:#6c6;'>)</span>;
+    <span style='color:#6c6;'>}</span>;
+
+    <span style='color:#090;font-style:italic;'>/** @brief  Global JSON-RPC settings.
+     *
+     *  settings.options may be over-ridden on any single RPC call via the
+     *  'options' parameter to $.jsonRpc().
+     *
+     *  If you wish to over-ride a value for your entire application, simply
+     *  modify the desired property of $.jsonRpc.settings directly, e.g.
+     *      $.jsonRpc.settings.options.dataType = 'jsonp';
+     *
+     *  Setting the 'dataType' to 'jsonp' will cause jQuery to automatically
+     *  change the 'type' to 'GET'.
+     */</span>
+    $.<span style='color:#060;'>jsonRpc</span>.<span style='color:#060;'>settings </span>= <span style='color:#6c6;'>{</span>
+        version:    <span style='color:#36c;'>'2'</span>,
+        id:         <span style='color:#c00'>0</span>,
+        options:    <span style='color:#6c6;'>{</span>
+            url:        <span style='color:#36c;'>'<?= $api->jsonRpc->url ?>'</span>,
+            type:       <span style='color:#36c;'>'GET'</span>,
+            dataType:   <span style='color:#36c;'>'jsonp'</span>
+        <span style='color:#6c6;'>}</span>
+    <span style='color:#6c6;'>}</span>;
+<span style='color:#6c6;'>}</span><span style='color:#6c6;'>(</span>jQuery<span style='color:#6c6;'>)</span><span style='color:#6c6;'>)</span>;
+    </pre>
+
     <p>Within this API, there are interfaces that require authentication and
     those that do not.  The only authentication currently supported is the
     normal, cookie-identified, session-based authentication provided by the
