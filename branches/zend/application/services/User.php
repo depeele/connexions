@@ -26,6 +26,9 @@ class Service_User extends Service_Base
      *                      (e.g. OpenId endpoint, User password);
      *  @param  id          If needed, the user identity
      *                      (e.g. User name);
+     *  @param  depth       To avoid infinite recursion when we automatically
+     *                      create a new userAuth record for a user and re-try
+     *                      authentication [ 0 ];
      *
      *  On successful authentication, the authentication information will be
      *  stored in the authentication session, identified by the session cookie.
@@ -36,7 +39,8 @@ class Service_User extends Service_Base
      */
     public function authenticate($method     = Model_UserAuth::AUTH_PASSWORD,
                                  $credential = null,
-                                 $id         = null)
+                                 $id         = null,
+                                 $depth      = 0)
     {
         $auth        = Zend_Auth::getInstance();
         $authAdapter = null;
@@ -136,6 +140,58 @@ class Service_User extends Service_Base
         }
         else
         {
+            /* Authentication FAILED.
+             *
+             * If this is PKI-based authentication, this MAY mean that the
+             * user's credential has not yet been registered.  If we have
+             * verified PKI information AND a matching user, automatically
+             * register the userAuth record and re-try authentication.
+             */
+            if ( ($depth === 0) && ($method === Model_UserAuth::AUTH_PKI) )
+            {
+                $connection = Zend_Registry::get('connectionInfo');
+                $pkiInfo    = Connexions::parsePki( $connection['pki'] );
+
+                if ( $pkiInfo && (! empty($pkiInfo['name'])) )
+                {
+                    // See if we can find a matching user.
+                    $user = $this->get(array('name' => $pkiInfo['name']));
+                    if ($user->isBacked())
+                    {
+                        /* We found a valid user.  Create a userAuth record for
+                         * them using the current, verified PKI information.
+                         */
+                        /*
+                        Connexions::log("Service_User::authenticate(): "
+                                        . "PKI authentication FAILED but "
+                                        . "we found a valid user[ %s ] "
+                                        . "using pkiInfo[ %s ].  "
+                                        . "Create a userAuth record...",
+                                        $user,
+                                        Connexions::varExport($pkiInfo));
+                        // */
+
+                        $ua = $user->addAuthenticator($pkiInfo['subject'],
+                                                      Model_UserAuth::AUTH_PKI);
+                        $ua->name = 'PKI certificate';
+                        $ua = $ua->save();
+
+                        // Re-try authentication
+                        return $this->authenticate(Model_UserAuth::AUTH_PKI,
+                                                   $pkiInfo['subject'],
+                                                   $user->userId,
+                                                   $depth++);
+                    }
+                }
+
+                /*
+                Connexions::log("Service_User::authenticate(): "
+                                . "PKI authentication FAILED and we "
+                                . "found no user using pkiInfo[ %s ]",
+                                Connexions::varExport($pkiInfo));
+                // */
+            }
+
             /* Get an 'anonymous' Model_User instance and do NOT mark it
              * authenticated.  Attach the current authentication results
              * so we can properly present error messages.

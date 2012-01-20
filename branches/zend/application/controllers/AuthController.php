@@ -33,6 +33,9 @@ class AuthController extends Connexions_Controller_Action
                                     ? '/'
                                     : $this->_baseUrl);
         $this->view->cookiePath = $this->_cookiePath;
+
+        $this->view->pkiInfo    = Connexions::parsePki(
+                                                $this->_connection['pki'] );
     }
 
     public function signinAction()

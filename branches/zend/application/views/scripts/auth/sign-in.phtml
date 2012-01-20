@@ -1,12 +1,20 @@
 <?php
 $this->headTitle('Sign In');
 
+// /*
 Connexions::log("views/scripts/auth/sign-in.phtml: connection[ %s ]",
                 Connexions::varExport($this->connection));
 Connexions::log("views/scripts/auth/sign-in.phtml: autoSignin[ %s ]",
                 Connexions::varExport($this->autoSignin));
+// */
 
-$pki = $this->connection['pki'];
+$pkiInfo =& $this->pkiInfo;
+
+// If 'username' is empty, and we have PKI information, fill it in.
+if (empty($this->username) && $pkiInfo)
+{
+    $this->username = $pkiInfo['name'];
+}
 
 $jQuery = $this->jQuery();
 $jQuery->addStylesheet($this->baseUrl('css/auth.min.css'));
@@ -51,8 +59,7 @@ $jQuery->addStylesheet($this->baseUrl('css/auth.min.css'));
     </button>
    </div>
    <?php
-   if (($pki !== null) &&
-       ($pki['verified'] === true))
+   if ($pkiInfo)
    {
        /* We have a valid SSL client certificate so offer the option
         * of authenticating using that.
@@ -62,7 +69,7 @@ $jQuery->addStylesheet($this->baseUrl('css/auth.min.css'));
     <span class='dn'
      ><span class='ui-icon'
       ><span class='connexions_sprites type-certificate'></span></span>
-      <?= $pki['subject'] ?></span>
+      <?= $pkiInfo['subject'] ?></span>
     <label for='autoSignin'>Automatic signin</label>
     <input id='autoSignin'
            type='checkbox'

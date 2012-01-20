@@ -7,62 +7,21 @@ $jQuery->addStylesheet($this->baseUrl('css/auth.min.css'));
 $fullName = $this->fullName;
 $email    = $this->email;
 
+// /*
 Connexions::log("register.phtml: includePki[ %s ], includePassword[ %s ], "
                 . "autoSignin[ %s ]",
                 Connexions::varExport($this->includePki),
                 Connexions::varExport($this->includePassword),
                 Connexions::varExport($this->autoSignin));
+// */
 
-$pki = $this->connection['pki'];
+$pkiInfo =& $this->pkiInfo;
 
-if (empty($this->user)      &&
-   ($pki !== null)    &&
-   ($pki['verified'] === true))
+if (empty($this->user) && $pkiInfo)
 {
-    $needUserName = true;
-    if (preg_match('/email(?:Address)=([^\/]+)/i',
-                   $pki['subject'], $match))
-    {
-        Connexions::log("register.phtml: subject[ %s ], email match[ %s ]",
-                        $pki['subject'],
-                        Connexions::varExport($match));
-
-        $email        = $match[1];
-        $this->user   = $email;
-        $needUserName = false;
-    }
-
-    if (preg_match('/CN=([^\/]+)/i',
-                        $pki['subject'], $match))
-    {
-        Connexions::log("register.phtml: subject[ %s ], CN match[ %s ]",
-                        $pki['subject'],
-                        Connexions::varExport($match));
-
-        $fullName   = $match[1];
-        if ($needUserName)
-        {
-            $this->user = $fullName;
-        }
-    }
-
-    /* Apply the Model_User filter to the constructed user name to ensure that
-     * it's valid.
-     */
-    $filter = $this->viewer->getFilter();
-    $filter->setData( array('name'      => $this->user,
-                            'fullName'  => $fullName,
-                            'email'     => $email) );
-    $this->user = $filter->getUnescaped('name');
-    $fullName   = $filter->getUnescaped('fullName');
-    $email      = $filter->getUnescaped('email');
-
-    //$this->user = preg_replace('/[^a-zA-Z0-9\._\-\@]/', '.', $this->user);
-    //$this->user = preg_replace('/\.+/',                 '.', $this->user);
-
-    Connexions::log("register.phtml: Sanitized certificate data: "
-                    . "name[ %s ], fullName[ %s ], email[ %s ]",
-                    $this->user, $fullName, $email);
+    $this->user = $pkiInfo['name'];
+    $email      = $pkiInfo['email'];
+    $fullName   = $pkiInfo['fullName'];
 }
 
 ?>
@@ -94,7 +53,7 @@ if (empty($this->user)      &&
    <fieldset class='credentials'>
     <legend>Credentials</legend>
    <?php
-   if (($pki !== null) && ($pki['verified'] === true))
+   if ($pkiInfo)
    {
        /* We have a valid SSL client certificate so offer it as a valid
         * credential.
@@ -117,7 +76,7 @@ if (empty($this->user)      &&
      <span class='dn'
       ><span class='ui-icon'
        ><span class='connexions_sprites type-certificate'></span></span>
-       <?= $pki['subject'] ?></span>
+       <?= $pkiInfo['subject'] ?></span>
      <div class='field options'>
       <label for='autoSignin'>Automatic sign-in via PKI?</label>
       <input id='autoSignin'
@@ -132,7 +91,7 @@ if (empty($this->user)      &&
        <?php
    }
 
-   if (($pki !== null) && ($pki['verified'] === true))
+   if ($pkiInfo)
    {
        ?>
     <fieldset class='userpassword'>
@@ -167,7 +126,7 @@ if (empty($this->user)      &&
       </div>
      </div>
     <?php
-    if (($pki !== null) && ($pki['verified'] === true))
+    if ($pkiInfo)
     {
         ?>
     </fieldset>

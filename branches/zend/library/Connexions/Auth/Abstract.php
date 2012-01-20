@@ -105,7 +105,10 @@ abstract class Connexions_Auth_Abstract extends Zend_Auth_Result
                 $this->_user = $identity;
             }
 
-            $this->_user->setAuthResult($this);
+            if ($this->_user instanceof Model_User)
+            {
+                $this->_user->setAuthResult($this);
+            }
         }
 
         return $this;
@@ -174,6 +177,15 @@ abstract class Connexions_Auth_Abstract extends Zend_Auth_Result
             $userAuth = $uaMapper->find( array(
                                 'authType'   => $this->getAuthType(),
                                 'credential' => $credential));
+
+            /*
+            Connexions::log("Connexions_Auth_Abstract::_matchUser(%s, %s): "
+                            . "from credential, userAuth[ %s ]",
+                            $identity, $credential,
+                            ($userAuth
+                                ? $userAuth->debugDump()
+                                : 'null'));
+            // */
         }
 
 
@@ -181,9 +193,13 @@ abstract class Connexions_Auth_Abstract extends Zend_Auth_Result
         {
             // CANNOT FIND a matching authentication record.
             if (! empty($identity))
+            {
                 $id = $identity;
+            }
             else
+            {
                 $id = $credential;
+            }
 
             $this->_setResult(self::FAILURE,
                               $id,
@@ -212,9 +228,8 @@ abstract class Connexions_Auth_Abstract extends Zend_Auth_Result
 
         /*
         Connexions::log("Connexions_Auth_Abstract::_matchUser(%s, %s): "
-                        . "found Model_User: useId[ %d ], name[%s ], [ %s ]",
-                        $identity, $credential, $user->userId, $user->name,
-                        $user->debugDump());
+                        . "found Model_User: userId[ %d ], name[%s ]",
+                        $identity, $credential, $user->userId, $user->name);
         // */
 
         /**********************************************************
