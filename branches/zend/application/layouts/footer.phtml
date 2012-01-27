@@ -54,28 +54,52 @@ if ( $this->excludeNav !== true )
     }
 
     ?>
-    <li class='org'><?php
+    <li class='info'><?php
+      if ($contact->owner || $content->org)
+      {
+        ?><div class='owner'><?php
+        if ($contact->owner)
+        {
+            if ($contact->owner->label)
+            {
+                ?><span class='label'><?= $contact->owner->label ?></span><?php
+            }
 
-    if ($contact->org)
-    {
-        $img = ($contact->org->img
-                    ? "<img src='{$contact->org->img}' />"
-                    : "");
+            if ($contact->owner->url)
+            {
+                $name = ($contact->owner->name
+                            ? $contact->owner->name
+                            : 'owner');
 
-        ?><a href='<?= $contact->org->url ?>'
-               ><?= $img ?><span class='name'
-               ><?= $contact->org->name ?></span></a>
-        <?php
-    }
+                ?><a class='name' href='<?= $contact->owner->url ?>'
+                    ><?= $name ?></a><?php
+            }
+            else if ($contact->owner->name)
+            {
+                ?><span class='name'><?= $contact->owner->name ?></span><?php
+            }
+        }
 
-    if ($app && $app->version && $app->version->major)
-    {
+        if ($contact->org)
+        {
+            $img = ($contact->org->img
+                        ? "<img src='{$contact->org->img}' />"
+                        : "");
+
+            ?><a class='org' href='<?= $contact->org->url ?>'
+                ><?= $img ?><?= $contact->org->name ?></a><?php
+        }
+        ?></div><?php
+      }
+
+      if ($app && $app->version && $app->version->major)
+      {
         ?><div class='version'>
             <span class='major'><?= $app->version->major ?>.</span
            ><span class='minor'><?= $app->version->minor ?></span>
             <span class='build'>(build <?= $app->version->build ?>)</span>
           </div><?php
-    }
+      }
 
     ?>
     </li>
