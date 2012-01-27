@@ -244,13 +244,30 @@ body.light {
       }
     }
   
-    .org {
+    .info {
       position: absolute;
       right:    0.5em;
-    }
 
-    .version {
-      font-size:  0.8em;
+      .owner {
+        font-size:      0.8em;
+        padding-bottom: 0.5em;
+      }
+      .label {
+        vertical-align: middle;
+        color:          $controlColor;
+      }
+      .name, .org {
+        padding-left:   0.25em;
+        vertical-align: middle;
+      }
+      img {
+        height: 1em;
+      }
+
+      .version {
+        font-size:  0.7em;
+        text-align: right;
+      }
     }
   
     .sep {
