@@ -1521,7 +1521,7 @@ Connexions.prototype = {
                 break;
 
             case 'progress':
-                if (callbacks.error)
+                if (callbacks.progress)
                 {
                     callbacks.progress(params.position, params.totalSize, xhr);
                 }
