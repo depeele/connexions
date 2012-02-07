@@ -36,9 +36,13 @@ class Model_Filter_Bookmark extends Connexions_Model_Filter
 
     protected $_validatorRules  = array(
         'userId'        => array('int',
+                                 array('greaterThan',
+                                       'min'    => 0),
                                  'presence' => 'required' ,
         ),
         'itemId'        => array('int',
+                                 array('greaterThan',
+                                       'min'    => 0),
                                  'presence' => 'required' ,
         ),
 
