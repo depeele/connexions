@@ -8,6 +8,10 @@ RewriteCond %{REQUEST_FILENAME} -l [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^.*$ - [NC,L]
 
+# Map generated files to their canonical names
+RewriteRule ^js/jquery.jsonrpc.js$        js/jquery.jsonrpc.php [NC,L]
+RewriteRule ^connexions-button.js$        connexions-button-js.php [NC,L]
+
 # Map original connexions urls to new locations
 RewriteRule ^details/(.*)$                 url/$1 [NC,QSA,R,L]
 RewriteRule ^watchlist/(.*)$               network/@self/$1 [NC,QSA,R,L]
