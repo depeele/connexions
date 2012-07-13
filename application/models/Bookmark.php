@@ -424,6 +424,8 @@ class Model_Bookmark extends Model_Base
     {
         return ($user                                                       &&
                 ($user instanceof Model_User)                               &&
+                $this->user                                                 &&
+                ($this->user instanceof Model_User)                         &&
                 $user->isSame( $this->user )                                &&
                 ( (! $requireAuthenticated) || $user->isAuthenticated() ) );
     }
