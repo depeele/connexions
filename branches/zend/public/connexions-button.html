@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <title>Connexions button</title>
+
+  <style type='text/css'>
+#connexions-link,
+#connexions-link img,
+#connexions-link span,
+#connexions-link div {
+    vertical-align: middle;
+    padding:        0;
+    margin:         0;
+
+    /* inline-block */
+    display:    -moz-inline-stack;  /* OLD mozilla browsers */
+    display:    inline-block;       /* modern browsers */
+
+    /* IE -- trigger 'hasLayout' and set display to inline === inline-block */
+    zoom:       1;
+    *display:   inline;
+}
+#connexions-link {
+    font-size:          10px;
+
+    padding:            0;
+    margin:             0;
+
+    color:              #333;
+    background-color:   #fff;
+
+    border:             0.1em solid #333;
+
+    -moz-border-radius:     0.5em;
+    -webkit-border-radius:  0.5em;
+    -ms-border-radius:      0.5em;
+    -khtml-border-radius:   0.5em;
+    border-radius:          0.5em;
+
+    cursor:             pointer;
+}
+#connexions-link img {
+    width:          1.6em;
+    height:         1.6em;
+
+    padding:        0.1em 0.3em 0.1em 0.1em;
+    margin-left:    0.2em;
+
+    border-right:   0.1em dotted #333;
+}
+#connexions-link .connexions-text {
+}
+#connexions-link .connexions-count {
+    padding-left:   0.5em;
+
+    text-align:     right;
+}
+#connexions-link .connexions-action {
+    padding:    0 0.5em;
+}
+#connexions-link.connexions-bookmarked {
+    background-color:   #cfc;
+}
+#connexions-link.working {
+    background-color:   #ddd;
+    cursor:             default;
+}
+  </style>
+ </head>
+ <body>
+  <div id='connexions-link' title='add to your connexions bookmarks'
+   ><img src='images/logo-16.png'
+   /><div class='connexions-text'
+    ><span class='connexions-count'>&nbsp;</span
+    ><span class='connexions-text'>bookmark</span
+   ></div
+  ></div>
+ </body>
+
+ <script src='js/jquery.min.js'></script>
+ <script src='js/jquery.jsonrpc.js'></script>
+ <script>
+function urlParams()
+{
+    var pl      = /\+/g,
+        search  = /([^&=]+)=?([^&]*)/g,
+        decode  = function(s){ return decodeURIComponent(s.replace(pl, ' ')); },
+        query   = window.location.search.substring(1),
+        res     = {},
+        match;
+
+    while (match = search.exec(query))
+    {
+        res[decode(match[1])] = decode(match[2]);
+    }
+
+    return res;
+}
+
+$(document).ready(function() {
+    var $link       = $('#connexions-link'),
+        $count      = $link.find('.connexions-count'),
+        $action     = $link.find('.connexions-action'),
+        params      = urlParams(),
+        url         = params.url,
+        title       = params.title,
+        itemId      = url,
+        bookmarked  = false;
+
+    // Use POST for jsonRpc
+    $.jsonRpc.settings.options.type        = 'POST';
+    $.jsonRpc.settings.options.contentType = 'application/json';
+    $.jsonRpc.settings.options.dataType    = 'json';
+
+    updateCount();
+    updateMyStatus();
+
+    $link.on('click', function(e) {
+        if ($link.hasClass('working'))  { return; }
+        $link.addClass('working');
+
+        var note    = window.getSelection(),
+            method  = null,
+            params  = {
+                id: (itemId === url
+                        ? {}
+                        : {itemid:itemId})
+            };
+        if (note.toString)  { note = note.toString(); }
+        else if (note.text) { note = note.text; }
+
+        if (bookmarked)
+        {
+            // Delete the current bookmark
+            method = 'bookmark.delete';
+        }
+        else
+        {
+            // Add a new bookmark
+            method             = 'bookmark.update';
+            params.name        = title;
+            params.description = note;
+            params.tags        = 'like';
+            params.url         = url;
+        }
+
+        $.jsonRpc(method, params, {
+            success: function(data, textStatus, jqXHR) {
+                if (data.error)
+                {
+                    console.log("jsonRpc error on %s: %d: %s",
+                                method, data.error.code, data.error.message);
+                    return;
+                }
+
+                updateCount();
+                updateMyStatus();
+            },
+            error: function(jqXHR, textStatus, e) {
+                console.log("jsonRpc HARD error on %s: %s", method, e);
+            },
+            complete: function() {
+                $link.removeClass('working');
+            }
+        });
+    });
+
+    function updateCount()
+    {
+        $.jsonRpc('item.find', {id:itemId}, {
+            success: function(data, textStatus, jqXHR) {
+                if (data.error)
+                {
+                    console.log("jsonRpc error on item.find: %d: %s",
+                                data.error.code, data.error.message);
+                    return;
+                }
+
+                var item    = (data.result ? data.result : {userCount:0});
+
+                if (item.itemId)    { itemId = item.itemId; }
+
+                $count.text( item.userCount );
+                $action.text(' bookmark' + (item.userCount === 1
+                                                ? '' : 's'));
+                updateMyStatus();
+            },
+            error: function(jqXHR, textStatus, e) {
+                console.log("jsonRpc HARD error on item.find: %s", e);
+            }
+        });
+    }
+
+    function updateMyStatus()
+    {
+        $.jsonRpc('bookmark.find', {id: {itemId:itemId}}, {
+            success: function(data, textStatus, jqXHR) {
+                if (data.error)
+                {
+                    console.log("jsonRpc error on bookmark.find: %d: %s",
+                                data.error.code, data.error.message);
+                    return;
+                }
+
+                if (data.result)
+                {
+                    bookmarked = true;
+                    $link.addClass('connexions-bookmarked');
+                    $link.attr('title', 'remove your connexions bookmarks');
+                }
+                else
+                {
+                    bookmarked = false;
+                    $link.removeClass('connexions-bookmarked');
+                    $link.attr('title', 'add to your connexions bookmarks');
+                }
+            },
+            error: function(jqXHR, textStatus, e) {
+                console.log("jsonRpc HARD error on bookmark.find: %s", e);
+            }
+        });
+    }
+});
+ </script>
+</html>
