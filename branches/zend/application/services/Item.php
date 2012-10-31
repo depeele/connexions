@@ -16,7 +16,7 @@ class Service_Item extends Service_Base
         'url'       => 'ASC',
     );
 
-    /** @brief  Retrieve a set of items related by a set of Users.
+    /** @brief  Retrieve a set of items related by a set of Users ( i(u) ).
      *  @param  users   A Model_Set_User instance, array, or comma-separated
      *                  string of users to match.
      *  @param  exact   Items MUST be associated with ALL provided users
@@ -55,7 +55,7 @@ class Service_Item extends Service_Base
                                     $offset );
     }
 
-    /** @brief  Retrieve a set of items related by a set of Tags.
+    /** @brief  Retrieve a set of items related by a set of Tags ( i(t) ).
      *  @param  tags    A Model_Set_Tag instance or array of tags to match.
      *  @param  exact   Items MUST be associated with ALL provided tags
      *                  [ true ];
@@ -93,7 +93,8 @@ class Service_Item extends Service_Base
                                     $offset );
     }
 
-    /** @brief  Retrieve a set of items related by a set of Users and Tags.
+    /** @brief  Retrieve a set of items related by a set of Users and Tags
+     *          ( i(u,t) ).
      *  @param  users       A Model_Set_User or Model_User instance of user(s)
      *                      to match.
      *  @param  tags        A Model_Set_Tag instance or array of tags to match.

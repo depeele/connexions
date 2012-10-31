@@ -244,7 +244,7 @@ class Service_User extends Service_Base
                                          ), false);
     }
 
-    /** @brief  Retrieve a set of users related by a set of Tags.
+    /** @brief  Retrieve a set of users related by a set of Tags ( u(t) ).
      *  @param  tags    A Model_Set_Tag instance, array, or comma-separated
      *                  string of tags to match.
      *  @param  exact   Users MUST be associated with provided tags [ true ];
@@ -284,7 +284,7 @@ class Service_User extends Service_Base
 
     /** @brief  Retrieve a set of users related by a set of Bookmarks
      *          (actually, by the users and items represented by the 
-     *           bookmarks).
+     *           bookmarks) ( u(b) ).
      *  @param  bookmarks   A Model_Set_Bookmark instance or array of bookmark 
      *                      identifiers to match.
      *  @param  order       Optional ORDER clause (string, array)
