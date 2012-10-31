@@ -16,7 +16,7 @@ class Service_Tag extends Service_Base
         'tag'       => 'ASC',
     );
 
-    /** @brief  Retrieve a set of tags related by a set of Users.
+    /** @brief  Retrieve a set of tags related by a set of Users ( t(u) ).
      *  @param  users   A Model_Set_User instance or array of users to match.
      *  @param  order   Optional ORDER clause (string, array)
      *                      [ 'userCount     DESC',
@@ -68,7 +68,7 @@ class Service_Tag extends Service_Base
                                     $offset );
     }
 
-    /** @brief  Retrieve a set of tags related by a set of Items.
+    /** @brief  Retrieve a set of tags related by a set of Items ( t(i) ).
      *  @param  items   A Model_Set_Item instance or array of items to match.
      *  @param  order   Optional ORDER clause (string, array)
      *                      [ 'itemCount     DESC',
@@ -106,7 +106,7 @@ class Service_Tag extends Service_Base
 
     /** @brief  Retrieve a set of tags related by a set of Bookmarks
      *          (actually, by the users and items represented by the 
-     *           bookmarks).
+     *           bookmarks) ( t(b) ).
      *  @param  bookmarks   A Model_Set_Bookmark instance or array of bookmark 
      *                      identifiers to match.
      *  @param  order       Optional ORDER clause (string, array)
@@ -148,6 +148,32 @@ class Service_Tag extends Service_Base
                                     $order,
                                     $count,
                                     $offset );
+    }
+
+    /** @brief  Retrieve a set of tags related by a set of Bookmarks
+     *          tagged with the given tag(s) ( t(b(t)) ).
+     *  @param  tags        A Model_Set_Tag instance or array of tag
+     *                      identifiers to match.
+     *  @param  order       Optional ORDER clause (string, array)
+     *                          [ 'userItemCount DESC',
+     *                            'userCount     DESC',
+     *                            'tag           ASC' ];
+     *  @param  count       Optional LIMIT count
+     *  @param  offset      Optional LIMIT offset
+     *
+     *  @return A new Model_Set_Tag instance.
+     */
+    public function fetchByTaggedBookmarks($tags    = null,
+                                           $order   = null,
+                                           $count   = null,
+                                           $offset  = null)
+    {
+        // Retrieve the referenced bookmark(s)
+        $bService  = $this->factory('Service_Bookmark');
+        $bookmarks = $bService->fetchByTags($tags,
+                                            false); // NOT exact tags
+
+        return $this->fetchByBookmarks($bookmarks, $order, $count, $offset);
     }
 
     /** @brief  Perform user autocompletion given a set of already selected

@@ -357,7 +357,7 @@ class Service_Bookmark extends Service_Base
         return new Zend_Paginator( $set->getPaginatorAdapter() );
     }
 
-    /** @brief  Retrieve a set of bookmarks related by a set of Tags.
+    /** @brief  Retrieve a set of bookmarks related by a set of Tags ( b(t) ).
      *  @param  tags    A Model_Set_Tag instance, array, or comma-separated
      *                  string of tags to match.
      *  @param  exact   Bookmarks MUST be associated with provided tags
@@ -390,7 +390,7 @@ class Service_Bookmark extends Service_Base
                                     $offset );
     }
 
-    /** @brief  Retrieve a set of bookmarks related by a set of Users.
+    /** @brief  Retrieve a set of bookmarks related by a set of Users ( b(u) ).
      *  @param  users   A Model_Set_User instance, array, or comma-separated
      *                  string of users to match.
      *  @param  order   Optional ORDER clause (string, array)
@@ -432,7 +432,7 @@ class Service_Bookmark extends Service_Base
                                     $offset );
     }
 
-    /** @brief  Retrieve a set of bookmarks related by a set of Items.
+    /** @brief  Retrieve a set of bookmarks related by a set of Items ( b(i) ).
      *  @param  items   A Model_Set_Item instance, array, or comma-separated
      *                  string of items to match.
      *  @param  order   Optional ORDER clause (string, array)
@@ -462,7 +462,8 @@ class Service_Bookmark extends Service_Base
                                     $offset );
     }
 
-    /** @brief  Retrieve a set of bookmarks related by a set of Users and Tags.
+    /** @brief  Retrieve a set of bookmarks related by a set of Users and Tags
+     *          ( b(u,t) ).
      *  @param  users       A Model_Set_User instance, array, or
      *                      comma-separated string of users to match.
      *  @param  tags        A Model_Set_Tag instance, array, or comma-separated
@@ -503,7 +504,8 @@ class Service_Bookmark extends Service_Base
                                     $offset );
     }
 
-    /** @brief  Retrieve a set of bookmarks related by a set of Items and Tags.
+    /** @brief  Retrieve a set of bookmarks related by a set of Items and Tags
+     *          ( b(i,t) ).
      *  @param  items       A Model_Set_Item instance, array, or
      *                      comma-separated string of items to match.
      *  @param  tags        A Model_Set_Tag instance, array, or comma-separated

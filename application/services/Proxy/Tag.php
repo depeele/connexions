@@ -74,6 +74,30 @@ class Service_Proxy_Tag extends Connexions_Service_Proxy
                                                  $offset);
     }
 
+    /** @brief  Retrieve a set of tags related by a set of Bookmarks
+     *          tagged with the given tag(s).
+     *  @param  tags        A Model_Set_Tag instance or array of tag
+     *                      identifiers to match.
+     *  @param  order       Optional ORDER clause (string, array)
+     *                          [ 'userItemCount DESC',
+     *                            'userCount     DESC',
+     *                            'tag           ASC' ];
+     *  @param  count       Optional LIMIT count
+     *  @param  offset      Optional LIMIT offset
+     *
+     *  @return A new Model_Set_Tag instance.
+     */
+    public function fetchByTaggedBookmarks($tags    = null,
+                                           $order   = 'userItemCount DESC, userCount DESC, tag ASC',
+                                           $count   = 50,
+                                           $offset  = 0)
+    {
+        return $this->_service->fetchByTaggedBookmarks($tags,
+                                                       $order,
+                                                       $count,
+                                                       $offset);
+    }
+
     /** @brief  Perform user autocompletion given a set of already selected
      *          users from which we need to locate the current set of
      *          user-related tags and, from that, tag-related users.

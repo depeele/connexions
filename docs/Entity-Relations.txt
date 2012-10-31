@@ -99,36 +99,63 @@ Entity relations and where they are presented:
 ------------------------------------------------------------------------------
   user-related:
     Items       User Bookmarks  : implicitly visible in the presented
-                                  Bookmarks
+     i(u)                         Bookmarks
+                Service:Item:fetchByUsers(u)
 
     Tags        User Bookmarks  : in sidebar tag-cloud;
-                Tags page       : click a user in the sidebar user-cloud
+     t(u)       Tags page       : click a user in the sidebar user-cloud
                                   implicitly shows tag-related users
+                Service:Tag:fetchByUsers(u)
 
     Bookmarks   User Bookmarks  : explicitly visible in the presented
-                                  Bookmarks
+     b(u)                         Bookmarks
+                Service:Bookmark:fetchByUsers(u)
 
 
   item-related:
     Users       Url / Item page : implicitly visible in the presented
-                                  Bookmarks
+     u(i)                         Bookmarks
+                Service:User:fetchByItems(i)
 
     Tags        Url / Item page : in sidebar tag-cloud
+     t(i)       Service:Tag:fetchByItems(i)
 
     Bookmarks   Url / Item page : explicitly visible in the presented
-                                  Bookmarks
+     b(i)                         Bookmarks
+                Service:Bookmark:fetchByItems(i)
 
 
   tag-related:
     Users       People page     : click a tag in the sidebar tag-cloud
+     u(t)       Service:User:fetchByTags(i)
 
     Items       Bookmarks page  : click a tag in the sidebar tag-cloud
-                                  implicitly shows tag-related items
+     i(t)                         implicitly shows tag-related items
                                   in the list of presented Bookmarks
+                Service:Item:fetchByTags(i)
 
     Bookmarks   Bookmarks page  : click a tag in the sidebar tag-cloud
-
+     b(t)       Service:Bookmark:fetchByTags(i)
 
   Bookmark-related
     Tags        visible in any Bookmark view if a tag-cloud is presented
+     t(b)       Service:Tag:fetchByBookmarks(b)
 
+    Users
+     u(b)  ***  Service:User:fetchByBookmarks(b)
+
+    Items
+     i(b)  ***  Service:Item:fetchByBookmarks(b)
+
+  Additional relations:
+    All bookmarks associated with user(s) and tag(s)
+     b(u,t)     Service:Bookmark:fetchByUsersAndTags(u,t)
+
+    All bookmarks associated with item(s) and tag(s)
+     b(i,t)     Service:Bookmark:fetchByItemsAndTags(i,t)
+
+    All items associated with user(s) and tag(s)
+     i(u,t)     Service:Item:fetchByUsersAndTags(u,t)
+
+    All tags associated with bookmarks tagged with the given tag(s)
+     t(b(t))    Service:Tag:fetchByTaggedBookmarks(t)
