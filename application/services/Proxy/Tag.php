@@ -84,18 +84,22 @@ class Service_Proxy_Tag extends Connexions_Service_Proxy
      *                            'tag           ASC' ];
      *  @param  count       Optional LIMIT count
      *  @param  offset      Optional LIMIT offset
+     *  @param  matchAll    If true, bookmarks must match ALL provided tags,
+     *                      otherwise, they must match ANY 1 tag [ true ];
      *
      *  @return A new Model_Set_Tag instance.
      */
-    public function fetchByTaggedBookmarks($tags    = null,
-                                           $order   = 'userItemCount DESC, userCount DESC, tag ASC',
-                                           $count   = 50,
-                                           $offset  = 0)
+    public function fetchByTaggedBookmarks($tags        = null,
+                                           $order       = 'userItemCount DESC, userCount DESC, tag ASC',
+                                           $count       = 50,
+                                           $offset      = 0,
+                                           $matchAll    = true)
     {
         return $this->_service->fetchByTaggedBookmarks($tags,
                                                        $order,
                                                        $count,
-                                                       $offset);
+                                                       $offset,
+                                                       $matchAll);
     }
 
     /** @brief  Perform user autocompletion given a set of already selected

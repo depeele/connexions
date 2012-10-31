@@ -160,18 +160,21 @@ class Service_Tag extends Service_Base
      *                            'tag           ASC' ];
      *  @param  count       Optional LIMIT count
      *  @param  offset      Optional LIMIT offset
+     *  @param  matchAll    If true, bookmarks must match ALL provided tags,
+     *                      otherwise, they must match ANY 1 tag [ true ];
      *
      *  @return A new Model_Set_Tag instance.
      */
-    public function fetchByTaggedBookmarks($tags    = null,
-                                           $order   = null,
-                                           $count   = null,
-                                           $offset  = null)
+    public function fetchByTaggedBookmarks($tags        = null,
+                                           $order       = null,
+                                           $count       = null,
+                                           $offset      = null,
+                                           $matchAll    = true)
     {
         // Retrieve the referenced bookmark(s)
         $bService  = $this->factory('Service_Bookmark');
         $bookmarks = $bService->fetchByTags($tags,
-                                            false); // NOT exact tags
+                                            Connexions::to_bool($matchAll));
 
         return $this->fetchByBookmarks($bookmarks, $order, $count, $offset);
     }
