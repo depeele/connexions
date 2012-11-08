@@ -2803,8 +2803,10 @@ $.widget("ui.input", {
                         .removeClass('ui-state-disabled')
                         .removeAttr('disabled');
 
-            //this.element.trigger('enabled.uiinput');
-            this._trigger('enabled');
+            try {
+                //this.element.trigger('enabled.uiinput');
+                this._trigger('enabled');
+            } catch(e) {}
         }
     },
 
@@ -2819,8 +2821,10 @@ $.widget("ui.input", {
                         .attr('disabled', true)
                         .addClass('ui-state-disabled');
 
-            //this.element.trigger('disabled.uiinput');
-            this._trigger('disabled');
+            try {
+                //this.element.trigger('disabled.uiinput');
+                this._trigger('disabled');
+            } catch(e) {}
         }
     },
 
@@ -2920,7 +2924,9 @@ $.widget("ui.input", {
 
         if (state !== undefined)
         {
-            self._trigger('validation_change', null, [state]);
+            try {
+                self._trigger('validation_change', null, [state]);
+            } catch(e) {}
         }
     },
 
