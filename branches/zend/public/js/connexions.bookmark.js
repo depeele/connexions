@@ -640,6 +640,24 @@ $.widget("connexions.bookmark", {
 
         self._squelch = true;
 
+        if (opts.itemId !== data.itemId)
+        {
+            // Update the edit and delete URLs
+            var url;
+            url = self.$edit.attr('href')
+                    .replace('id='+ opts.userId +':'+ opts.itemId,
+                             'id='+ opts.userId +':'+ data.itemId);
+            self.$edit.attr('href', url);
+
+            /* :NOTE: The $delete url isn't really used.  See _performDelete()
+             *        This change is really about keeping the UI consistent.
+             */
+            url = self.$delete.attr('href')
+                    .replace('/'+ opts.userId +':'+ opts.itemId,
+                             '/'+ opts.userId +':'+ data.itemId);
+            self.$delete.attr('href', url);
+        }
+
         // Include the updated data
         self.$itemId.val( data.itemId );
         self.$name.text(  data.name );

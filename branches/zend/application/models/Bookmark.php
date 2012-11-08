@@ -304,11 +304,20 @@ class Model_Bookmark extends Model_Base
         }
         else if ( (! isset($props['public'])) || ($props['public'] !== false) )
         {
-            // Convert "private" data to a public representation
+            /* Convert "private" data to a public representation
+             *  -- don't throw away userId/itemId since the caller may need
+             *     them (e.g. Bookmark Update client-side scripts).
+             */
             if ($this->user !== null)
-                $data['userId'] = strval($this->user);
+            {
+                $data['user']   = strval($this->user);
+                $data['userId'] = $this->user->userId;
+            }
             if ($this->item !== null)
-                $data['itemId'] = strval($this->item);
+            {
+                $data['url']    = strval($this->item);
+                $data['itemId'] = $this->item->itemId;
+            }
 
             if ($this->tags !== null)
             {
