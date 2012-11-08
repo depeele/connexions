@@ -493,7 +493,9 @@ $.widget("connexions.bookmarkPost", {
          * 'change' event, causing _url_changed() to be invoked, resulting in
          * another call to this method, ...
          */
-        opts.$url.val( (opts.itemId ? opts.itemId : opts.url) );
+        opts.$url.val( (opts.itemId && (! $.isNumeric(opts.itemId))
+                            ? opts.itemId
+                            : opts.url) );
 
         if (opts.$mode.length > 0)
         {

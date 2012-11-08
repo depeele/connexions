@@ -752,6 +752,7 @@ class Service_Bookmark extends Service_Base
                         Connexions::varExport($tags),
                         Connexions::varExport($url));
         // */
+        $urlChange = false;
 
         // First, attempt to normalize the incoming bookmark id.
         $id = $this->_mapper->normalizeId($id);
@@ -829,6 +830,43 @@ class Service_Bookmark extends Service_Base
             if (  $isFavorite !== null) $id['isFavorite']   = $isFavorite;
             if (  $isPrivate  !== null) $id['isPrivate']    = $isPrivate;
             if (  $worldModify!== null) $id['worldModify']  = $worldModify;
+
+            if ( (! empty($id['url'])) &&
+                 isset($id['userId'])  &&
+                 isset($id['itemId']) )
+            {
+                /* Retrieve the bookmark and normalize the URL to determine
+                 * whether or not the user is changing the URL.
+                 */
+                $bookmark = $this->get(array('userId' => $id['userId'],
+                                             'itemId' => $id['itemId']));
+
+                /*
+                Connexions::log("Service_Bookmark::update() "
+                                . "userId[ %s ], itemId[ %s ]: %s",
+                                Connexions::varExport($id['userId']),
+                                Connexions::varExport($id['itemId']),
+                                Connexions::varExport($bookmark));
+                // */
+
+                if ($bookmark)
+                {
+                    $id['url'] = Connexions::normalizeUrl( $id['url'] );
+
+                    if ($id['url'] !== $bookmark->item->url)
+                    {
+                        $urlChange = true;
+
+                        /*
+                        Connexions::log("Service_Bookmark::update() "
+                                        . "new url[ %s ] != old url[ %s ]",
+                                        Connexions::varExport($id['url']),
+                                        Connexions::varExport(
+                                                        $bookmark->item->url));
+                        // */
+                    }
+                }
+            }
         }
 
         if (is_array($overrides))
@@ -861,7 +899,70 @@ class Service_Bookmark extends Service_Base
             {
                 // Update an existing bookmark with data from 'id'
                 $action   = 'update';
-                $bookmark->populate($id);
+
+                if ($urlChange === true)
+                {
+                    /* We're changing the url / item so, in order to properly
+                     * maintain tag connections and statistics, we must:
+                     *  1) Ensure that all relevant data is included in $id;
+                     *  2) delete the existing bookmark;
+                     *  3) create a new bookmark;
+                     */
+                    unset($id['itemId']);
+
+                    // 1) Ensure that all relevant data is included in $id;
+                    if (@empty($id['name']))
+                    {
+                        $id['name'] = $bookmark->name;
+                    }
+                    if (!isset($id['tags']))
+                    {
+                        $id['tags'] = $bookmark->tags;
+                    }
+                    if (!isset($id['description']))
+                    {
+                        $id['description'] = $bookmark->description;
+                    }
+                    if (!isset($id['rating']))
+                    {
+                        $id['rating'] = $bookmark->rating;
+                    }
+                    if (!isset($id['isFavorite']))
+                    {
+                        $id['isFavorite'] = $bookmark->isFavorite;
+                    }
+                    if (!isset($id['isPrivate']))
+                    {
+                        $id['isPrivate'] = $bookmark->isPrivate;
+                    }
+                    if (!isset($id['worldModify']))
+                    {
+                        $id['worldModify'] = $bookmark->worldModify;
+                    }
+                    if (!isset($id['taggedOn']))
+                    {
+                        $id['taggedOn'] = $bookmark->taggedOn;
+                    }
+
+                    /*
+                    Connexions::log("Service_Bookmark::update() "
+                                    . "delete the old bookmark [ %s ]",
+                                    $bookmark);
+                    Connexions::log("Service_Bookmark::update() "
+                                    . "create a new bookmark with: %s",
+                                    Connexions::varExport($id));
+                    // */
+
+                    // 2) delete the existing bookmark;
+                    $bookmark->delete();
+
+                    // 3) create a new bookmark;
+                    $bookmark = $this->get($id);
+                }
+                else
+                {
+                    $bookmark->populate($id);
+                }
             }
 
             if ($bookmark === null)

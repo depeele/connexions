@@ -424,6 +424,12 @@ class PostController extends Connexions_Controller_Action
         $error    = null;
         $boomkark = null;
         $bService = $this->service('Bookmark');
+
+        /*
+        Connexions::log("PostController::_doPost(): postInfo[ %s ]",
+                        Connexions::varExport($postInfo));
+        // */
+
         try
         {
             if (! @empty($postInfo['id']))
@@ -446,7 +452,7 @@ class PostController extends Connexions_Controller_Action
                          * the current user.
                          */
                         unset($postInfo['id']);
-                        $bookmark = null;
+                        //$bookmark = null;
                     }
                     else
                     {
@@ -499,7 +505,8 @@ class PostController extends Connexions_Controller_Action
             else
             {
                 // Update the given bookmark with postInfo data
-                $bookmark->populate( $postInfo );
+                $bookmark = $bService->update($postInfo);
+                //$bookmark->populate( $postInfo );
             }
 
             if ($bookmark === null)
