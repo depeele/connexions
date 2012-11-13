@@ -192,8 +192,12 @@ class Model_UserAuth extends Model_Base
             }
             break;
 
-        case self::AUTH_OPENID:
         case self::AUTH_PKI:
+            // Convert to lower-case so case differences won't effect us
+            $credential = strtolower( $credential );
+            break;
+
+        case self::AUTH_OPENID:
         default:
             // by default, do nothing
             break;
