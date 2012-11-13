@@ -315,8 +315,9 @@ class Model_Bookmark extends Model_Base
             }
             if ($this->item !== null)
             {
-                $data['url']    = strval($this->item);
-                $data['itemId'] = $this->item->itemId;
+                $data['url']     = $this->item->url;
+                $data['urlHash'] = $this->itemHash;
+                $data['itemId']  = $this->item->itemId;
             }
 
             if ($this->tags !== null)
