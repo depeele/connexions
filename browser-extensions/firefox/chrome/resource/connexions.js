@@ -2032,9 +2032,13 @@ Connexions.prototype = {
         var syncMs  = parseInt(self.pref('syncMinutes'), 10) * 60000;
 
         self.syncTimer.cancel();
-        self.syncTimer.initWithCallback(function() {
-            self.sync();
-        }, syncMs, CI.nsITimer.TYPE_REPEATING_SLACK);
+
+        if (syncMs >= 60000)
+        {
+            self.syncTimer.initWithCallback(function() {
+                self.sync();
+            }, syncMs, CI.nsITimer.TYPE_REPEATING_SLACK);
+        }
     },
 
     /** @brief  After collecting synchronization data, update our local
