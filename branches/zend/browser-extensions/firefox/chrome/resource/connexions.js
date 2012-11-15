@@ -1856,7 +1856,8 @@ Connexions.prototype = {
     normalizeBookmark: function(bookmark) {
         var self        = this;
         var normalized  = {
-            url:            bookmark.itemId,
+            url:            bookmark.url,
+          //url:            bookmark.itemId,
           //urlHash:        connexions.md5(bookmark.itemId),
             name:           bookmark.name,
             description:    bookmark.description,
