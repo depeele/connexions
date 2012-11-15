@@ -48,9 +48,11 @@ function Connexions_log(msg, stackFrame)
         stackFrame = Components.stack.caller;
     }
 
-    var src = stackFrame.filename.replace(/file:\/\/\/.*\/chrome/,
-                                          'chrome://connexions/chrome');
-    if (stackFrame.lineNumber !== undefined)
+    var src = (stackFrame.filename
+                ? stackFrame.filename.replace(/file:\/\/\/.*\/chrome/,
+                                              'chrome://connexions/chrome')
+                : '*unknown*');
+    if (stackFrame.lineNumber > 0)
     {
         src += ', line '+   stackFrame.lineNumber;
 
