@@ -36,6 +36,9 @@
  *                      /signOut
  *                      /register
  *                      /checkUser
+ *
+ *      /avatar         /:owner                     Return the owners avatar
+ *                                                  image.
  */
 
 class Connexions_Controller_Route
@@ -92,6 +95,8 @@ class Connexions_Controller_Route
                                  'signOut'  => false,
                                  'register' => false,
                                  'checkuser'=> false),
+
+        'avatar'        => array(':owner'   => true),
 
         // Compatability with the Connexions api (v1 and v2) and feeds
         'api'           => array('posts'    => array(
