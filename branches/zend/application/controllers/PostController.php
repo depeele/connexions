@@ -445,7 +445,7 @@ class PostController extends Connexions_Controller_Action
                         (empty($postInfo['url'])
                             ? $bookmark->item->url
                             : Connexions::normalizeUrl($postInfo['url']));
-                    if ($bookmark->item->url !== $postInfo['url'])
+                    if (strcasecmp($bookmark->item->url, $postInfo['url']))
                     {
                         /* The user has changed the URL.  Use the new URL to
                          * create a new bookmark or update a bookmark owned by

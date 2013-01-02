@@ -853,7 +853,7 @@ class Service_Bookmark extends Service_Base
                 {
                     $id['url'] = Connexions::normalizeUrl( $id['url'] );
 
-                    if ($id['url'] !== $bookmark->item->url)
+                    if (strcasecmp($id['url'], $bookmark->item->url))
                     {
                         $urlChange = true;
 

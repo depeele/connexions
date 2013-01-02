@@ -826,8 +826,8 @@ class Connexions
             return $str;
         }
 
-        // Normalize and compute the MD5 hash
-        return md5( self::normalizeUrl($str) );
+        // Normalize, lowercase, and compute the MD5 hash
+        return md5( strtolower(self::normalizeUrl($str)) );
     }
 
     /** @brief  Normalize a URL.
@@ -837,9 +837,12 @@ class Connexions
      */
     public static function normalizeUrl($url)
     {
-        // decode and lower-case the incoming url
+        /* decode and normalize white-space in the incoming url
+         *  :XXX: Do NOT lowercase the entire URL since portions of a URL are
+         *        case sensitive, namely the username, password, path, query,
+         *        and fragment.
+         */
         $url = urldecode($url);
-        $url = strtolower($url);
         $url = trim(preg_replace('/\s+/', ' ', $url), " \t");
 
         $uri = parse_url( $url );
@@ -855,13 +858,13 @@ class Connexions
             switch ($part)
             {
             case 'scheme':
-                // schemes are case-insensitive
-                $scheme = $val;
+                // schemes are case-insensitive -- lower-case
+                $scheme = strtolower($val);
                 break;
 
             case 'host':
-                // hostnames are case-insensitive
-                $host = $val;
+                // hostnames are case-insensitive -- lower-case
+                $host = strtolower($val);
                 break;
 
             case 'port':
@@ -869,13 +872,11 @@ class Connexions
                 $port = (int)$val;
                 break;
 
-            case 'user':
-            case 'pass':
-                // no change
-                break;
-
             case 'path':
-                // Convert any '\' to '/'
+                /* Case-sensitive
+                 *
+                 * Convert any '\' to '/'
+                 */
                 $path = str_replace('\\', '/', $val);
 
                 // Collapse and trim white-space
@@ -902,7 +903,10 @@ class Connexions
                 break;
 
             case 'query':
-                // Collapse and trim white-space
+                /* Case-sensitive
+                 *
+                 * Collapse and trim white-space
+                 */
                 $val = trim(preg_replace('/\s+/', ' ', $val));
 
                 // Ensure a normalized order
@@ -915,11 +919,14 @@ class Connexions
                 $val = http_build_query($query);
                 break;
 
+            case 'user':
+            case 'pass':
             case 'fragment':
-                // no change
-                break;
-
             default:
+                /* Case-sensitive
+                 *
+                 * no change
+                 */
                 break;
             }
 
