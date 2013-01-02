@@ -576,7 +576,9 @@ class Connexions
         $baseEntry = self::urlPathMap('base');
 
         $path = $baseEntry['path']
-              . preg_replace('#^'. $baseEntry['url'] .'#', '', $url);
+              . ($baseEntry['url'] === '/'
+                    : $baseEntry['url'] . $url
+                    : preg_replace('#^'. $baseEntry['url'] .'#', '', $url));
         
         /*
         Connexions::log("Connexions::url2path( %s ): "
