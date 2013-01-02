@@ -1164,9 +1164,11 @@ $.widget("connexions.bookmarkPost", {
     {
         var self    = this;
         var opts    = self.options;
+        var apiUrl  = document.location.protocol +'//'+ document.location.host
+                    + $.registry('urls').base +'post/';
 
         $.ajax({
-            url:    ($.registry('urls')).base +'/post/',
+            url:    apiUrl,
             data:   {
                 format: 'partial',
                 part:   'main-tags-recommended',
