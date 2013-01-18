@@ -6032,10 +6032,7 @@ $.widget("connexions.dropdownForm", {
             //$.log("connexions.dropdownForm::caught 'form:change'");
 
             // Any change within the form should enable the submit button
-            self.$submit
-                    .removeClass('ui-state-disabled')
-                    .removeAttr('disabled')
-                    .addClass('ui-state-default');
+            self.enableSubmit();
         };
 
         var _form_reset         = function(e) {
@@ -6119,6 +6116,11 @@ $.widget("connexions.dropdownForm", {
             self.$form.trigger('submit');
         };
 
+        var _form_enable        = function(){ self.enable(); };
+        var _form_disable       = function(){ self.disable(); };
+        var _form_enableSubmit  = function(){ self.enableSubmit(); };
+        var _form_disableSubmit = function(){ self.disableSubmit(); };
+
         /**********************************************************************
          * bind events
          *
@@ -6135,8 +6137,12 @@ $.widget("connexions.dropdownForm", {
                 .bind('click.uidropdownform',       _control_click);
 
         self.$form
-                .bind('change.uidropdownform', _form_change)
-                .bind('submit.uidropdownform', _form_submit);
+                .bind('change.uidropdownform',        _form_change)
+                .bind('submit.uidropdownform',        _form_submit)
+                .bind('enable.uidropdownform',        _form_enable)
+                .bind('disable.uidropdownform',       _form_disable)
+                .bind('enableSubmit.uidropdownform',  _form_enableSubmit)
+                .bind('disableSubmit.uidropdownform', _form_disableSubmit)
 
         self.$submit
                 .bind('click.uidropdownform', _form_clickSubmit);
@@ -6188,6 +6194,24 @@ $.widget("connexions.dropdownForm", {
         this.element.find('.control:first').click();
     },
 
+    enableSubmit: function() {
+        var self    = this;
+
+        self.$submit
+                .removeClass('ui-state-disabled')
+                .removeAttr('disabled')
+                .addClass('ui-state-default');
+    },
+
+    disableSubmit: function() {
+        var self    = this;
+
+        self.$submit
+                .removeClass('ui-state-default ui-state-highlight')
+                .addClass('ui-state-disabled')
+                .attr('disabled', true);
+    },
+
     enable: function(enableSubmit) {
         var self    = this;
 
@@ -6195,18 +6219,11 @@ $.widget("connexions.dropdownForm", {
 
         if (enableSubmit !== true)
         {
-            // Any change within the form should enable the submit button
-            self.$submit
-                    .removeClass('ui-state-default ui-state-highlight')
-                    .addClass('ui-state-disabled')
-                    .attr('disabled', true);
+            self.disableSubmit();
         }
         else
         {
-            self.$submit
-                    .removeClass('ui-state-disabled')
-                    .removeAttr('disabled')
-                    .addClass('ui-state-default');
+            self.enableSubmit();
         }
     },
 
@@ -6215,11 +6232,7 @@ $.widget("connexions.dropdownForm", {
 
         self.$form.find('input,select').attr('disabled', true);
 
-        // Any change within the form should enable the submit button
-        self.$submit
-                .removeClass('ui-state-default ui-state-highlight')
-                .addClass('ui-state-disabled')
-                .attr('disabled', true);
+        self.disableSubmit();
     },
 
     destroy: function() {
@@ -6611,6 +6624,12 @@ $.widget("connexions.optionGroups", {
                                             .replace(/^.*?\[(.*?)\]$/, '$1')
                                             .replace(/:/g, ' .') );
         });
+
+        if (selected.length < 1)
+        {
+            // INVALID -- no items selected.  Disable submit.
+            return self.options.form.trigger('disableSubmit');
+        }
 
         $groupFieldset.find('input:not(:checked)').each(function() {
             deSelected.push( '.' + $(this).attr('name')

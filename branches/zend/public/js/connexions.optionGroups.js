@@ -362,6 +362,12 @@ $.widget("connexions.optionGroups", {
                                             .replace(/:/g, ' .') );
         });
 
+        if (selected.length < 1)
+        {
+            // INVALID -- no items selected.  Disable submit.
+            return self.options.form.trigger('disableSubmit');
+        }
+
         $groupFieldset.find('input:not(:checked)').each(function() {
             deSelected.push( '.' + $(this).attr('name')
                                             .replace(/^.*?\[(.*?)\]$/, '$1')

@@ -515,8 +515,10 @@ class View_Helper_HtmlDisplayOptions extends Zend_View_Helper_Abstract
      *
      *  @return $this (null if 'groupName' is not a valid group).
      */
-    public function setGroup($groupName, array $customValues = null)
+    public function setGroup($groupName, $customValues = null)
     {
+        if (! is_array($customValues))  { $customValues = null; }
+
         /*
         Connexions::log("View_Helper_HtmlDisplayOptions::setGroup( %s ): "
                         .   "is %svalid; customValues[ %s ]",
