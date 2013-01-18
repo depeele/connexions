@@ -453,7 +453,7 @@ class SettingsController extends Connexions_Controller_Action
                                   . preg_replace("#^{$urlBase}#",
                                                  '',
                                                  $urlAvatarTmp) );
-        $avatarFile   = basename( $file['name']);
+        $avatarFile   = strtolower( basename( $file['name']) );
         $uploadFile   = $uploadDir .'/'. $avatarFile;
         $uploadUrl    = $urlAvatarTmp .'/'. $avatarFile;
 
@@ -473,9 +473,12 @@ class SettingsController extends Connexions_Controller_Action
         Connexions::log("SettingsController::_prepare_post_account_avatar(): "
                         .   "uploadUrl[ %s ]",
                         $uploadUrl);
+        Connexions::log("SettingsController::_prepare_post_account_avatar(): "
+                        .   "tmp_name[ %s ]",
+                        $file['tmp_name']);
         // */
 
-        $this->view->file = $file;
+        $this->view->file = $uploadFile;
         $this->view->url  = $uploadUrl;
 
         if (! move_uploaded_file($file['tmp_name'], $uploadFile))
