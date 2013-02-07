@@ -9,37 +9,44 @@ abstract class Service_Base extends Connexions_Service
 {
     /** @brief  Retrieve a set of Domain Model instance related by the provided 
      *          set of Users, Tags, and/or Items.
-     *  @param  to      An array containing the User(s), Tag(s) and/or Item(s) 
-     *                  retrieved bookmarks should be related to:
-     *                      users       A Model_Set_User instance, array, or 
-     *                                  comma-separated string of users to 
-     *                                  match -- ANY user in the list.
-     *                      items       A Model_Set_Item instance, array, or 
-     *                                  comma-separated string of items to 
-     *                                  match -- ANY item in the list..
-     *                      tags        A Model_Set_Tag instance, array, or 
-     *                                  comma-separated string of tags to
-     *                                  match -- ANY tag in the list.
-     *                      exactUsers  If 'users' is provided, the retrieved
-     *                                  models MUST match them all;
-     *                      exactItems  If 'items' is provided, the retrieved
-     *                                  models MUST match them all;
-     *                      exactTags   If 'tags' is provided, the retrieved
-     *                                  models MUST match them all;
-     *  @param  order   Optional ORDER clause (string, array)
-     *                      [ [ 'taggedOn      DESC',
-     *                          'name          ASC',
-     *                          'userCount     DESC',
-     *                          'tagCount      DESC' ] ]
-     *  @param  count   Optional LIMIT count
-     *  @param  offset  Optional LIMIT offset
+     *  @param  to          An array containing the User(s), Tag(s) and/or
+     *                      Item(s) retrieved bookmarks should be related to:
+     *                          users       A Model_Set_User instance, array,
+     *                                      or comma-separated string of users
+     *                                      to match -- ANY user in the list.
+     *                          items       A Model_Set_Item instance, array,
+     *                                      or comma-separated string of items
+     *                                      to match -- ANY item in the list..
+     *                          tags        A Model_Set_Tag instance, array, or
+     *                                      comma-separated string of tags to
+     *                                      match -- ANY tag in the list.
+     *                          exactUsers  If 'users' is provided, the
+     *                                      retrieved models MUST match them
+     *                                      all;
+     *                          exactItems  If 'items' is provided, the
+     *                                      retrieved models MUST match them
+     *                                      all;
+     *                          exactTags   If 'tags' is provided, the
+     *                                      retrieved models MUST match them
+     *                                      all;
+     *  @param  order       Optional ORDER clause (string, array)
+     *                          [ [ 'taggedOn      DESC',
+     *                              'name          ASC',
+     *                              'userCount     DESC',
+     *                              'tagCount      DESC' ] ]
+     *  @param  count       Optional LIMIT count
+     *  @param  offset      Optional LIMIT offset
+     *  @param  overrides   Should we allow retrievals that ignore privacy
+     *                      limits?  [ false ];  This is primarily for
+     *                      maintenance utilities.
      *
      *  @return A new Connexions_Model_Set instance.
      */
     public function fetchRelated(array  $to,
-                                        $order  = null,
-                                        $count  = null,
-                                        $offset = null)
+                                        $order      = null,
+                                        $count      = null,
+                                        $offset     = null,
+                                        $overrides  = false)
     {
         /*
         Connexions::log("Service_Base(%s)::fetchRelated(): "
@@ -56,6 +63,10 @@ abstract class Service_Base extends Connexions_Service
                         'offset'  => $offset,
                         'privacy' => $this->_curUser(),
                   );
+        if ($overrides === true)
+        {
+            $config['privacy'] = false;
+        }
 
         $config = $this->_normalizeParams($to, $config);
 
