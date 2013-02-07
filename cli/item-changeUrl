@@ -1,0 +1,202 @@
+#!/usr/bin/env php
+<?php
+define('CLI_DIR', realpath(dirname(__FILE__)));
+
+require_once(CLI_DIR. '/bootstrap.php');
+require_once(CLI_DIR. '/getopt.php');
+$opts   = Connexions_getopt('vnf:t:');
+$prog   = array_shift($argv);
+$nItems = count($opts['f']);
+if ($nItems < 1)
+{
+    printf (  "*** Usage: %s [-n] -f <from URL prefix> -t <to URL prefix> ...\n"
+            . "***              -n  Do a dry-run with no change\n"
+            . "***              -v  Verbose\n"
+            . "***              -f  A single   old / from URL prefix\n"
+            . "***              -t  A matching new / to   URL prefix\n"
+            . "***\n"
+            . "***              You may include multiple -f/-t pairs\n",
+            $prog);
+    exit(0);
+}
+
+if (! is_array($opts['f'])) { $opts['f'] = array( $opts['f'] ); }
+if (! is_array($opts['t'])) { $opts['t'] = array( $opts['t'] ); }
+
+if (count($opts['f']) !== count($opts['t']))
+{
+    printf ( "*** The number of 'from' urls (%d) does NOT match\n"
+            ."    the number of 'to'   urls (%d)\n",
+            count($opts['f']), count($opts['t']));
+    exit(1);
+}
+
+$bmSvc   = Connexions_Service::factory('Service_Bookmark');
+$itemSvc = Connexions_Service::factory('Service_Item');
+
+for ($idex = 0; $idex < $nItems; $idex++)
+{
+    $oldUrl = $opts['f'][$idex];
+    $toUrl  = $opts['t'][$idex];
+
+    printf ("Change urls LIKE '%s', replacing with '%s'...\n",
+            $oldUrl, $newUrl);
+
+    $items = $itemSvc->fetchByUrl( $oldUrl );
+
+    printf ("++ Updating %u items:\n", count($items));
+
+    $quoteOld = preg_quote($oldUrl);
+    $index    = 0;
+    foreach ($items as $idex => $item)
+    {
+        $regex  = '/^'. str_replace('/', '\\/', $quoteOld) . '/i';
+        $url    = preg_replace($regex, $newUrl, $item->url);
+
+        // See if there is already an item with this new URL
+        $newItems = $itemSvc->fetchByUrl( $url );
+        if (count($newItems) > 0)
+        {
+            // Did we find an EXACT match?
+            $match = null;
+            foreach ($newItems as $jdex => $newItem)
+            {
+                if ($newItem->url === $url)
+                {
+                    $match = $newItem;
+                    break;
+                }
+            }
+
+            if ($match)
+            {
+                printf ("** %3d: An item with the new url already exists\n",
+                        $index);
+
+                $index += changeBookmarks($index, $item, $match);
+                continue;
+            }
+        }
+
+        changeUrl($index, $item, $url);
+        $index++;
+    }
+}
+printf ("\n");
+
+/** @brief  Change all bookmarks ('userItem' and 'userTagItem' records), to
+ *          reference the new item instead of the old;
+ *  @param  index       The current item index;
+ *  @param  fromItem    The original item;
+ *  @param  toItem      The new      item;
+ */
+function changeBookmarks($index, $fromItem, $toItem)
+{
+    global  $opts, $bmSvc;
+
+    $bookmarks  = $bmSvc->fetchByItems( $fromItem,
+                                        null,    // order
+                                        -1,      // count (all)
+                                        null,    // offset
+                                        null,    // since
+                                        true);   // overrides
+    $nBookmarsk = count($bookmarks);
+
+    if ($nBookmarks < 1)
+    {
+        if (isset($opts['v']))
+        {
+            printf ("** %3d: there SHOULD be one or more bookmarks but none "
+                    .        "were found",
+                    $index);
+            printf ("**    :   from item[ %7d ]: %s\n", $fromItem->itemId,
+                                                        $fromItem->url);
+            printf ("**    :   to   item[ %7d ]: %s\n", $toItem->itemId,
+                                                        $toItem->url);
+        }
+        return 0;
+    }
+
+    if (isset($opts['v']))
+    {
+        printf ("++ %3d: change %d bookmark%s from\n",
+                $index, $nBookmarks, ($nBookmarks === 1 ? '' : 's'));
+        printf ("++    :   from item[ %7d ]: %s\n", $fromItem->itemId,
+                                                    $fromItem->url);
+        printf ("++    :   to   item[ %7d ]: %s\n", $toItem->itemId,
+                                                    $toItem->url);
+    }
+
+    foreach ($bookmarks as $idex => $bookmark)
+    {
+        if (isset($opts['v']))
+        {
+            printf ("++++++: bookmark %3d / %3d\n", $idex+1, $nBookmarks);
+        }
+        else
+        {
+            if ( ($index > 0) && (($index % 70) === 0) )
+            {
+                printf (" : %4d\n", $index);
+            }
+            printf (".");
+        }
+
+        if (! isset($opts['n']))
+        {
+            $bmSvc->update($bookmark->getId(),
+                           null,            // name         (unchanged)
+                           null,            // description  (unchanged)
+                           null,            // rating       (unchanged)
+                           null,            // isFavorite   (unchanged)
+                           null,            // isPrivate    (unchanged)
+                           null,            // worldModify  (unchanged)
+                           null,            // tags         (unchanged)
+                           $toItem->url,    // new URL
+                           true);           // overrides
+        }
+    }
+
+    return $nBookmarks;
+}
+
+/** @brief  Given an item and a new url along with an assurance that there is
+ *          no existing item with the new url, change the url of the item.
+ *  @param  index   The current item index;
+ *  @param  item    The target item;
+ *  @param  url     The new URL;
+ */
+function changeUrl($index, $item, $url)
+{
+    global  $opts;
+
+    $origUrl  = $item->url;
+    $origHash = $item->urlHash;
+
+    /* Set the new url so we know the url hash.  If '-n' is set, we will NOT
+     * save the change.
+     */
+    $item->url = $url;
+
+    if (isset($opts['v']))
+    {
+        printf ("++ %3d: id[ %7d ], old[ %s ]\n",
+                $index, $item->itemId, $origUrl);
+        printf ("++    :                new[ %s ]\n", $item->url);
+        printf ("++    :                old hash  %s\n", $origHash);
+        printf ("++    :                new hash  %s\n", $item->urlHash);
+    }
+    else
+    {
+        if ( ($index > 0) && (($index % 70) === 0) )
+        {
+            printf (" : %4d\n", $index);
+        }
+        printf (".");
+    }
+
+    if (! isset($opts['n']))
+    {
+        $item->save();
+    }
+}
