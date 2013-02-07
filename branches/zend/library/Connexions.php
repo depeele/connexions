@@ -577,7 +577,7 @@ class Connexions
 
         $path = $baseEntry['path']
               . ($baseEntry['url'] === '/'
-                    : $baseEntry['url'] . $url
+                    ? $baseEntry['url'] . $url
                     : preg_replace('#^'. $baseEntry['url'] .'#', '', $url));
         
         /*
