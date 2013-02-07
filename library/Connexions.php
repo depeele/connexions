@@ -849,6 +849,16 @@ class Connexions
 
         $uri = parse_url( $url );
 
+        /*
+        Connexions::log("normalizeUrl(): url[ %s ]: uri[ %s ]",
+                        $url, Connexions::varExport($uri));
+        // */
+        if ($uri === false)
+        {
+            // INVALID URL -- simply return the provided string.
+            return $url;
+        }
+
         $scheme = null;
         $host   = null;
         $port   = null;
