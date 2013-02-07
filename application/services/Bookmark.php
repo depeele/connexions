@@ -358,25 +358,29 @@ class Service_Bookmark extends Service_Base
     }
 
     /** @brief  Retrieve a set of bookmarks related by a set of Tags ( b(t) ).
-     *  @param  tags    A Model_Set_Tag instance, array, or comma-separated
-     *                  string of tags to match.
-     *  @param  exact   Bookmarks MUST be associated with provided tags
-     *                  [ true ];
-     *  @param  order   Optional ORDER clause (string, array)
-     *                  [ $_defaultOrdering ];
-     *  @param  count   Optional LIMIT count
-     *  @param  offset  Optional LIMIT offset
-     *  @param  since   Limit the results to bookmarks updated after this
-     *                  date/time [ null == no time limits ];
+     *  @param  tags        A Model_Set_Tag instance, array, or comma-separated
+     *                      string of tags to match.
+     *  @param  exact       Bookmarks MUST be associated with provided tags
+     *                      [ true ];
+     *  @param  order       Optional ORDER clause (string, array)
+     *                      [ $_defaultOrdering ];
+     *  @param  count       Optional LIMIT count
+     *  @param  offset      Optional LIMIT offset
+     *  @param  since       Limit the results to bookmarks updated after this
+     *                      date/time [ null == no time limits ];
+     *  @param  overrides   Should we allow retrievals that ignore privacy
+     *                      limits?  [ false ];  This is primarily for
+     *                      maintenance utilities.
      *
      *  @return A new Model_Set_Bookmark instance.
      */
     public function fetchByTags($tags,
-                                $exact   = true,
-                                $order   = null,
-                                $count   = null,
-                                $offset  = null,
-                                $since   = null)
+                                $exact      = true,
+                                $order      = null,
+                                $count      = null,
+                                $offset     = null,
+                                $since      = null,
+                                $overrides  = false)
     {
         $order = $this->_csOrder2array($order);
         $to    = array('tags'      => $tags,
@@ -387,26 +391,31 @@ class Service_Bookmark extends Service_Base
         return $this->fetchRelated( $to,
                                     $order,
                                     $count,
-                                    $offset );
+                                    $offset,
+                                    $overrides );
     }
 
     /** @brief  Retrieve a set of bookmarks related by a set of Users ( b(u) ).
-     *  @param  users   A Model_Set_User instance, array, or comma-separated
-     *                  string of users to match.
-     *  @param  order   Optional ORDER clause (string, array)
-     *                  [ $_defaultOrdering ];
-     *  @param  count   Optional LIMIT count
-     *  @param  offset  Optional LIMIT offset
-     *  @param  since   Limit the results to bookmarks updated after this
-     *                  date/time [ null == no time limits ];
+     *  @param  users       A Model_Set_User instance, array, or
+     *                      comma-separated string of users to match.
+     *  @param  order       Optional ORDER clause (string, array)
+     *                      [ $_defaultOrdering ];
+     *  @param  count       Optional LIMIT count
+     *  @param  offset      Optional LIMIT offset
+     *  @param  since       Limit the results to bookmarks updated after this
+     *                      date/time [ null == no time limits ];
+     *  @param  overrides   Should we allow retrievals that ignore privacy
+     *                      limits?  [ false ];  This is primarily for
+     *                      maintenance utilities.
      *
      *  @return A new Model_Set_Bookmark instance.
      */
     public function fetchByUsers($users,
-                                 $order   = null,
-                                 $count   = null,
-                                 $offset  = null,
-                                 $since   = null)
+                                 $order     = null,
+                                 $count     = null,
+                                 $offset    = null,
+                                 $since     = null,
+                                 $overrides = false)
     {
         $order = $this->_csOrder2array($order);
         $to    = array('users'      => $users,
@@ -429,26 +438,31 @@ class Service_Bookmark extends Service_Base
         return $this->fetchRelated( $to,
                                     $order,
                                     $count,
-                                    $offset );
+                                    $offset,
+                                    $overrides );
     }
 
     /** @brief  Retrieve a set of bookmarks related by a set of Items ( b(i) ).
-     *  @param  items   A Model_Set_Item instance, array, or comma-separated
-     *                  string of items to match.
-     *  @param  order   Optional ORDER clause (string, array)
-     *                  [ $_defaultOrdering ];
-     *  @param  count   Optional LIMIT count
-     *  @param  offset  Optional LIMIT offset
-     *  @param  since   Limit the results to bookmarks updated after this
-     *                  date/time [ null == no time limits ];
+     *  @param  items       A Model_Set_Item instance, array, or
+     *                      comma-separated string of items to match.
+     *  @param  order       Optional ORDER clause (string, array)
+     *                      [ $_defaultOrdering ];
+     *  @param  count       Optional LIMIT count
+     *  @param  offset      Optional LIMIT offset
+     *  @param  since       Limit the results to bookmarks updated after this
+     *                      date/time [ null == no time limits ];
+     *  @param  overrides   Should we allow retrievals that ignore privacy
+     *                      limits?  [ false ];  This is primarily for
+     *                      maintenance utilities.
      *
      *  @return A new Model_Set_Bookmark instance.
      */
     public function fetchByItems($items,
-                                 $order   = null,
-                                 $count   = null,
-                                 $offset  = null,
-                                 $since   = null)
+                                 $order     = null,
+                                 $count     = null,
+                                 $offset    = null,
+                                 $since     = null,
+                                 $overrides = false)
     {
         $order = $this->_csOrder2array($order);
         $to    = array('items'      => $items,
@@ -459,7 +473,8 @@ class Service_Bookmark extends Service_Base
         return $this->fetchRelated( $to,
                                     $order,
                                     $count,
-                                    $offset );
+                                    $offset,
+                                    $overrides );
     }
 
     /** @brief  Retrieve a set of bookmarks related by a set of Users and Tags
@@ -478,6 +493,9 @@ class Service_Bookmark extends Service_Base
      *  @param  offset      Optional LIMIT offset
      *  @param  since       Limit the results to bookmarks updated after this
      *                      date/time [ null == no time limits ];
+     *  @param  overrides   Should we allow retrievals that ignore privacy
+     *                      limits?  [ false ];  This is primarily for
+     *                      maintenance utilities.
      *
      *  @return A new Model_Set_Bookmark instance.
      */
@@ -488,7 +506,8 @@ class Service_Bookmark extends Service_Base
                                         $order      = null,
                                         $count      = null,
                                         $offset     = null,
-                                        $since      = null)
+                                        $since      = null,
+                                        $overrides  = false)
     {
         $order = $this->_csOrder2array($order);
         $to    = array('users'      => $users,
@@ -501,7 +520,8 @@ class Service_Bookmark extends Service_Base
         return $this->fetchRelated( $to,
                                     $order,
                                     $count,
-                                    $offset );
+                                    $offset,
+                                    $overrides );
     }
 
     /** @brief  Retrieve a set of bookmarks related by a set of Items and Tags
@@ -518,16 +538,20 @@ class Service_Bookmark extends Service_Base
      *  @param  offset      Optional LIMIT offset
      *  @param  since       Limit the results to bookmarks updated after this
      *                      date/time [ null == no time limits ];
+     *  @param  overrides   Should we allow retrievals that ignore privacy
+     *                      limits?  [ false ];  This is primarily for
+     *                      maintenance utilities.
      *
      *  @return A new Model_Set_Bookmark instance.
      */
     public function fetchByItemsAndTags($items,
                                         $tags,
-                                        $exact   = true,
-                                        $order   = null,
-                                        $count   = null,
-                                        $offset  = null,
-                                        $since   = null)
+                                        $exact      = true,
+                                        $order      = null,
+                                        $count      = null,
+                                        $offset     = null,
+                                        $since      = null,
+                                        $overrides  = false)
     {
         $order = $this->_csOrder2array($order);
         $to    = array('items'      => $items,
@@ -540,24 +564,30 @@ class Service_Bookmark extends Service_Base
         return $this->fetchRelated( $to,
                                     $order,
                                     $count,
-                                    $offset );
+                                    $offset,
+                                    $overrides );
     }
 
     /** @brief  Retrieve the set of bookmarks in the given user's inbox
      *          that have been updated since the given date/time and
      *          have all of the given tags.
-     *  @param  user    A Model_Set_User instance representing the target user.
-     *  @param  tags    A Model_Set_Tag instance, array, or comma-separated
-     *                  string of tags to match
-     *                  (retrieved bookmarks will have ALL tags).
-     *  @param  since   Limit the results to bookmarks updated after this
-     *                  date/time [ null == no time limits ];
+     *  @param  user        A Model_Set_User instance representing the target
+     *                      user.
+     *  @param  tags        A Model_Set_Tag instance, array, or comma-separated
+     *                      string of tags to match
+     *                      (retrieved bookmarks will have ALL tags).
+     *  @param  since       Limit the results to bookmarks updated after this
+     *                      date/time [ null == no time limits ];
+     *  @param  overrides   Should we allow retrievals that ignore privacy
+     *                      limits?  [ false ];  This is primarily for
+     *                      maintenance utilities.
      *
      *  @return A new Model_Set_Bookmark instance.
      */
     public function fetchInbox($user,
-                               $tags    = null,
-                               $since   = null)
+                               $tags        = null,
+                               $since       = null,
+                               $overrides   = false)
     {
         if (! $user instanceof Model_User)
         {
@@ -607,7 +637,11 @@ class Service_Bookmark extends Service_Base
                     // Include any time limits
                     'where'      => $this->_includeSince(array(), $since) );
 
-        return $this->fetchRelated( $to );
+        return $this->fetchRelated( $to,
+                                    null,   // order
+                                    null,   // count
+                                    null,   // offset
+                                    $overrides );
     }
 
     /** @brief  Perform tag autocompletion within the given context.
