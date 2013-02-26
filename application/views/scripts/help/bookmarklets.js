@@ -21,13 +21,14 @@ javascript:(function(){
              +      '&noNav'
              +      '&closeAction=close';
         w    = window.open(url, 'connexions',
-                           'toolbar=no,menubar=no,resizable=yes,status=yes,'
+                           'resizable=yes,scrollbars=yes,status=yes,'
+                           + 'toolbar=no,menubar=no,centerscreen,'
                            + 'width=975,height=625');
     window.setTimeout('w.focus()', 200);
 }())
 
 // New Window (collapsed
-javascript:(function(){var url=encodeURIComponent(location.href),name=escape(document.title),desc=escape(window.getSelection()),w=window.open('<?= $this->baseUrl('post') ?>'+'?url='+url+'&name='+name+'&description='+desc+'&noNav&closeAction=close','connexions','toolbar=no,menubar=no,resizable=yes,status=yes,width=975,height=625');window.setTimeout('w.focus()',200);}())
+javascript:(function(){var url=encodeURIComponent(location.href),name=escape(document.title),desc=escape(window.getSelection()),w=window.open('<?= $this->baseUrl('post') ?>'+'?url='+url+'&name='+name+'&description='+desc+'&noNav&closeAction=close','connexions','resizable=yes,scrollbars=yes,status=yes,toolbar=no,menubar=no,centerscreen,width=975,height=625');window.setTimeout('w.focus()',200);}())
 
 // lightbox
 javascript:(function(){
