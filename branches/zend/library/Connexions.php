@@ -1087,8 +1087,17 @@ class Connexions
         $res    = 0;
         try
         {
+            /* Zend_Date doesn't properly parse a date like:
+             *  2013-03-05 15:34:57
+             *      produces  : May 3, 2013
+             *      instead of: March 5, 2013
+             *
             $date = new Zend_Date($str);
             $res = $date->getTimestamp();
+             */
+
+            $res = strtotime($str);
+
         }
         catch (Zend_Date_Exception $e)
         {
