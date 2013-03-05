@@ -28,6 +28,8 @@ class Service_Proxy_Feeds_Json
                           $callback = null,
                           $count    = 100)
     {
+        if ($count === null)    { $count = 100; }
+
         $bService = $this->_service('Bookmark');
         $uService = $this->_service('User');
         $tService = $this->_service('Tag');
@@ -124,6 +126,8 @@ class Service_Proxy_Feeds_Json
                          $callback = null,
                          $count    = 100)
     {
+        if ($count === null)    { $count = 100; }
+
         $uService = $this->_service('User');
         $tService = $this->_service('Tag');
 
@@ -195,6 +199,8 @@ class Service_Proxy_Feeds_Json
                            $callback = null,
                            $count    = 100)
     {
+        if ($count === null)    { $count = 100; }
+
         $uService = $this->_service('User');
         $tService = $this->_service('Tag');
 
@@ -272,6 +278,8 @@ class Service_Proxy_Feeds_Json
                         $callback = null,
                         $count    = 100)
     {
+        if ($count === null)    { $count = 100; }
+
         $iService = $this->_service('Item');
 
         switch (strtolower($sort))
