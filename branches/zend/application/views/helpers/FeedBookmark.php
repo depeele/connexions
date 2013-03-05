@@ -40,9 +40,11 @@ class View_Helper_FeedBookmark extends Zend_View_Helper_Abstract
 
         /*
         Connexions::log("View_Helper_FeedBookmark:feedBookmark: "
-                        . "url[ {$bookmark->item->url} ], [ {$localUrl} ]");
+                        . "url[ %s ], [ %s ]",
+                        $bookmark->item->url, $localUrl);
         Connexions::log("View_Helper_FeedBookmark:feedBookmark: "
-                        . "title[ {$title} ]");
+                        . "title[ %s ]",
+                        $title);
         // */
 
         $entryInfo = array(
@@ -50,7 +52,8 @@ class View_Helper_FeedBookmark extends Zend_View_Helper_Abstract
             'link'          => $itemUrl,
             'description'   => $descr,
 
-            'author'        => $bookmark->user->fullName,
+            'author'        => $bookmark->user->email,
+            //'author'        => $bookmark->user->fullName,
             'guid'          => $localUrl,
             'content'       => $descr,
             'lastUpdate'    => $updated,
@@ -72,7 +75,7 @@ class View_Helper_FeedBookmark extends Zend_View_Helper_Abstract
 
         // Append additional information to the end of 'content'
         $entryInfo['content'] .= '<br />'
-                              .  "Owner: {$authorEl}<br />"
+                              .  "Owner: {$authorLink}<br />"
                               .  ($bookmark->isPrivate  ? '' : 'Not ')
                               .     'Private, '
                               .  ($bookmark->isFavorite ? '' : 'Not ')
