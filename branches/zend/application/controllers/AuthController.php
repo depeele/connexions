@@ -572,11 +572,15 @@ class AuthController extends Connexions_Controller_Action
         $uService  = $this->service('User');
         $userModel = $uService->authenticate( $authCred['type'],
                                               $authCred['value'],
-                                              $userModel->id );
+                                              $userModel->getId() );
 
         // /*
         Connexions::log("AuthController::_registerUser(): "
-                        .   "authentication %s",
+                        .   "authentication type[ %s ], value[ %s ], id[ %s ]"
+                        .   ":%s",
+                        $authCred['type'],
+                        $authCred['value'],
+                        $userModel->getId(),
                         ($userModel->isAuthenticated()
                             ? 'success'
                             : 'FAILURE'));
