@@ -28,14 +28,16 @@ class AuthController extends Connexions_Controller_Action
 
         parent::init();
 
+        // Make any connection-level PKI information available
+        $this->_pki = $this->_connection['pki'];
+
         // Auth cookies should be applied at the highest level
         $this->_cookiePath      = (empty($this->_baseUrl)
                                     ? '/'
                                     : $this->_baseUrl);
         $this->view->cookiePath = $this->_cookiePath;
 
-        $this->view->pkiInfo    = Connexions::parsePki(
-                                                $this->_connection['pki'] );
+        $this->view->pkiInfo    = Connexions::parsePki( $this->_pki );
     }
 
     public function signinAction()
@@ -198,6 +200,19 @@ class AuthController extends Connexions_Controller_Action
         // Parameter name from application/views/scripts/auth/register.phtml
         $autoSignin = $request->getParam('autoSignin', null);
 
+        /*
+        Connexions::log("AuthController:registerAction():%sPOST: user[ %s ], "
+                        .   "fullName[ %s ], include:Password[ %s ]/Pki[ %s ], "
+                        .   "pass[ %s ], pass2[ %s ], pki[ %s ]",
+                        ($request->isPost() ? "" : "NOT "),
+                        $user, $fullName,
+                        Connexions::varExport($includePassword),
+                        Connexions::varExport($includePki),
+                        $pass, $pass2,
+                        Connexions::varExport($this->_pki));
+
+        // */
+
         /* To create a new user we need:
          *  - a POST request;
          *  - a non-empty user;
@@ -261,6 +276,11 @@ class AuthController extends Connexions_Controller_Action
                     $res = "Missing credentials";
                 }
             }
+
+            // /*
+            Connexions::log("AuthController::registerAction():POST: ERROR: %s",
+                            Connexions::varExport($res));
+            // */
 
             // ERROR
             $this->view->error = $res;
