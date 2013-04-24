@@ -61,10 +61,14 @@ class Connexions_Auth_ApacheSsl extends Connexions_Auth_Abstract
             // /*
             Connexions::log("Connenxions_Auth_ApacheSsl::authanticate: "
                             .   "FAILED: "
-                            .   "code [ {$this->_code} ], "
-                            .   "identity [ {$this->_identity} ], "
-                            .   "messages [ "
-                            .       @implode('; ', $this->_messages) ." ]");
+                            .   "cert [ %s ], "
+                            .   "code [ %s ], "
+                            .   "identity [ %s ], "
+                            .   "messages [ %s ]",
+                            Connexions:;varExport($_SERVER['SSL_CLIENT_S_DN']),
+                            $this->_code,
+                            $this->_identity,
+                            @implode('; ', $this->_messages));
             // */
 
             return $this;
@@ -80,10 +84,14 @@ class Connexions_Auth_ApacheSsl extends Connexions_Auth_Abstract
             // /*
             Connexions::log("Connenxions_Auth_ApacheSsl::authanticate: "
                             .   "FAILED: "
-                            .   "code [ {$this->_code} ], "
-                            .   "identity [ {$this->_identity} ], "
-                            .   "messages [ "
-                            .       @implode('; ', $this->_messages) ." ]");
+                            .   "cert [ %s ], "
+                            .   "code [ %s ], "
+                            .   "identity [ %s ], "
+                            .   "messages [ %s ]",
+                            Connexions:;varExport($_SERVER['SSL_CLIENT_S_DN']),
+                            $this->_code,
+                            $this->_identity,
+                            @implode('; ', $this->_messages));
             // */
 
             return $this;
@@ -102,10 +110,12 @@ class Connexions_Auth_ApacheSsl extends Connexions_Auth_Abstract
             // /*
             Connexions::log("Connenxions_Auth_ApacheSsl::authanticate: "
                             .   "FAILED: "
-                            .   "code [ {$this->_code} ], "
-                            .   "identity [ {$this->_identity} ], "
-                            .   "messages [ "
-                            .       @implode('; ', $this->_messages) ." ]");
+                            .   "code [ %s ], "
+                            .   "identity [ %s ], "
+                            .   "messages [ %s ]",
+                            $this->_code,
+                            $this->_identity,
+                            @implode('; ', $this->_messages));
             // */
 
             return $this;
