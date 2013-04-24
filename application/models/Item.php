@@ -102,19 +102,31 @@ class Model_Item extends Model_Taggable
         case 'urlHash':
             if (! empty($this->url))
             {
-                // Force the url hash to the hash of the current url.
+                // Check the incoming hash against that of the current url.
                 $newValue = Connexions::md5Url($this->url);
 
                 if ($value !== $newValue)
                 {
                     Connexions::log("Model_Item::__set(%s, %s): "
-                                    . "Rewrite the hash to "
-                                    . "'%s' to match the existing URL",
+                                    . "hash for current URL: "
+                                    . "'%s' -- MISMATCH",
                                     $name, $value, $newValue);
+
+                    /* :XXX: This does NOT result in properly saving the change
+                     *       and, in fact, removes the ability to alter an
+                     *       incorrect hash to its proper value.
+                     *
+                     *       This change is not being saved *and* not marking
+                     *       the field as dirty.  Any future change to the
+                     *       *same* correct value will appear to the underlying
+                     *       framework as *no-change* resulting in the field
+                     *       not being marked dirty and thus not being saved.
+                     *
                     $value = $newValue;
 
                     if ($this->isBacked())
                         $needSave = true;
+                    // */
                 }
             }
 
