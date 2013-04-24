@@ -128,11 +128,14 @@ class Service_User extends Service_Base
         // */
 
         $authResult = $auth->authenticate( $authAdapter );
-        if ($authResult->isValid())
-        {
-            // Retrieve the authenticated Model_User instance
-            $user = $authResult->getUser();
 
+        /* If authentication is valid, attempt to retrieve the authenticated
+         * Model_User instance.
+         */
+        $user       = ($authResult->isValid() ? $authResult->getUser() : null);
+
+        if ($authResult->isValid() && $user)
+        {
             // Log this authentication
             $this->_logActivity($user, 'update',
                                 array('action'        => 'authenticate',
@@ -147,6 +150,22 @@ class Service_User extends Service_Base
              * verified PKI information AND a matching user, automatically
              * register the userAuth record and re-try authentication.
              */
+
+            /*
+            Connexions::log("Service_User::authenticate(): FAILED "
+                            .   "method[ %s ], authAdapter[ %s ], "
+                            .   "credential[ %s ], id[ %s ], "
+                            .   "authResult[ %s ], user[ %s ]",
+                            $method,
+                            (is_object($authAdapter)
+                                ? get_class($authAdapter)
+                                : gettype($authAdapter)),
+                            Connexions::varExport($credential),
+                            Connexions::varExport($id),
+                            Connexions::varExport($authResult),
+                            Connexions::varExport($user) );
+            // */
+
             if ( ($depth === 0) && ($method === Model_UserAuth::AUTH_PKI) )
             {
                 $connection = Zend_Registry::get('connectionInfo');
