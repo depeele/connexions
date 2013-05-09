@@ -102,7 +102,7 @@ class UrlController extends Connexions_Controller_Action
         {
             // This URL has not been bookmarked here.
             $this->view->url   = $url;
-            $this->view->error = "There are no bookarks for the provided URL.";
+            $this->view->error = "There are no bookmarks for the provided URL.";
 
             return $this->_forward('choose');
         }
