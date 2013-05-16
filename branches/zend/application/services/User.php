@@ -1013,8 +1013,19 @@ class Service_User extends Service_Base
         // */
 
 
-        // Retrieve information about the source image.
-        $srcInfo   = getimagesize($srcPath);
+        /* Retrieve information about the source image.
+         *
+         * getimagesize() cannot handle retrieval from a site that requires a
+         * client certificate.  To allow transparent handling despite the
+         * source of the image, make use of the Connexions::getPate() helper,
+         * which will use the connexions certificate (config.pki.cert) if
+         * needed.  Once we have the image data, use a second helper to
+         * retrieve information about the image from that data.
+         *
+         *  $srcInfo   = getimagesize($srcPath);
+         */
+        $srcData    = Connexions::getPage( $srcPath );
+        $srcInfo    = Connexions::imageInfoFromData( $srcData );
 
         // /*
         Connexions::log("Service_User::cropAvatar(): "

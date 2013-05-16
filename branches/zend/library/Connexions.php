@@ -1300,6 +1300,62 @@ class Connexions
     }
 
     /*************************************************************************
+     * Image helpers
+     *
+     */
+
+    /** @brief  Given the raw data of an image, retrieve information similar to
+     *          what getimagesize() would return.
+     *  @param  data    The raw image data;
+     *
+     *  @return An array of image information similar to what getimagesize()
+     *          would return:
+     *              width   => image-width,  (also available at index 0)
+     *              height  => image-height, (also available at index 1)
+     *              mime    => mime-type
+     */
+    public static function imageInfoFromData($data)
+    {
+        static  $type   = array(
+            1   => 'image/jpeg',
+            2   => 'image/gif',
+            3   => 'image/png',
+            4   => 'image/x-windows-bmp',
+            5   => 'image/tiff',
+            6   => 'image/x-ilbm',
+        );
+        $info   = array(
+            'width'     => 0,
+            'height'    => 0,
+            'mime'      => 'application/octet-stream',
+        );
+
+        if ( preg_match('/\A(?:(\xff\xd8\xff)|(GIF8[79]a)|(\x89PNG\x0d\x0a)|(BM)|(\x49\x49(?:\x2a\x00\x4a))|(FORM.{4}ILBM))/',
+                        $data, $hits))
+        {
+            $info['mime'] = $type[count($hits) - 1];
+        }
+
+        if (! empty($data))
+        {
+            $im = @imagecreatefromstring($data);
+            if ($im !== false)
+            {
+                $info['width']  = $imagesx($im);
+                $info['height'] = $imagesy($im);
+
+                imagedestroy($im);
+            }
+        }
+
+        // In order to properly mirror getimagesize(), set index 0 and 1
+        $info[0] = $info['width'];
+        $info[1] = $info['height'];
+
+        return $info;
+    }
+
+    /*************************************************************************
      * PKI helpers
      *
      */
@@ -1399,6 +1455,48 @@ class Connexions
         // */
 
         return $pkiInfo;
+    }
+
+    /** @brief  Retrieve a URL, possibly using https and our site certificate.
+     *  @param  url     The target URL
+     *
+     *  @return The data of the target URL (if retrievable).
+     */
+    static public function getPage($url)
+    {
+        /* Retrieve the path to our combined certificate file.  This should
+         * contain PEM encoded versions of both the public certificate and
+         * private key.
+         */
+        $cert   = self::getConfig()
+                    ->get('pki')
+                        ->get('cert')
+                            ->toArray();
+
+        $config = array(
+            'ssl'   => array(
+                'verify_peer'   => false,
+                'local_cert'    => $cert['path']
+            )
+        );
+        if (! empty($cert['passphrase']))
+        {
+            $config['ssl']['passphrase'] = $cert['passphrase'];
+        }
+
+        // Establish the stream context
+        $ctx    = stream_context_create( $config );
+
+        // open the target URL using our SSL context
+        $fp     = fopen($url, 'rb', false, $ctx);
+        $data   = '';
+        while (is_resource($fp) && (!feof($fp)))
+        {
+            $data .= fread($fp, 16384);
+        }
+        fclose($fp);
+
+        return $data;
     }
 
     /*************************************************************************
