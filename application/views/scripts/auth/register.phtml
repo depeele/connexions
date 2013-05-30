@@ -99,7 +99,7 @@ if (empty($this->user) && $pkiInfo)
       <input id='includePassword'
              type='checkbox'
              name='includePassword'
-             value='true'<?= ($this->includePassword
+             value='true'<?= ($this->includePassword && (! $this->includePki)
                                   ? " checked='true'"
                                   : '') ?> />
       Password
