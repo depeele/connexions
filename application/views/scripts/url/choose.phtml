@@ -18,7 +18,7 @@ $jQuery->addStylesheet($this->baseUrl('css/url-choose.min.css'))
   <h1>URL Lookup</h1>
  </div><!-- legend } -->
  <div class="userInput lastUnit"><!-- { -->
-  <form method='post'>
+  <form method='post' action='<?= $this->baseUrl('url') ?>'>
    <div class='field'>
     <label for='url'>Desired URL</label>
     <textarea class='text required' autocomplete='off'
