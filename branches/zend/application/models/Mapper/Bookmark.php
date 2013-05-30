@@ -128,6 +128,41 @@ class Model_Mapper_Bookmark extends Model_Mapper_Base
         return $normIds;
     }
 
+    /** @brief  Retrieve the model instance with the given id.
+     *  @param  id      An array of 'property/value' pairs identifying the
+     *                  desired model.
+     *
+     *  We over-ride in order to properly handle the case where the target item
+     *  doesn't exist.
+     *
+     *  @return The matching domain model instance (null if no match).
+     */
+    public function find($id)
+    {
+        /*
+        Connexions::log("Model_Mapper_Bookmark::find( %s )",
+                        Connexions::varExport($id));
+        // */
+
+        /* Before this method is called, id will have been normalized.  Our
+         * normalization process will either:
+         *  - locate the target item, placing the integer itemId in 'id' as
+         *    'itemId' OR
+         *  - NOT locate the target item, leaving the search information in
+         *    'id' as an 'itemId' object (which may contain 'url' and/or
+         *    'urlHash');
+         *
+         * If the item was NOT located, then there can be no matching bookmark.
+         * Properly handle this case.
+         */
+        if (! is_int($id['itemId']))
+        {
+            // No target item so no target bookmark
+            return null;
+        }
+
+        return parent::find($id);
+    }
 
     /** @brief  Save the given model instance.
      *  @param  bookmark    The bookmark Domain Model instance to save.
