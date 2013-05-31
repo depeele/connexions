@@ -5,6 +5,37 @@ define('CLI_DIR', realpath(dirname(__FILE__)));
 require_once(CLI_DIR. '/bootstrap.php');
 $prog = array_shift($argv);
 
+if (count($argv) < 1)
+{
+    printf("*** Usage: %s [--auth] bookmark-id [...]\n", $prog);
+    exit;
+}
+
+/******************************************************************
+ * Handle --auth to establish the authenticated user
+ *
+ */
+if ($argv[0] === '--auth')
+{
+    // Establish the authenticated user as user 1
+    array_shift($argv);
+
+    $us   = Connexions_Service::factory('Service_User');
+    $user = $us->find( 1 );
+
+    if ($user)
+    {
+        $auth = new Zend_Auth_Result(Zend_Auth_Result::SUCCESS, $user);
+        $user->setAuthResult($user);
+
+        Zend_Registry::set('user', $user);
+    }
+}
+
+/******************************************************************
+ * Attempt to locate the given bookmark(s)
+ *
+ */
 $svc = Connexions_Service::factory('Service_Bookmark');
 foreach ($argv as $id)
 {
@@ -15,10 +46,18 @@ foreach ($argv as $id)
                                   'itemId' => $itemId) );
     */
 
+    try {
+        $tmp = json_decode( $id, true );
+        $id  = $tmp;
+
+    } catch (Exception $e) {
+        // Ignore the exception and proceed with unchanged $id
+    }
+
     $bookmark = $svc->find( $id );
 
     printf ("id[ %s ]: %s\n",
-            $id,
+            Connexions::varExport($id),
             ($bookmark instanceof Model_Bookmark
                 ? $bookmark->debugDump()
                 : "NOT FOUND") );
