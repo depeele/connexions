@@ -8,11 +8,13 @@ $fullName = $this->fullName;
 $email    = $this->email;
 
 // /*
-Connexions::log("register.phtml: includePki[ %s ], includePassword[ %s ], "
+Connexions::log("views/scripts/auth/register.phtml: "
+                . "includePki[ %s ], includePassword[ %s ], "
                 . "autoSignin[ %s ]",
                 Connexions::varExport($this->includePki),
                 Connexions::varExport($this->includePassword),
-                Connexions::varExport($this->autoSignin));
+                Connexions::varExport($this->autoSignin),
+                Connexions::varExport($this->pkiInfo));
 // */
 
 $pkiInfo =& $this->pkiInfo;
@@ -165,6 +167,8 @@ if (empty($this->user) && $pkiInfo)
     var $includePassword = $form.find('input[name=includePassword]');
     var $includePki      = $form.find('input[name=includePki]');
     var $status          = $container.find('.status');
+    var noPkiMode        = (($includePki.length      != 1) &&
+                            ($includePassword.length != 1));
 
     function validate_user($user, name)
     {
@@ -300,7 +304,8 @@ if (empty($this->user) && $pkiInfo)
                 if (res === true)
                 {
                     var includePki      = $includePki.is(':checked'),
-                        includePassword = $includePassword.is(':checked');
+                        includePassword = (noPkiMode ||
+                                           $includePassword.is(':checked'));
 
                     if (includePki)
                     {
