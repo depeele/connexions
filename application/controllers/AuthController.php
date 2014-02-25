@@ -396,7 +396,8 @@ class AuthController extends Connexions_Controller_Action
      */
     protected function _userAuthCookie($user = null)
     {
-        $authCookie = $this->_api->authCookie;
+        $authCookie  = $this->_api->authCookie;
+        $authTimeout = $this->_api->authTimeout;
 
         if ($user === null)
         {
@@ -423,7 +424,8 @@ class AuthController extends Connexions_Controller_Action
                        $this->_connection['https']);
         }
 
-        $expires = time() + (60 * 60 * 24 * 365);
+        // Set the expiration for the auth cookie
+        $expires = time() + $authTimeout;
         if ($user && $user->isAuthenticated())
         {
             // Set the authCookie to identify the new user.

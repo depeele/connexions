@@ -520,51 +520,86 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
          */
         if  ($auth->hasIdentity())
         {
-            //Connexions::log("Bootstrap::_commonAuth: Auth has identity...");
+            /*
+            Connexions::log("Bootstrap::_commonAuth: Auth has identity: %s",
+                            Connexions::varExport($auth->getIdentity()));
+            // */
 
+            // Locate the session-based user
             $user = $uService->find( $auth->getIdentity() );
             if ($user !== null)
             {
-                // Create a Zend_Auth_Result that indicates success
-                $result = new Connexions_Auth_Pre($user);
-                $user->setAuthResult($result);
+                /* We have a session-based authenticated user.
+                 *
+                 * Do we need to perform a new authentication?
+                 */
+                $nextAuth = Connexions::date2time($user->lastAuth)
+                          + Connexions::getConfig()->api->authTimeout;
 
-                // Update the 'lastVisit' time for this user.
-                $user->updateLastVisit();
-                $user->save(true);  // noLog
+                /*
+                Connexions::log("Bootstrap::_commonAuth(): "
+                                .   "Session based identity: %s : %s, "
+                                .   "nextAuth[ %s ], time[ %s ]",
+                                Connexions::varExport($auth->getIdentity()),
+                                $user,
+                                $nextAuth, time());
+                // */
+
+                if ($nextAuth <= time())
+                {
+                    /* The previous authentication for this session-based user
+                     * has expired.
+                     */
+
+                    /*
+                    Connexions::log("Boostrap::_commonAuth(): auth expiration "
+                                    .   "for '%s'...",
+                                    $user);
+                    // */
+
+                    $user->logout();
+                    $user = null;
+                }
+                else
+                {
+                    /* Create a Zend_Auth_Result that indicates success based
+                     * upon the session-based authenticated user.
+                     */
+                    $result = new Connexions_Auth_Pre($user);
+                    $user->setAuthResult($result);
+                }
             }
+        }
+
+        if ($user === null)
+        {
+            /* We have no valid session-based authenticated user.
+             *
+             * See if the connecting user may have specified _autoSignin() for
+             * an authentication method and, if so, whether re-authentication
+             * succeeds.
+             */
+            $user = $this->_autoSignin();
         }
 
         /*
         Connexions::log("Bootstrap::_commonAuth: user is %sNULL",
                         ($user === null ? '' : 'NOT '));
         // */
-        if ($user === null)
-        {
-            /* :TODO: Any Transport-level / Atomic
-             *          Identification & Authentication should occur here,
-             *          storing the identity in the global Auth instance:
-             *              Zend_Auth::getInstance()->setIdentity( $id );
-             *
-             *  Example:
-             *      $uService = Connexions_Service::factory('Service_User');
-             *      $user     = $uService->authenticate(
-             *                                  Model_UserAuth::AUTH_PKI);
-             *
-             *      $user will now be one of:
-             *          - authenticated user;
-             *          - non-backed, unauthenticated anonymous user;
-             */
-            $user = $this->_autoSignin();
-        }
 
-        if ($user === null)
+        if ($user !== null)
+        {
+            // Update the 'lastVisit' time for this user.
+            $user->updateLastVisit();
+            $user->save(true);  // noLog
+        }
+        else
         {
             /*
             Connexions::log("Bootstrap::_commonAuth: create an anonymous user");
             // */
 
-            // Find/Make an 'anonymous', unauthenticated user
+            // Find/Make the 'anonymous', unauthenticated user
             $user = $uService->getAnonymous();
         }
 
@@ -621,6 +656,11 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
             return null;
         }
 
+        /********************************************************************
+         * Attempt all authentication methods indicated by the autoSignin
+         * cookie to see if we can automatically authenticate with any.
+         */
+        $user     = null;
         $uService = Connexions_Service::factory('Service_User');
         $methods  = preg_split('/\s*,\s*/', $autoSignin);
         foreach ($methods as $method)
