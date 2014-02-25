@@ -10,6 +10,7 @@ CREATE TABLE user (
   profile       TEXT                    NOT NULL DEFAULT '',
 
   -- statistics about this user
+  lastAuth      TIMESTAMP               NOT NULL DEFAULT 0,
   lastVisit     TIMESTAMP               NOT NULL DEFAULT CURRENT_TIMESTAMP,
   lastVisitFor  TIMESTAMP               NOT NULL DEFAULT 0,
 

@@ -38,6 +38,11 @@ abstract class Connexions_Auth_Abstract extends Zend_Auth_Result
         return $this->_user;
     }
 
+    public function getUserAuth()
+    {
+        return $this->_userAuth;
+    }
+
     public function getRequest()
     {
         // Retrieve the registered request

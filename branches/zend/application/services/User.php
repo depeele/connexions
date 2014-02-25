@@ -140,6 +140,11 @@ class Service_User extends Service_Base
             $this->_logActivity($user, 'update',
                                 array('action'        => 'authenticate',
                                       'method'        => $method));
+            $user->setAuthResult($authResult);
+
+            // Update the last authentication timestamp for this user
+            $user->updateLastAuth();
+            $user->save(true);  // noLog
         }
         else
         {
@@ -244,8 +249,7 @@ class Service_User extends Service_Base
                             array('action' => 'deauthenticate'));
 
 
-        $auth  = Zend_Auth::getInstance();
-        $auth->clearIdentity();
+        $user->logout();
 
         return true;
     }

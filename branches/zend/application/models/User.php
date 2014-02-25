@@ -19,6 +19,7 @@ class Model_User extends Model_Taggable
             'apiKey'        => '',
             'pictureUrl'    => '',
             'profile'       => '',
+            'lastAuth'      => '',
             'lastVisit'     => '',
             'lastVisitFor'  => '',
 
@@ -91,6 +92,18 @@ class Model_User extends Model_Taggable
         return $this;
     }
 
+    /** @brief  Update the last authentication date of this model instance to
+     *          NOW.
+     *
+     *  @return $this for a fluent interface.
+     */
+    public function updateLastAuth()
+    {
+        $this->__set('lastAuth', date('Y-m-d H:i:s'));
+
+        return $this;
+    }
+
     /** @brief  Update the last visit date of this model instance to NOW.
      *
      *  @return $this for a fluent interface.
@@ -127,8 +140,8 @@ class Model_User extends Model_Taggable
     {
         if (! $this->isBacked())
         {
-            /* For a new, un-backed model instance, ensure that 'apiKey' and 
-             * 'lastVisit' are initialized.
+            /* For a new, un-backed model instance, ensure that 'apiKey',
+             * 'lastAuth', and 'lastVisit' are initialized.
              */
             if (empty($data['apiKey']))
             {
@@ -136,9 +149,9 @@ class Model_User extends Model_Taggable
                 $data['apiKey'] = $this->genApiKey();
             }
 
-            if (empty($data['lastVisit']))
-            {
-                $data['lastVisit'] = date('Y-m-d H:i:s');
+            $now = date('Y-m-d H:i:s');
+            if (empty($data['lastAuth']))   { $data['lastAuth']  = $now; }
+            if (empty($data['lastVisit']))  { $data['lastVisit'] = $now; }
             }
         }
 
@@ -351,9 +364,13 @@ class Model_User extends Model_Taggable
     public function setAuthResult($result)
     {
         if ($result instanceof Zend_Auth_Result)
+        {
             $this->_authResult = $result;
+        }
         else
+        {
             $this->_authResult = null;
+        }
 
         return $this;
     }
